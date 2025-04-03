@@ -9,6 +9,7 @@ const API_CONFIG = {
 
     // Endpoints específicos
     ENDPOINTS: {
+        LOGIN: '/api',
         PRODUCTOS: '/api/productos',
         PACIENTES: '/api/pacientes',
         MEDICOS: '/api/medicos',

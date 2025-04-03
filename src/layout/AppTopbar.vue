@@ -1,8 +1,31 @@
 <script setup>
 import { useLayout } from '@/layout/composables/layout';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import AppConfigurator from './AppConfigurator.vue';
 
+const router = useRouter();
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
+
+// Estado del usuario desde localStorage
+const user = ref({
+    name: JSON.parse(localStorage.getItem('userData'))?.nombre + ' ' + JSON.parse(localStorage.getItem('userData'))?.apellido || 'Usuario Demo',
+    email: JSON.parse(localStorage.getItem('userData'))?.email || 'usuario@demo.com'
+});
+
+const handleLogout = () => {
+    localStorage.removeItem('userData');
+    router.push('/auth/login');
+};
+
+const handleAccountSettings = () => {
+    // Aquí implementarías la navegación a la página de configuración de cuenta
+    console.log('Ir a configuración de cuenta');
+};
+
+const handleAgenda = () => {
+    router.push('/pages/agenda');
+};
 </script>
 
 <template>
@@ -30,7 +53,7 @@ const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
                     </g>
                 </svg>
 
-                <span>SAKAI</span>
+                <span>RestSys</span>
             </router-link>
         </div>
 
@@ -60,18 +83,38 @@ const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
 
             <div class="layout-topbar-menu hidden lg:block">
                 <div class="layout-topbar-menu-content">
-                    <button type="button" class="layout-topbar-action">
+                    <button type="button" class="layout-topbar-action" @click="handleAgenda">
                         <i class="pi pi-calendar"></i>
-                        <span>Calendar</span>
+                        <span>Agenda</span>
                     </button>
                     <button type="button" class="layout-topbar-action">
                         <i class="pi pi-inbox"></i>
                         <span>Messages</span>
                     </button>
-                    <button type="button" class="layout-topbar-action">
+                    <button
+                        type="button"
+                        class="layout-topbar-action"
+                        v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }"
+                    >
                         <i class="pi pi-user"></i>
-                        <span>Profile</span>
+                        <span>{{ user.name }}</span>
                     </button>
+                    <div class="layout-topbar-menu hidden absolute right-0 top-full mt-2 bg-white dark:bg-gray-800 shadow-lg rounded-lg w-64">
+                        <div class="layout-topbar-menu-content flex flex-col">
+                            <div class="p-3 border-b border-gray-200 dark:border-gray-700">
+                                <div class="font-semibold text-gray-900 dark:text-white">{{ user.name }}</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ user.email }}</div>
+                            </div>
+                            <button type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center text-gray-900 dark:text-white" @click="handleAccountSettings">
+                                <i class="pi pi-cog mr-2"></i>
+                                <span>Cuenta</span>
+                            </button>
+                            <button type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center text-red-600 dark:text-red-400" @click="handleLogout">
+                                <i class="pi pi-sign-out mr-2"></i>
+                                <span>Salir</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

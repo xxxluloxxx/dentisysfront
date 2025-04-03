@@ -1,6 +1,6 @@
 <script setup>
 import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
-import { loginService } from '@/services/loginService';
+import { loginService } from '@/service/loginService';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -21,16 +21,20 @@ const handleLogin = async () => {
     errorMessage.value = '';
 
     try {
-        const isAuthenticated = await loginService.authenticate(email.value, password.value);
+        const userData = await loginService.authenticate(email.value, password.value);
 
-        if (isAuthenticated) {
-            // Si la autenticación es exitosa, redirigir al dashboard
+        if (userData) {
+            // Mantener localStorage para persistencia
+            localStorage.setItem('userData', JSON.stringify(userData));
+            // Redirigir al dashboard
             router.push('/dashboard');
         } else {
-            errorMessage.value = 'Credenciales inválidas. Por favor, intente nuevamente.';
+            // Si la autenticación falla, redirigir a la página de acceso
+            router.push('/auth/access');
         }
     } catch (error) {
-        errorMessage.value = 'Error al intentar iniciar sesión. Por favor, intente nuevamente.';
+        // Si hay cualquier otro error, redirigir a la página de error
+        router.push('/auth/error');
     } finally {
         loading.value = false;
     }
@@ -83,7 +87,7 @@ const handleLogin = async () => {
                             </div>
                             <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">¿Olvidaste tu contraseña?</span>
                         </div>
-                        <Button label="Iniciar sesión" class="w-full" as="router-link" to="/dashboard" :loading="loading"></Button>
+                        <Button label="Iniciar sesión" class="w-full" @click="handleLogin" :loading="loading"></Button>
                     </div>
                 </div>
             </div>
