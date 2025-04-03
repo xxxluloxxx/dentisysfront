@@ -20,5 +20,19 @@ export default defineConfig({
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url))
         }
+    },
+    base: '/',
+    build: {
+        outDir: 'dist',
+        assetsDir: 'assets',
+        rollupOptions: {
+            output: {
+                manualChunks: undefined
+            }
+        }
+    },
+    preview: {
+        host: '0.0.0.0',
+        port: process.env.PORT || 3000
     }
 });
