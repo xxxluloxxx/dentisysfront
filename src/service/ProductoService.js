@@ -3,7 +3,7 @@ import API_CONFIG from '../config/api.config';
 
 export const ProductoService = {
     async getAllProducts() {
-        console.log('🚀 Iniciando petición a la API de productos 333...');
+        console.log('🚀 Iniciando petición a la API de productos...');
         try {
             const response = await axios.get(API_CONFIG.getUrl('PRODUCTOS'));
             console.log('✅ Respuesta recibida de la API:', response.data);

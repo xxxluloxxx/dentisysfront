@@ -6,23 +6,26 @@ import { onMounted, ref } from 'vue';
 
 const toast = useToast();
 const dt = ref();
-const products = ref();
-const productDialog = ref(false);
-const deleteProductDialog = ref(false);
-const deleteProductsDialog = ref(false);
-const product = ref({});
-const selectedProducts = ref();
+const productos = ref();
+const loading = ref(false);
+const productoDialog = ref(false);
+const deleteProductoDialog = ref(false);
+const producto = ref({});
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 const submitted = ref(false);
 
 onMounted(() => {
+    loading.value = true;
     ProductoService.getAllProducts()
-        .then((data) => (products.value = data))
+        .then((data) => (productos.value = data))
         .catch((error) => {
             console.error('Error al cargar los productos:', error);
             toast.add({ severity: 'error', summary: 'Error', detail: 'Error al conectarse al servidor', life: 3000 });
+        })
+        .finally(() => {
+            loading.value = false;
         });
 });
 
@@ -32,29 +35,29 @@ function formatCurrency(value) {
 }
 
 function openNew() {
-    product.value = {};
+    producto.value = {};
     submitted.value = false;
-    productDialog.value = true;
+    productoDialog.value = true;
 }
 
 function hideDialog() {
-    productDialog.value = false;
+    productoDialog.value = false;
     submitted.value = false;
 }
 
 function saveProduct() {
     submitted.value = true;
 
-    if (product?.value.nombre?.trim()) {
+    if (producto?.value.nombre?.trim()) {
         const productoData = {
-            codigo: product.value.codigo,
-            nombre: product.value.nombre,
-            descripcion: product.value.descripcion,
-            precio: product.value.precio,
-            categoria: product.value.categoria
+            codigo: producto.value.codigo,
+            nombre: producto.value.nombre,
+            descripcion: producto.value.descripcion,
+            precio: producto.value.precio,
+            categoria: producto.value.categoria
         };
 
-        if (product.value.id) {
+        if (producto.value.id) {
             updateProduct(productoData);
         } else {
             createProduct(productoData);
@@ -65,9 +68,9 @@ function saveProduct() {
 function createProduct(productoData) {
     ProductoService.createProduct(productoData)
         .then((response) => {
-            products.value.push(response);
-            productDialog.value = false;
-            product.value = {};
+            productos.value.push(response);
+            productoDialog.value = false;
+            producto.value = {};
             toast.add({ severity: 'success', summary: 'Éxito', detail: 'Producto Creado', life: 3000 });
         })
         .catch((error) => {
@@ -77,14 +80,14 @@ function createProduct(productoData) {
 }
 
 function updateProduct(productoData) {
-    ProductoService.updateProduct(product.value.id, productoData)
+    ProductoService.updateProduct(producto.value.id, productoData)
         .then((response) => {
-            const index = findIndexById(product.value.id);
+            const index = findIndexById(producto.value.id);
             if (index !== -1) {
-                products.value[index] = response;
+                productos.value[index] = response;
             }
-            productDialog.value = false;
-            product.value = {};
+            productoDialog.value = false;
+            producto.value = {};
             toast.add({ severity: 'success', summary: 'Éxito', detail: 'Producto Actualizado', life: 3000 });
         })
         .catch((error) => {
@@ -94,21 +97,21 @@ function updateProduct(productoData) {
 }
 
 function editProduct(prod) {
-    product.value = { ...prod };
-    productDialog.value = true;
+    producto.value = { ...prod };
+    productoDialog.value = true;
 }
 
 function confirmDeleteProduct(prod) {
-    product.value = prod;
-    deleteProductDialog.value = true;
+    producto.value = prod;
+    deleteProductoDialog.value = true;
 }
 
 function deleteProduct() {
-    ProductoService.deleteProduct(product.value.id)
+    ProductoService.deleteProduct(producto.value.id)
         .then(() => {
-            products.value = products.value.filter((val) => val.id !== product.value.id);
-            deleteProductDialog.value = false;
-            product.value = {};
+            productos.value = productos.value.filter((val) => val.id !== producto.value.id);
+            deleteProductoDialog.value = false;
+            producto.value = {};
             toast.add({ severity: 'success', summary: 'Éxito', detail: 'Producto Eliminado', life: 3000 });
         })
         .catch((error) => {
@@ -119,82 +122,58 @@ function deleteProduct() {
 
 function findIndexById(id) {
     let index = -1;
-    for (let i = 0; i < products.value.length; i++) {
-        if (products.value[i].id === id) {
+    for (let i = 0; i < productos.value.length; i++) {
+        if (productos.value[i].id === id) {
             index = i;
             break;
         }
     }
-
     return index;
 }
 
 function exportCSV() {
     dt.value.exportCSV();
 }
-
-function confirmDeleteSelected() {
-    deleteProductsDialog.value = true;
-}
-
-function deleteSelectedProducts() {
-    const deletePromises = selectedProducts.value.map((product) => ProductoService.deleteProduct(product.id));
-
-    Promise.all(deletePromises)
-        .then(() => {
-            products.value = products.value.filter((val) => !selectedProducts.value.includes(val));
-            deleteProductsDialog.value = false;
-            selectedProducts.value = null;
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Productos Eliminados', life: 3000 });
-        })
-        .catch((error) => {
-            console.error('Error al eliminar los productos:', error);
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al eliminar los productos', life: 3000 });
-        });
-}
 </script>
 
 <template>
     <div>
         <div class="card">
-            <Toolbar class="mb-6">
-                <template #start>
-                    <Button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
-                    <Button label="Delete" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
-                </template>
-
-                <template #end>
-                    <Button label="Export" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
-                </template>
-            </Toolbar>
-
             <DataTable
                 ref="dt"
-                v-model:selection="selectedProducts"
-                :value="products"
+                :value="productos"
                 dataKey="id"
                 :paginator="true"
                 :rows="10"
                 :filters="filters"
+                scrollable
+                scrollHeight="600px"
+                :loading="loading"
+                loadingIcon="pi pi-spin pi-spinner"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} productos"
             >
                 <template #header>
-                    <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">Productos y servicios</h4>
-                        <IconField>
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Search..." />
-                        </IconField>
+                    <div class="flex flex-col gap-y-4">
+                        <div class="flex flex-wrap gap-2 items-center justify-start">
+                            <h4 class="m-0">Productos y servicios</h4>
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center justify-between">
+                            <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
+                            <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center justify-end">
+                            <IconField>
+                                <InputIcon>
+                                    <i class="pi pi-search" />
+                                </InputIcon>
+                                <InputText v-model="filters['global'].value" placeholder="Search..." />
+                            </IconField>
+                        </div>
                     </div>
                 </template>
-
-                <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
-                <Column field="codigo" header="Codigo" sortable style="min-width: 12rem"></Column>
-                <Column field="nombre" header="Nombre" sortable style="min-width: 16rem"></Column>
+                <Column field="nombre" header="Nombre" sortable style="min-width: 10rem"></Column>
                 <Column field="precio" header="Precio" sortable style="min-width: 8rem">
                     <template #body="slotProps">
                         {{ formatCurrency(slotProps.data.precio) }}
@@ -211,34 +190,29 @@ function deleteSelectedProducts() {
             </DataTable>
         </div>
 
-        <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" header="Product Details" :modal="true">
+        <Dialog v-model:visible="productoDialog" :style="{ width: '450px' }" header="Product Details" :modal="true">
             <div class="flex flex-col gap-6">
-                <img v-if="product.image" :src="`https://primefaces.org/cdn/primevue/images/product/${product.image}`" :alt="product.image" class="block m-auto pb-4" />
+                <img v-if="producto.image" :src="`https://primefaces.org/cdn/primevue/images/product/${producto.image}`" :alt="producto.image" class="block m-auto pb-4" />
                 <div>
                     <label for="nombre" class="block font-bold mb-3">Nombre</label>
-                    <InputText id="nombre" v-model.trim="product.nombre" required="true" autofocus :invalid="submitted && !product.nombre" fluid />
-                    <small v-if="submitted && !product.nombre" class="text-red-500">El nombre es requerido.</small>
+                    <InputText id="nombre" v-model.trim="producto.nombre" required="true" autofocus :invalid="submitted && !producto.nombre" fluid />
+                    <small v-if="submitted && !producto.nombre" class="text-red-500">El nombre es requerido.</small>
                 </div>
                 <div>
                     <label for="description" class="block font-bold mb-3">Descripción</label>
-                    <Textarea id="description" v-model="product.descripcion" required="true" rows="3" cols="20" fluid />
+                    <Textarea id="description" v-model="producto.descripcion" required="true" rows="3" cols="20" fluid />
                 </div>
 
                 <div>
                     <label for="categoria" class="block font-bold mb-3">Categoria</label>
-                    <InputText id="categoria" v-model.trim="product.categoria" required="true" autofocus :invalid="submitted && !product.categoria" fluid />
-                    <small v-if="submitted && !product.categoria" class="text-red-500">La categoría es requerida.</small>
+                    <InputText id="categoria" v-model.trim="producto.categoria" required="true" autofocus :invalid="submitted && !producto.categoria" fluid />
+                    <small v-if="submitted && !producto.categoria" class="text-red-500">La categoría es requerida.</small>
                 </div>
 
                 <div class="grid grid-cols-12 gap-4">
                     <div class="col-span-6">
-                        <label for="codigo" class="block font-bold mb-3">Código</label>
-                        <InputText id="codigo" v-model.trim="product.codigo" required="true" autofocus :invalid="submitted && !product.codigo" fluid />
-                        <small v-if="submitted && !product.codigo" class="text-red-500">El código es requerido.</small>
-                    </div>
-                    <div class="col-span-6">
                         <label for="price" class="block font-bold mb-3">Precio</label>
-                        <InputNumber id="price" v-model="product.precio" mode="currency" currency="USD" locale="en-US" fluid />
+                        <InputNumber id="price" v-model="producto.precio" mode="currency" currency="USD" locale="en-US" fluid />
                     </div>
                 </div>
             </div>
@@ -249,28 +223,17 @@ function deleteSelectedProducts() {
             </template>
         </Dialog>
 
-        <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+        <Dialog v-model:visible="deleteProductoDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="product"
-                    >Estas seguro de querer elimminar este producto <b>{{ product.name }}</b
+                <span v-if="producto"
+                    >Estas seguro de querer elimminar este producto <b>{{ producto.name }}</b
                     >?</span
                 >
             </div>
             <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductDialog = false" />
+                <Button label="No" icon="pi pi-times" text @click="deleteProductoDialog = false" />
                 <Button label="Si" icon="pi pi-check" @click="deleteProduct" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteProductsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="product">Are you sure you want to delete the selected products?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductsDialog = false" />
-                <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedProducts" />
             </template>
         </Dialog>
     </div>
