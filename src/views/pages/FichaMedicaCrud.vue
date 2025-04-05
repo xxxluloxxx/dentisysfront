@@ -2,7 +2,7 @@
 import { FichaOdontologicaService } from '@/service/FichaMedica';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -11,6 +11,7 @@ const dt = ref();
 const fichas = ref();
 const fichaDialog = ref(false);
 const deleteFichaDialog = ref(false);
+const loading = ref(true);
 const multiple = ref('multiple');
 const ficha = ref({});
 const filters = ref({
@@ -18,12 +19,30 @@ const filters = ref({
 });
 const submitted = ref(false);
 
+// Añadir función de filtrado
+const filteredFichas = computed(() => {
+    if (!filters.value.global.value) return fichas.value;
+
+    const searchTerm = filters.value.global.value.toLowerCase();
+    return fichas.value.filter(
+        (ficha) =>
+            ficha.medico?.nombre?.toLowerCase().includes(searchTerm) ||
+            ficha.medico?.apellido?.toLowerCase().includes(searchTerm) ||
+            ficha.paciente?.nombre?.toLowerCase().includes(searchTerm) ||
+            ficha.paciente?.apellido?.toLowerCase().includes(searchTerm)
+    );
+});
+
 onMounted(() => {
+    loading.value = true;
     FichaOdontologicaService.getAll()
         .then((data) => (fichas.value = data))
         .catch((error) => {
             console.error('Error al cargar los productos:', error);
             toast.add({ severity: 'error', summary: 'Error', detail: 'Error al conectarse al servidor', life: 3000 });
+        })
+        .finally(() => {
+            loading.value = false;
         });
 });
 
@@ -74,6 +93,7 @@ function obtenerFecha(value) {
 <template>
     <div>
         <div class="card">
+            <!-- Vista de escritorio -->
             <DataTable
                 ref="dt"
                 :value="fichas"
@@ -85,27 +105,29 @@ function obtenerFecha(value) {
                 :sortMode="multiple"
                 :multiSortMeta="[
                     { field: 'createdAt', order: 1 },
-                    { field: 'medico.nombre', order: 1 },
+                    { field: 'medico.nombre', order: 1 }
                 ]"
                 :filters="filters"
+                :loading="loading"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} fichas"
+                currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} fichas"
+                class="hidden md:block"
             >
-            <template #header>
+                <template #header>
                     <div class="flex flex-col gap-y-4">
-                        <div class="flex flex-wrap gap-2 items-center justify-end">
-                            <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
+                        <div class="flex flex-wrap gap-2 items-center justify-start">
+                            <h4 class="m-0">Fichas médicas</h4>
                         </div>
                         <div class="flex flex-wrap gap-2 items-center justify-between">
-                            <div class="flex flex-wrap gap-2 items-center justify-start">
-                                <h4 class="m-0">Fichas médicas</h4>
-                            </div>
+                            <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center justify-end">
                             <IconField>
                                 <InputIcon>
                                     <i class="pi pi-search" />
                                 </InputIcon>
-                                <InputText v-model="filters['global'].value" placeholder="Search..." />
+                                <InputText v-model="filters['global'].value" placeholder="Buscar..." />
                             </IconField>
                         </div>
                     </div>
@@ -130,59 +152,99 @@ function obtenerFecha(value) {
                     </template>
                 </Column>
             </DataTable>
+
+            <!-- Vista móvil -->
+            <div class="md:hidden -mx-4">
+                <div class="flex flex-col gap-4">
+                    <!-- Header móvil con búsqueda y botones -->
+                    <div class="flex flex-col gap-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="m-0 text-xl font-semibold">Fichas médicas</h4>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <div class="flex gap-2">
+                                <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1" @click="exportCSV($event)" />
+                            </div>
+                            <div class="relative w-full">
+                                <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de fichas en tarjetas -->
+                    <div class="flex flex-col gap-4 w-full">
+                        <div v-for="ficha in filteredFichas" :key="ficha.id" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 w-full">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-lg font-semibold dark:text-white">Fecha: {{ obtenerFecha(ficha.createdAt) }}</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Médico: {{ ficha.medico.nombre }} {{ ficha.medico.apellido }}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Paciente: {{ ficha.paciente.nombre }} {{ ficha.paciente.apellido }}</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <Button icon="pi pi-eye" outlined rounded class="p-2" @click="verFicha(ficha)" />
+                                    <Button icon="pi pi-pencil" outlined rounded severity="warn" class="p-2" @click="editProduct(ficha)" />
+                                    <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2" @click="confirmDeleteFicha(ficha)" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <Dialog v-model:visible="fichaDialog" :style="{ width: '450px' }" header="Product Details" :modal="true">
-            <div class="flex flex-col gap-6">
-                <img v-if="ficha.image" :src="`https://primefaces.org/cdn/primevue/images/product/${ficha.image}`" :alt="ficha.image" class="block m-auto pb-4" />
-                <div>
-                    <label for="nombre" class="block font-bold mb-3">Nombre</label>
-                    <InputText id="nombre" v-model.trim="ficha.nombre" required="true" autofocus :invalid="submitted && !ficha.nombre" fluid />
-                    <small v-if="submitted && !ficha.nombre" class="text-red-500">El nombre es requerido.</small>
-                </div>
-                <div>
-                    <label for="description" class="block font-bold mb-3">Descripción</label>
-                    <Textarea id="description" v-model="ficha.descripcion" required="true" rows="3" cols="20" fluid />
+        <Dialog v-model:visible="fichaDialog" :style="{ width: '90vw', maxWidth: '450px' }" header="Detalles de la ficha" :modal="true" class="p-fluid">
+            <div class="flex flex-col gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="field">
+                        <label for="nombre" class="block font-bold mb-2">Nombre</label>
+                        <InputText id="nombre" v-model.trim="ficha.nombre" required="true" autofocus :invalid="submitted && !ficha.nombre" class="w-full" />
+                        <small v-if="submitted && !ficha.nombre" class="text-red-500">El nombre es requerido.</small>
+                    </div>
+                    <div class="field">
+                        <label for="description" class="block font-bold mb-2">Descripción</label>
+                        <Textarea id="description" v-model="ficha.descripcion" required="true" rows="3" cols="20" class="w-full" />
+                    </div>
                 </div>
 
-                <div>
-                    <label for="categoria" class="block font-bold mb-3">Categoria</label>
-                    <InputText id="categoria" v-model.trim="ficha.categoria" required="true" autofocus :invalid="submitted && !ficha.categoria" fluid />
+                <div class="field">
+                    <label for="categoria" class="block font-bold mb-2">Categoria</label>
+                    <InputText id="categoria" v-model.trim="ficha.categoria" required="true" autofocus :invalid="submitted && !ficha.categoria" class="w-full" />
                     <small v-if="submitted && !ficha.categoria" class="text-red-500">La categoría es requerida.</small>
                 </div>
 
-                <div class="grid grid-cols-12 gap-4">
-                    <div class="col-span-6">
-                        <label for="codigo" class="block font-bold mb-3">Código</label>
-                        <InputText id="codigo" v-model.trim="ficha.codigo" required="true" autofocus :invalid="submitted && !ficha.codigo" fluid />
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="field">
+                        <label for="codigo" class="block font-bold mb-2">Código</label>
+                        <InputText id="codigo" v-model.trim="ficha.codigo" required="true" autofocus :invalid="submitted && !ficha.codigo" class="w-full" />
                         <small v-if="submitted && !ficha.codigo" class="text-red-500">El código es requerido.</small>
                     </div>
-                    <div class="col-span-6">
-                        <label for="price" class="block font-bold mb-3">Precio</label>
-                        <InputNumber id="price" v-model="ficha.precio" mode="currency" currency="USD" locale="en-US" fluid />
+                    <div class="field">
+                        <label for="price" class="block font-bold mb-2">Precio</label>
+                        <InputNumber id="price" v-model="ficha.precio" mode="currency" currency="USD" locale="en-US" class="w-full" />
                     </div>
                 </div>
             </div>
 
             <template #footer>
-                <Button label="Cancelar" icon="pi pi-times" text @click="hideDialog" />
-                <Button label="Guardar" icon="pi pi-check" @click="saveProduct" />
+                <div class="flex justify-end gap-2">
+                    <Button label="Cancelar" icon="pi pi-times" text @click="hideDialog" />
+                    <Button label="Guardar" icon="pi pi-check" @click="saveProduct" />
+                </div>
             </template>
         </Dialog>
 
-        <Dialog v-model:visible="deleteFichaDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+        <Dialog v-model:visible="deleteFichaDialog" :style="{ width: '450px' }" header="Confirmar" :modal="true">
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
                 <span v-if="ficha"
-                    >Estas seguro de querer elimminar esta ficha <b>{{ ficha.name }}</b
+                    >¿Estás seguro de querer eliminar esta ficha <b>{{ ficha.name }}</b
                     >?</span
                 >
             </div>
             <template #footer>
                 <Button label="No" icon="pi pi-times" text @click="deleteFichaDialog = false" />
-                <Button label="Si" icon="pi pi-check" @click="deleteFicha" />
+                <Button label="Sí" icon="pi pi-check" @click="deleteFicha" />
             </template>
         </Dialog>
-
     </div>
 </template>

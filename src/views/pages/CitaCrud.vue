@@ -4,7 +4,7 @@ import { MedicoService } from '@/service/MedicoService';
 import { PacienteService } from '@/service/PacienteService';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const toast = useToast();
 const dt = ref();
@@ -22,14 +22,29 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 const submitted = ref(false);
+const loading = ref(true);
 const multiple = ref('multiple');
 
+// Añadir función de filtrado
+const filteredCitas = computed(() => {
+    if (!filters.value.global.value) return citas.value;
+
+    const searchTerm = filters.value.global.value.toLowerCase();
+    return citas.value.filter(
+        (cita) => cita.pacienteNombre?.toLowerCase().includes(searchTerm) || cita.medicoNombre?.toLowerCase().includes(searchTerm) || cita.estado?.toLowerCase().includes(searchTerm) || cita.observaciones?.toLowerCase().includes(searchTerm)
+    );
+});
+
 onMounted(() => {
+    loading.value = true;
     CitaService.getAllCitas()
         .then((data) => (citas.value = data))
         .catch((error) => {
             console.error('Error al cargar las citas:', error);
             toast.add({ severity: 'error', summary: 'Error', detail: 'Error al conectarse al servidor', life: 3000 });
+        })
+        .finally(() => {
+            loading.value = false;
         });
 
     PacienteService.getAll()
@@ -46,8 +61,6 @@ onMounted(() => {
             toast.add({ severity: 'error', summary: 'Error', detail: 'Error al conectarse al servidor', life: 3000 });
         });
 });
-
-
 
 function openNew() {
     cita.value = {};
@@ -233,17 +246,7 @@ function getEstadoSeverity(estado) {
 <template>
     <div>
         <div class="card">
-            <Toolbar class="mb-6">
-                <template #start>
-                    <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
-                    <Button label="Eliminar" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedCitas || !selectedCitas.length" />
-                </template>
-
-                <template #end>
-                    <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
-                </template>
-            </Toolbar>
-
+            <!-- Vista de escritorio -->
             <DataTable
                 ref="dt"
                 v-model:selection="selectedCitas"
@@ -259,22 +262,34 @@ function getEstadoSeverity(estado) {
                     { field: 'horaCita', order: 1 }
                 ]"
                 :filters="filters"
+                :loading="loading"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
-                currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} pacientes"
+                currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} citas"
+                class="hidden md:block"
             >
                 <template #header>
-                    <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">Pacientes</h4>
-                        <IconField>
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Buscar..." />
-                        </IconField>
+                    <div class="flex flex-col gap-y-4">
+                        <div class="flex flex-wrap gap-2 items-center justify-start">
+                            <h4 class="m-0">Citas</h4>
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center justify-between">
+                            <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
+                            <Button label="Eliminar" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedCitas || !selectedCitas.length" />
+                            <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center justify-end">
+                            <IconField>
+                                <InputIcon>
+                                    <i class="pi pi-search" />
+                                </InputIcon>
+                                <InputText v-model="filters['global'].value" placeholder="Buscar..." />
+                            </IconField>
+                        </div>
                     </div>
                 </template>
 
+                <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
                 <Column field="fechaCita" header="Fecha Cita" sortable style="min-width: 5rem"></Column>
                 <Column field="horaCita" header="Hora Cita" sortable style="min-width: 5rem"></Column>
                 <Column field="pacienteNombre" header="Paciente" sortable style="min-width: 5rem"></Column>
@@ -292,101 +307,122 @@ function getEstadoSeverity(estado) {
                     </template>
                 </Column>
             </DataTable>
+
+            <!-- Vista móvil -->
+            <div class="md:hidden -mx-4">
+                <div class="flex flex-col gap-4">
+                    <!-- Header móvil con búsqueda y botones -->
+                    <div class="flex flex-col gap-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="m-0 text-xl font-semibold">Citas</h4>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <div class="flex gap-2">
+                                <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="flex-1" @click="openNew" />
+                                <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1" @click="exportCSV($event)" />
+                            </div>
+                            <div class="relative w-full">
+                                <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de citas en tarjetas -->
+                    <div class="flex flex-col gap-4 w-full">
+                        <div v-for="cita in filteredCitas" :key="cita.id" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 w-full">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-lg font-semibold dark:text-white">{{ cita.pacienteNombre }}</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Médico: {{ cita.medicoNombre }}</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <Button icon="pi pi-pencil" outlined rounded class="p-2" @click="editCita(cita)" />
+                                    <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2" @click="confirmDeleteCita(cita)" />
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div>
+                                    <span class="font-semibold dark:text-white">Fecha:</span>
+                                    <p class="text-gray-600 dark:text-gray-400">{{ cita.fechaCita }}</p>
+                                </div>
+                                <div>
+                                    <span class="font-semibold dark:text-white">Hora:</span>
+                                    <p class="text-gray-600 dark:text-gray-400">{{ cita.horaCita }}</p>
+                                </div>
+                                <div>
+                                    <span class="font-semibold dark:text-white">Estado:</span>
+                                    <Tag :value="cita.estado" :severity="getEstadoSeverity(cita.estado)" />
+                                </div>
+                                <div>
+                                    <span class="font-semibold dark:text-white">Observaciones:</span>
+                                    <p class="text-gray-600 dark:text-gray-400">{{ cita.observaciones }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <Dialog v-model:visible="citaDialog" :style="{ width: '450px' }" header="Detalles de la cita" :modal="true">
-            <div class="flex flex-col gap-6">
-                <div class="flex items-center gap-2">
-                    <div class="flex-1">
-                        <label for="pacienteNombre" class="block font-bold mb-3">Paciente</label>
-                        <InputText id="pacienteNombre" v-model.trim="cita.pacienteNombre" required="true" autofocus :invalid="submitted && !cita.pacienteNombre" fluid disabled />
+        <Dialog v-model:visible="citaDialog" :style="{ width: '90vw', maxWidth: '450px' }" header="Detalles de la cita" :modal="true" class="p-fluid">
+            <div class="flex flex-col gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="field">
+                        <label for="pacienteNombre" class="block font-bold mb-2">Paciente</label>
+                        <div class="flex items-center gap-2">
+                            <InputText id="pacienteNombre" v-model.trim="cita.pacienteNombre" required="true" autofocus :invalid="submitted && !cita.pacienteNombre" class="w-full" disabled />
+                            <Button icon="pi pi-search" @click="toggleDataTablePacientes" />
+                        </div>
                         <small v-if="submitted && !cita.pacienteNombre" class="text-red-500">El paciente es requerido.</small>
                     </div>
-                    <Button icon="pi pi-search" class="mt-6" @click="toggleDataTablePacientes" />
-                    <Popover ref="opPaciente" id="overlay_panel" style="width: 450px">
-                        <DataTable :value="pacientes" selectionMode="single" :paginator="true" :rows="5" @row-select="onPacienteSelect" :filters="filters">
-                            <template #header>
-                                <div class="flex flex-wrap gap-2 items-center justify-between">
-                                    <h4 class="m-0">Pacientes</h4>
-                                    <IconField>
-                                        <InputIcon>
-                                            <i class="pi pi-search" />
-                                        </InputIcon>
-                                        <InputText v-model="filters['global'].value" placeholder="Buscar..." />
-                                    </IconField>
-                                </div>
-                            </template>
-                            <Column field="identificacion" header="Identificacion" sortable style="min-width: 12rem"></Column>
-                            <Column field="nombre" header="Nombre" sortable style="min-width: 12rem"></Column>
-                            <Column field="apellido" header="Apellido" sortable style="min-width: 12rem"></Column>
-                        </DataTable>
-                    </Popover>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="flex-1">
-                        <label for="medicoNombre" class="block font-bold mb-3">Medico</label>
-                        <InputText id="medicoNombre" v-model.trim="cita.medicoNombre" required="true" autofocus :invalid="submitted && !cita.medicoNombre" fluid disabled />
-                        <small v-if="submitted && !cita.medicoNombre" class="text-red-500">El medico es requerido.</small>
+                    <div class="field">
+                        <label for="medicoNombre" class="block font-bold mb-2">Médico</label>
+                        <div class="flex items-center gap-2">
+                            <InputText id="medicoNombre" v-model.trim="cita.medicoNombre" required="true" autofocus :invalid="submitted && !cita.medicoNombre" class="w-full" disabled />
+                            <Button icon="pi pi-search" @click="toggleDataTableMedicos" />
+                        </div>
+                        <small v-if="submitted && !cita.medicoNombre" class="text-red-500">El médico es requerido.</small>
                     </div>
-                    <Button icon="pi pi-search" class="mt-6" @click="toggleDataTableMedicos" />
-                    <Popover ref="opMedico" id="overlay_panel" style="width: 450px">
-                        <DataTable :value="medicos" selectionMode="single" :paginator="true" :rows="5" @row-select="onMedicoSelect" :filters="filters">
-                            <template #header>
-                                <div class="flex flex-wrap gap-2 items-center justify-between">
-                                    <h4 class="m-0">Medicos</h4>
-                                    <IconField>
-                                        <InputIcon>
-                                            <i class="pi pi-search" />
-                                        </InputIcon>
-                                        <InputText v-model="filters['global'].value" placeholder="Buscar..." />
-                                    </IconField>
-                                </div>
-                            </template>
-                            <Column field="especialidad" header="Especialidad" sortable style="min-width: 12rem"></Column>
-                            <Column field="nombre" header="Nombre" sortable style="min-width: 12rem"></Column>
-                            <Column field="apellido" header="Apellido" sortable style="min-width: 12rem"></Column>
-                        </DataTable>
-                    </Popover>
                 </div>
-                <div>
-                    <label for="observaciones" class="block font-bold mb-3">Observaciones</label>
-                    <InputText id="observaciones" v-model.trim="cita.observaciones" required="true" autofocus :invalid="submitted && !cita.observaciones" fluid />
-                    <small v-if="submitted && !cita.observaciones" class="text-red-500">El observaciones es requerido.</small>
+
+                <div class="field">
+                    <label for="observaciones" class="block font-bold mb-2">Observaciones</label>
+                    <InputText id="observaciones" v-model.trim="cita.observaciones" required="true" autofocus :invalid="submitted && !cita.observaciones" class="w-full" />
+                    <small v-if="submitted && !cita.observaciones" class="text-red-500">Las observaciones son requeridas.</small>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="fechaCita" class="block font-bold mb-3">Fecha</label>
-                        <Calendar id="fechaCita" v-model="cita.fechaCita" dateFormat="dd/mm/yy" :showIcon="true" required="true" :invalid="submitted && !cita.fechaCita" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="field">
+                        <label for="fechaCita" class="block font-bold mb-2">Fecha</label>
+                        <Calendar id="fechaCita" v-model="cita.fechaCita" dateFormat="dd/mm/yy" :showIcon="true" required="true" :invalid="submitted && !cita.fechaCita" class="w-full" />
                         <small v-if="submitted && !cita.fechaCita" class="text-red-500">La fecha de la cita es requerida.</small>
                     </div>
-                    <div>
-                        <label for="estado" class="block font-bold mb-3">Estado</label>
-                        <Select id="estado" v-model="cita.estado" :options="['PENDIENTE', 'CONFIRMADA', 'CANCELADA']" placeholder="Seleccione un tipo" class="w-full" />
+                    <div class="field">
+                        <label for="estado" class="block font-bold mb-2">Estado</label>
+                        <Select id="estado" v-model="cita.estado" :options="['PENDIENTE', 'CONFIRMADA', 'CANCELADA']" placeholder="Seleccione un estado" class="w-full" />
                         <small v-if="submitted && !cita.estado" class="text-red-500">El estado es requerido.</small>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="horaCitaInicio" class="block font-bold mb-3">Hora inicio</label>
-                        <Calendar id="horaCitaInicio" v-model="cita.horaCita" timeOnly hourFormat="24" :showIcon="true" required="true" :invalid="submitted && !cita.horaCita" />
-                        <small v-if="submitted && !cita.horaCita" class="text-red-500">La hora de inicio es requerida.</small>
-                    </div>
+
+                <div class="field">
+                    <label for="horaCita" class="block font-bold mb-2">Hora</label>
+                    <Calendar id="horaCita" v-model="cita.horaCita" timeOnly hourFormat="24" :showIcon="true" required="true" :invalid="submitted && !cita.horaCita" class="w-full" />
+                    <small v-if="submitted && !cita.horaCita" class="text-red-500">La hora es requerida.</small>
                 </div>
             </div>
 
             <template #footer>
-                <Button label="Cancelar" icon="pi pi-times" text @click="hideDialog" />
-                <Button label="Guardar" icon="pi pi-check" @click="saveCita" />
+                <div class="flex justify-end gap-2">
+                    <Button label="Cancelar" icon="pi pi-times" text @click="hideDialog" />
+                    <Button label="Guardar" icon="pi pi-check" @click="saveCita" />
+                </div>
             </template>
         </Dialog>
 
         <Dialog v-model:visible="deleteCitaDialog" :style="{ width: '450px' }" header="Confirmar" :modal="true">
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="cita"
-                    >¿Estás seguro de querer eliminar este paciente <b>{{ cita.nombre }} {{ cita.apellido }}</b
-                    >?</span
-                >
+                <span v-if="cita">¿Estás seguro de querer eliminar esta cita?</span>
             </div>
             <template #footer>
                 <Button label="No" icon="pi pi-times" text @click="deleteCitaDialog = false" />
@@ -397,12 +433,50 @@ function getEstadoSeverity(estado) {
         <Dialog v-model:visible="deleteCitasDialog" :style="{ width: '450px' }" header="Confirmar" :modal="true">
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="cita">¿Estás seguro de querer eliminar los pacientes seleccionados?</span>
+                <span v-if="cita">¿Estás seguro de querer eliminar las citas seleccionadas?</span>
             </div>
             <template #footer>
                 <Button label="No" icon="pi pi-times" text @click="deleteCitasDialog = false" />
                 <Button label="Sí" icon="pi pi-check" text @click="deleteSelectedCitas" />
             </template>
         </Dialog>
+
+        <Popover ref="opPaciente" id="overlay_panel" style="width: 450px">
+            <DataTable :value="pacientes" selectionMode="single" :paginator="true" :rows="5" @row-select="onPacienteSelect" :filters="filters">
+                <template #header>
+                    <div class="flex flex-wrap gap-2 items-center justify-between">
+                        <h4 class="m-0">Pacientes</h4>
+                        <IconField>
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText v-model="filters['global'].value" placeholder="Buscar..." />
+                        </IconField>
+                    </div>
+                </template>
+                <Column field="identificacion" header="Identificacion" sortable style="min-width: 12rem"></Column>
+                <Column field="nombre" header="Nombre" sortable style="min-width: 12rem"></Column>
+                <Column field="apellido" header="Apellido" sortable style="min-width: 12rem"></Column>
+            </DataTable>
+        </Popover>
+
+        <Popover ref="opMedico" id="overlay_panel" style="width: 450px">
+            <DataTable :value="medicos" selectionMode="single" :paginator="true" :rows="5" @row-select="onMedicoSelect" :filters="filters">
+                <template #header>
+                    <div class="flex flex-wrap gap-2 items-center justify-between">
+                        <h4 class="m-0">Médicos</h4>
+                        <IconField>
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText v-model="filters['global'].value" placeholder="Buscar..." />
+                        </IconField>
+                    </div>
+                </template>
+                <Column field="especialidad" header="Especialidad" sortable style="min-width: 12rem"></Column>
+                <Column field="nombre" header="Nombre" sortable style="min-width: 12rem"></Column>
+                <Column field="apellido" header="Apellido" sortable style="min-width: 12rem"></Column>
+            </DataTable>
+        </Popover>
     </div>
 </template>

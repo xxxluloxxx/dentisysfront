@@ -5,17 +5,28 @@ import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import FullCalendar from '@fullcalendar/vue3';
 import { useToast } from 'primevue/usetoast';
-import { onMounted, ref } from 'vue';
+import { onBeforeMount, onMounted, ref } from 'vue';
 
 const toast = useToast();
 const citas = ref([]);
+const isMobile = ref(false);
+
+const checkMobile = () => {
+    isMobile.value = window.innerWidth < 768;
+};
+
+onBeforeMount(() => {
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+});
+
 const opcionesCalendario = {
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
-    initialView: 'timeGridWeek',
+    initialView: isMobile.value ? 'timeGridDay' : 'timeGridWeek',
     headerToolbar: {
         left: 'prev,next',
         center: 'title',
-        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        right: isMobile.value ? 'timeGridDay' : 'dayGridMonth,timeGridWeek,timeGridDay'
     },
     locale: 'es',
     slotMinTime: '08:00:00',
@@ -45,7 +56,6 @@ const opcionesCalendario = {
         });
     },
     eventDidMount: (info) => {
-        // Agregar tooltip al evento
         info.el.title = info.event.extendedProps.description;
     }
 };
@@ -84,11 +94,14 @@ onMounted(() => {
 
 :deep(.fc-toolbar-title) {
     color: var(--text-color);
+    font-size: 1.2rem;
 }
 
 :deep(.fc-button) {
     background-color: var(--primary-color) !important;
     border-color: var(--primary-color) !important;
+    padding: 0.5rem !important;
+    font-size: 0.9rem !important;
 }
 
 :deep(.fc-button:hover) {
@@ -100,6 +113,50 @@ onMounted(() => {
     cursor: pointer;
     border: none;
     padding: 2px;
+    margin: 1px 0;
+    overflow: hidden;
+}
+
+:deep(.fc-event-main) {
+    padding: 2px 4px;
+}
+
+:deep(.fc-event-main-frame) {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+}
+
+:deep(.fc-event-time) {
+    font-size: 0.75em;
+    font-weight: bold;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+:deep(.fc-event-title) {
+    font-weight: bold;
+    font-size: 0.85em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+:deep(.fc-event-status) {
+    font-size: 0.7em;
+    font-weight: bold;
+    margin-top: 2px;
+    padding: 1px 3px;
+    border-radius: 3px;
+    background-color: var(--primary-100);
+    color: var(--primary-700);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 :deep(.fc-timegrid-slot) {
@@ -107,44 +164,71 @@ onMounted(() => {
 }
 
 :deep(.fc-timegrid-axis) {
-    color: var(--text-color);
+    color: var(--text-color) !important;
 }
 
 :deep(.fc-col-header-cell) {
-    color: var(--text-color);
+    color: var(--text-color) !important;
+    background-color: var(--surface-card) !important;
 }
 
 :deep(.fc-timegrid-slot-label) {
-    color: var(--text-color);
+    color: var(--text-color) !important;
 }
 
 :deep(.fc-timegrid-slot) {
-    color: var(--text-color);
+    color: var(--text-color) !important;
 }
 
-:deep(.fc-event-time) {
-    font-size: 0.8em;
-    font-weight: bold;
-    margin-bottom: 2px;
+:deep(.fc-timegrid-axis-cushion) {
+    color: var(--text-color) !important;
 }
 
-:deep(.fc-event-title) {
-    font-weight: bold;
+:deep(.fc-col-header-cell-cushion) {
+    color: var(--text-color) !important;
 }
 
-:deep(.fc-event-subtitle) {
-    font-size: 0.8em;
-    opacity: 0.8;
-    margin-top: 2px;
+:deep(.fc-daygrid-day-number) {
+    color: var(--text-color) !important;
 }
 
-:deep(.fc-event-status) {
-    font-size: 0.8em;
-    font-weight: bold;
-    margin-top: 2px;
-    padding: 2px 4px;
-    border-radius: 3px;
-    background-color: var(--primary-100);
-    color: var(--primary-700);
+:deep(.fc-theme-standard td) {
+    border-color: var(--surface-border) !important;
+}
+
+:deep(.fc-theme-standard th) {
+    border-color: var(--surface-border) !important;
+}
+
+@media screen and (max-width: 768px) {
+    :deep(.fc-toolbar) {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    :deep(.fc-toolbar-title) {
+        font-size: 1rem;
+    }
+
+    :deep(.fc-button) {
+        padding: 0.4rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    :deep(.fc-event-time) {
+        font-size: 0.65em;
+    }
+
+    :deep(.fc-event-title) {
+        font-size: 0.75em;
+    }
+
+    :deep(.fc-event-status) {
+        font-size: 0.6em;
+    }
+
+    :deep(.fc-timegrid-slot) {
+        height: 1.8em !important;
+    }
 }
 </style>

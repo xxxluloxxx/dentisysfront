@@ -2,7 +2,7 @@
 import { ProformaService } from '@/service/Proforma';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const toast = useToast();
 const dt = ref();
@@ -15,7 +15,14 @@ const multiple = ref('multiple');
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
-const submitted = ref(false);
+
+// Añadir función de filtrado
+const filteredProformas = computed(() => {
+    if (!filters.value.global.value) return proformas.value;
+
+    const searchTerm = filters.value.global.value.toLowerCase();
+    return proformas.value.filter((proforma) => proforma.medicoNombre?.toLowerCase().includes(searchTerm) || proforma.pacienteNombre?.toLowerCase().includes(searchTerm) || proforma.estado?.toLowerCase().includes(searchTerm));
+});
 
 onMounted(() => {
     loading.value = true;
@@ -84,14 +91,20 @@ function expandAll() {
 }
 
 function collapseAll() {
-    expandedRows.value = null;
+    expandedRows.value = {};
+}
+
+function toggleExpand(proformaId) {
+    expandedRows.value[proformaId] = !expandedRows.value[proformaId];
 }
 </script>
 
 <template>
     <div>
         <div class="card">
+            <!-- Vista de escritorio -->
             <DataTable
+                ref="dt"
                 v-model:expandedRows="expandedRows"
                 :value="proformas"
                 :loading="loading"
@@ -110,25 +123,26 @@ function collapseAll() {
                 currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} proformas"
                 dataKey="id"
                 tableStyle="min-width: 60rem"
+                class="hidden md:block"
             >
                 <template #header>
                     <div class="flex flex-col gap-y-4">
                         <div class="flex flex-wrap gap-2 items-center justify-start">
                             <h4 class="m-0">Proformas</h4>
                         </div>
-                        <div class="flex flex-wrap gap-2 items-center justify-end">
-                            <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
-                        </div>
                         <div class="flex flex-wrap gap-2 items-center justify-between">
                             <div class="flex flex-wrap justify-end gap-2">
                                 <Button text icon="pi pi-plus" label="Expand All" @click="expandAll" />
                                 <Button text icon="pi pi-minus" label="Collapse All" @click="collapseAll" />
                             </div>
+                            <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center justify-end">
                             <IconField>
                                 <InputIcon>
                                     <i class="pi pi-search" />
                                 </InputIcon>
-                                <InputText v-model="filters['global'].value" placeholder="Search..." />
+                                <InputText v-model="filters['global'].value" placeholder="Buscar..." />
                             </IconField>
                         </div>
                     </div>
@@ -185,57 +199,107 @@ function collapseAll() {
                     </div>
                 </template>
             </DataTable>
-        </div>
 
-        <Dialog v-model:visible="proformaDialog" :style="{ width: '450px' }" header="Product Details" :modal="true">
-            <div class="flex flex-col gap-6">
-                <img v-if="proforma.image" :src="`https://primefaces.org/cdn/primevue/images/product/${proforma.image}`" :alt="proforma.image" class="block m-auto pb-4" />
-                <div>
-                    <label for="nombre" class="block font-bold mb-3">Nombre</label>
-                    <InputText id="nombre" v-model.trim="proforma.nombre" required="true" autofocus :invalid="submitted && !proforma.nombre" fluid />
-                    <small v-if="submitted && !proforma.nombre" class="text-red-500">El nombre es requerido.</small>
-                </div>
-                <div>
-                    <label for="description" class="block font-bold mb-3">Descripción</label>
-                    <Textarea id="description" v-model="proforma.descripcion" required="true" rows="3" cols="20" fluid />
-                </div>
-
-                <div>
-                    <label for="categoria" class="block font-bold mb-3">Categoria</label>
-                    <InputText id="categoria" v-model.trim="proforma.categoria" required="true" autofocus :invalid="submitted && !proforma.categoria" fluid />
-                    <small v-if="submitted && !proforma.categoria" class="text-red-500">La categoría es requerida.</small>
-                </div>
-
-                <div class="grid grid-cols-12 gap-4">
-                    <div class="col-span-6">
-                        <label for="codigo" class="block font-bold mb-3">Código</label>
-                        <InputText id="codigo" v-model.trim="proforma.codigo" required="true" autofocus :invalid="submitted && !proforma.codigo" fluid />
-                        <small v-if="submitted && !proforma.codigo" class="text-red-500">El código es requerido.</small>
+            <!-- Vista móvil -->
+            <div class="md:hidden -mx-4">
+                <div class="flex flex-col gap-4">
+                    <!-- Header móvil con búsqueda y botones -->
+                    <div class="flex flex-col gap-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="m-0 text-xl font-semibold">Proformas</h4>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <div class="flex gap-2">
+                                <Button text icon="pi pi-plus" label="Expand All" class="flex-1" @click="expandAll" />
+                                <Button text icon="pi pi-minus" label="Collapse All" class="flex-1" @click="collapseAll" />
+                                <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1" @click="exportCSV($event)" />
+                            </div>
+                            <div class="relative w-full">
+                                <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-span-6">
-                        <label for="price" class="block font-bold mb-3">Precio</label>
-                        <InputNumber id="price" v-model="proforma.precio" mode="currency" currency="USD" locale="en-US" fluid />
+
+                    <!-- Lista de proformas en tarjetas -->
+                    <div class="flex flex-col gap-4 w-full">
+                        <div v-for="proforma in filteredProformas" :key="proforma.id" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 w-full">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-lg font-semibold dark:text-white">{{ proforma.medicoNombre }}</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Paciente: {{ proforma.pacienteNombre }}</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <Button icon="pi pi-eye" outlined rounded class="p-2" @click="editProforma(proforma)" />
+                                    <Button icon="pi pi-pencil" outlined rounded severity="warn" class="p-2" @click="editProforma(proforma)" />
+                                    <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2" @click="confirmDeleteProforma(proforma)" />
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div>
+                                    <span class="font-semibold dark:text-white">Fecha:</span>
+                                    <p class="text-gray-600 dark:text-gray-400">{{ obtenerFecha(proforma.createdAt) }}</p>
+                                </div>
+                                <div>
+                                    <span class="font-semibold dark:text-white">Estado:</span>
+                                    <Tag :value="proforma.estado" :severity="getEstadoSeverity(proforma.estado)" />
+                                </div>
+                                <div>
+                                    <span class="font-semibold dark:text-white">Subtotal:</span>
+                                    <p class="text-gray-600 dark:text-gray-400">{{ formatCurrency(proforma.subtotal) }}</p>
+                                </div>
+                                <div>
+                                    <span class="font-semibold dark:text-white">IVA:</span>
+                                    <p class="text-gray-600 dark:text-gray-400">{{ proforma.iva }}%</p>
+                                </div>
+                                <div>
+                                    <span class="font-semibold dark:text-white">Total:</span>
+                                    <p class="text-gray-600 dark:text-gray-400">{{ formatCurrency(proforma.total) }}</p>
+                                </div>
+                            </div>
+                            <!-- Botón para expandir/colapsar -->
+                            <div class="mt-4 flex justify-center">
+                                <Button :icon="expandedRows[proforma.id] ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" text @click="toggleExpand(proforma.id)" class="w-full" />
+                            </div>
+                            <!-- Detalles expandibles -->
+                            <div v-if="expandedRows[proforma.id]" class="mt-4">
+                                <h5 class="font-semibold mb-2">Productos de la proforma</h5>
+                                <div class="grid gap-2">
+                                    <div v-for="detalle in proforma.detalles" :key="detalle.id" class="bg-gray-50 dark:bg-gray-700 p-2 rounded">
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <span class="font-semibold">Producto:</span>
+                                                <p>{{ detalle.productoNombre }}</p>
+                                            </div>
+                                            <div>
+                                                <span class="font-semibold">Precio:</span>
+                                                <p>{{ formatCurrency(detalle.precioUnitario) }}</p>
+                                            </div>
+                                            <div>
+                                                <span class="font-semibold">Cantidad:</span>
+                                                <p>{{ detalle.cantidad }}</p>
+                                            </div>
+                                            <div>
+                                                <span class="font-semibold">Subtotal:</span>
+                                                <p>{{ formatCurrency(detalle.subtotal) }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <template #footer>
-                <Button label="Cancelar" icon="pi pi-times" text @click="hideDialog" />
-                <Button label="Guardar" icon="pi pi-check" @click="saveProforma" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteproformaDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+        <Dialog v-model:visible="deleteproformaDialog" :style="{ width: '450px' }" header="Confirmar" :modal="true">
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="proforma"
-                    >Estas seguro de querer elimminar esta proforma <b>{{ proforma.name }}</b
-                    >?</span
-                >
+                <span v-if="proforma">¿Estás seguro de querer eliminar esta proforma?</span>
             </div>
             <template #footer>
                 <Button label="No" icon="pi pi-times" text @click="deleteproformaDialog = false" />
-                <Button label="Si" icon="pi pi-check" @click="deleteProforma" />
+                <Button label="Sí" icon="pi pi-check" @click="deleteProforma" />
             </template>
         </Dialog>
     </div>

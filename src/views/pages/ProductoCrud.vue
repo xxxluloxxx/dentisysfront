@@ -139,6 +139,7 @@ function exportCSV() {
 <template>
     <div>
         <div class="card">
+            <!-- Vista de escritorio -->
             <DataTable
                 ref="dt"
                 :value="productos"
@@ -152,7 +153,8 @@ function exportCSV() {
                 loadingIcon="pi pi-spin pi-spinner"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} productos"
+                currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} productos"
+                class="hidden md:block"
             >
                 <template #header>
                     <div class="flex flex-col gap-y-4">
@@ -168,7 +170,7 @@ function exportCSV() {
                                 <InputIcon>
                                     <i class="pi pi-search" />
                                 </InputIcon>
-                                <InputText v-model="filters['global'].value" placeholder="Search..." />
+                                <InputText v-model="filters['global'].value" placeholder="Buscar..." />
                             </IconField>
                         </div>
                     </div>
@@ -188,52 +190,100 @@ function exportCSV() {
                     </template>
                 </Column>
             </DataTable>
+
+            <!-- Vista móvil -->
+            <div class="md:hidden -mx-4">
+                <div class="flex flex-col gap-4">
+                    <!-- Header móvil con búsqueda y botones -->
+                    <div class="flex flex-col gap-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="m-0 text-xl font-semibold">Productos y servicios</h4>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <div class="flex gap-2">
+                                <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="flex-1" @click="openNew" />
+                                <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1" @click="exportCSV($event)" />
+                            </div>
+                            <div class="relative w-full">
+                                <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de productos en tarjetas -->
+                    <div class="flex flex-col gap-4 w-full">
+                        <div v-for="producto in productos" :key="producto.id" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 w-full">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-lg font-semibold dark:text-white">{{ producto.nombre }}</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Categoría: {{ producto.categoria }}</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <Button icon="pi pi-pencil" outlined rounded class="p-2" @click="editProduct(producto)" />
+                                    <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2" @click="confirmDeleteProduct(producto)" />
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div>
+                                    <span class="font-semibold dark:text-white">Precio:</span>
+                                    <p class="text-gray-600 dark:text-gray-400">{{ formatCurrency(producto.precio) }}</p>
+                                </div>
+                                <div>
+                                    <span class="font-semibold dark:text-white">Descripción:</span>
+                                    <p class="text-gray-600 dark:text-gray-400">{{ producto.descripcion }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <Dialog v-model:visible="productoDialog" :style="{ width: '450px' }" header="Product Details" :modal="true">
-            <div class="flex flex-col gap-6">
-                <img v-if="producto.image" :src="`https://primefaces.org/cdn/primevue/images/product/${producto.image}`" :alt="producto.image" class="block m-auto pb-4" />
-                <div>
-                    <label for="nombre" class="block font-bold mb-3">Nombre</label>
-                    <InputText id="nombre" v-model.trim="producto.nombre" required="true" autofocus :invalid="submitted && !producto.nombre" fluid />
-                    <small v-if="submitted && !producto.nombre" class="text-red-500">El nombre es requerido.</small>
-                </div>
-                <div>
-                    <label for="description" class="block font-bold mb-3">Descripción</label>
-                    <Textarea id="description" v-model="producto.descripcion" required="true" rows="3" cols="20" fluid />
-                </div>
-
-                <div>
-                    <label for="categoria" class="block font-bold mb-3">Categoria</label>
-                    <InputText id="categoria" v-model.trim="producto.categoria" required="true" autofocus :invalid="submitted && !producto.categoria" fluid />
-                    <small v-if="submitted && !producto.categoria" class="text-red-500">La categoría es requerida.</small>
-                </div>
-
-                <div class="grid grid-cols-12 gap-4">
-                    <div class="col-span-6">
-                        <label for="price" class="block font-bold mb-3">Precio</label>
-                        <InputNumber id="price" v-model="producto.precio" mode="currency" currency="USD" locale="en-US" fluid />
+        <Dialog v-model:visible="productoDialog" :style="{ width: '90vw', maxWidth: '450px' }" header="Detalles del Producto" :modal="true" class="p-fluid">
+            <div class="flex flex-col gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="field">
+                        <label for="nombre" class="block font-bold mb-2">Nombre</label>
+                        <InputText id="nombre" v-model.trim="producto.nombre" required="true" autofocus :invalid="submitted && !producto.nombre" class="w-full" />
+                        <small v-if="submitted && !producto.nombre" class="text-red-500">El nombre es requerido.</small>
                     </div>
+                    <div class="field">
+                        <label for="categoria" class="block font-bold mb-2">Categoría</label>
+                        <InputText id="categoria" v-model.trim="producto.categoria" required="true" :invalid="submitted && !producto.categoria" class="w-full" />
+                        <small v-if="submitted && !producto.categoria" class="text-red-500">La categoría es requerida.</small>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="description" class="block font-bold mb-2">Descripción</label>
+                    <Textarea id="description" v-model="producto.descripcion" required="true" rows="3" cols="20" class="w-full" />
+                </div>
+
+                <div class="field">
+                    <label for="price" class="block font-bold mb-2">Precio</label>
+                    <InputNumber id="price" v-model="producto.precio" mode="currency" currency="USD" locale="en-US" class="w-full" />
                 </div>
             </div>
 
             <template #footer>
-                <Button label="Cancelar" icon="pi pi-times" text @click="hideDialog" />
-                <Button label="Guardar" icon="pi pi-check" @click="saveProduct" />
+                <div class="flex justify-end gap-2">
+                    <Button label="Cancelar" icon="pi pi-times" text @click="hideDialog" />
+                    <Button label="Guardar" icon="pi pi-check" @click="saveProduct" />
+                </div>
             </template>
         </Dialog>
 
-        <Dialog v-model:visible="deleteProductoDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+        <Dialog v-model:visible="deleteProductoDialog" :style="{ width: '450px' }" header="Confirmar" :modal="true">
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
                 <span v-if="producto"
-                    >Estas seguro de querer elimminar este producto <b>{{ producto.name }}</b
+                    >¿Estás seguro de querer eliminar este producto <b>{{ producto.nombre }}</b
                     >?</span
                 >
             </div>
             <template #footer>
                 <Button label="No" icon="pi pi-times" text @click="deleteProductoDialog = false" />
-                <Button label="Si" icon="pi pi-check" @click="deleteProduct" />
+                <Button label="Sí" icon="pi pi-check" @click="deleteProduct" />
             </template>
         </Dialog>
     </div>
