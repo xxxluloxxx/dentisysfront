@@ -226,11 +226,11 @@ function exportCSV() {
 
                     <!-- Lista de pacientes en tarjetas -->
                     <div class="flex flex-col gap-4">
-                        <div v-for="paciente in filteredPacientes" :key="paciente.id" class="bg-white rounded-lg shadow p-4">
+                        <div v-for="paciente in filteredPacientes" :key="paciente.id" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
                             <div class="flex justify-between items-start mb-2">
                                 <div>
-                                    <h3 class="text-lg font-semibold">{{ paciente.nombre }} {{ paciente.apellido }}</h3>
-                                    <p class="text-sm text-gray-600">ID: {{ paciente.identificacion }}</p>
+                                    <h3 class="text-lg font-semibold dark:text-white">{{ paciente.nombre }} {{ paciente.apellido }}</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">ID: {{ paciente.identificacion }}</p>
                                 </div>
                                 <div class="flex gap-2">
                                     <Button icon="pi pi-pencil" outlined rounded class="p-2" @click="editPaciente(paciente)" />
@@ -239,20 +239,20 @@ function exportCSV() {
                             </div>
                             <div class="grid grid-cols-2 gap-2 text-sm">
                                 <div>
-                                    <span class="font-semibold">Email:</span>
-                                    <p class="text-gray-600">{{ paciente.email }}</p>
+                                    <span class="font-semibold dark:text-white">Email:</span>
+                                    <p class="text-gray-600 dark:text-gray-400">{{ paciente.email }}</p>
                                 </div>
                                 <div>
-                                    <span class="font-semibold">Teléfono:</span>
-                                    <p class="text-gray-600">{{ paciente.telefono }}</p>
+                                    <span class="font-semibold dark:text-white">Teléfono:</span>
+                                    <p class="text-gray-600 dark:text-gray-400">{{ paciente.telefono }}</p>
                                 </div>
                                 <div>
-                                    <span class="font-semibold">Género:</span>
-                                    <p class="text-gray-600">{{ paciente.genero }}</p>
+                                    <span class="font-semibold dark:text-white">Género:</span>
+                                    <p class="text-gray-600 dark:text-gray-400">{{ paciente.genero }}</p>
                                 </div>
                                 <div>
-                                    <span class="font-semibold">Dirección:</span>
-                                    <p class="text-gray-600">{{ paciente.direccion }}</p>
+                                    <span class="font-semibold dark:text-white">Dirección:</span>
+                                    <p class="text-gray-600 dark:text-gray-400">{{ paciente.direccion }}</p>
                                 </div>
                             </div>
                         </div>

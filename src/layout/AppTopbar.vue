@@ -53,7 +53,7 @@ const handleAgenda = () => {
                     </g>
                 </svg>
 
-                <span>RestSys</span>
+                <span>DentiSys</span>
             </router-link>
         </div>
 
