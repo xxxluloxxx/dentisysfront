@@ -5,11 +5,15 @@ import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 
 onMounted(() => {
+    loading.value = true;
     MedicoService.getAll()
         .then((data) => (medicos.value = data))
         .catch((error) => {
             console.error('Error al cargar los medicos:', error);
             toast.add({ severity: 'error', summary: 'Error', detail: 'Error al conectarse al servidor', life: 3000 });
+        })
+        .finally(() => {
+            loading.value = false;
         });
 });
 
@@ -18,9 +22,9 @@ const dt = ref();
 const medicos = ref();
 const medicoDialog = ref(false);
 const deletemedicoDialog = ref(false);
-const deleteMedicosDialog = ref(false);
 const medico = ref({});
 const selectedMedicos = ref();
+const loading = ref(true);
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
@@ -132,63 +136,42 @@ function findIndexById(id) {
 function exportCSV() {
     dt.value.exportCSV();
 }
-
-function confirmDeleteSelected() {
-    deleteMedicosDialog.value = true;
-}
-
-function deleteSelectedPacientes() {
-    const deletePromises = selectedMedicos.value.map((medico) => MedicoService.delete(medico.id));
-
-    Promise.all(deletePromises)
-        .then(() => {
-            medicos.value = medicos.value.filter((val) => !selectedMedicos.value.includes(val));
-            deleteMedicosDialog.value = false;
-            selectedMedicos.value = null;
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Medicos Eliminados', life: 3000 });
-        })
-        .catch((error) => {
-            console.error('Error al eliminar los medicos:', error);
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al eliminar los medicos', life: 3000 });
-        });
-}
 </script>
 
 <template>
     <div>
         <div class="card">
-            <Toolbar class="mb-6">
-                <template #start>
-                    <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
-                    <Button label="Eliminar" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedMedicos || !selectedMedicos.length" />
-                </template>
-
-                <template #end>
-                    <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
-                </template>
-            </Toolbar>
-
             <DataTable
                 ref="dt"
-                v-model:selection="selectedMedicos"
                 :value="medicos"
                 dataKey="id"
                 :paginator="true"
                 :rows="10"
+                scrollable
+                scrollHeight="600px"
                 :filters="filters"
+                :loading="loading"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
                 currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} medicos"
             >
                 <template #header>
-                    <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">Medicos</h4>
-                        <IconField>
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Buscar..." />
-                        </IconField>
+                    <div class="flex flex-col gap-y-4">
+                        <div class="flex flex-wrap gap-2 items-center justify-start">
+                            <h4 class="m-0">Médicos</h4>
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center justify-between">
+                            <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
+                            <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center justify-end">
+                            <IconField>
+                                <InputIcon>
+                                    <i class="pi pi-search" />
+                                </InputIcon>
+                                <InputText v-model="filters['global'].value" placeholder="Search..." />
+                            </IconField>
+                        </div>
                     </div>
                 </template>
 
@@ -222,7 +205,6 @@ function deleteSelectedPacientes() {
                         <InputText id="identificacion" v-model.trim="medico.numeroDocumento" required="true" autofocus :invalid="submitted && !medico.identificacion" fluid />
                         <small v-if="submitted && !medico.numeroDocumento" class="text-red-500">La identificacion es requerida.</small>
                     </div>
-
                 </div>
                 <div>
                     <label for="nombre" class="block font-bold mb-3">Nombre</label>
@@ -250,7 +232,6 @@ function deleteSelectedPacientes() {
                     <InputText id="telefono" v-model.trim="medico.telefono" required="true" autofocus :invalid="submitted && !medico.telefono" fluid />
                     <small v-if="submitted && !medico.telefono" class="text-red-500">El teléfono es requerido.</small>
                 </div>
-
             </div>
 
             <template #footer>
@@ -259,29 +240,5 @@ function deleteSelectedPacientes() {
             </template>
         </Dialog>
 
-        <Dialog v-model:visible="deletemedicoDialog" :style="{ width: '450px' }" header="Confirmar" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="medico"
-                    >¿Estás seguro de querer eliminar este medico <b>{{ medico.nombre }} {{ medico.apellido }}</b
-                    >?</span
-                >
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deletemedicoDialog = false" />
-                <Button label="Sí" icon="pi pi-check" @click="deletePaciente" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteMedicosDialog" :style="{ width: '450px' }" header="Confirmar" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="medico">¿Estás seguro de querer eliminar los medicos seleccionados?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteMedicosDialog = false" />
-                <Button label="Sí" icon="pi pi-check" text @click="deleteSelectedPacientes" />
-            </template>
-        </Dialog>
     </div>
 </template>

@@ -10,17 +10,19 @@ onMounted(() => {
         .catch((error) => {
             console.error('Error al cargar los pacientes:', error);
             toast.add({ severity: 'error', summary: 'Error', detail: 'Error al conectarse al servidor', life: 3000 });
+        })
+        .finally(() => {
+            loading.value = false;
         });
 });
 
 const toast = useToast();
 const dt = ref();
 const pacientes = ref();
+const loading = ref(true);
 const pacienteDialog = ref(false);
 const deletePacienteDialog = ref(false);
-const deletePacientesDialog = ref(false);
 const paciente = ref({});
-const selectedPacientes = ref();
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
@@ -132,63 +134,42 @@ function findIndexById(id) {
 function exportCSV() {
     dt.value.exportCSV();
 }
-
-function confirmDeleteSelected() {
-    deletePacientesDialog.value = true;
-}
-
-function deleteSelectedPacientes() {
-    const deletePromises = selectedPacientes.value.map((paciente) => PacienteService.delete(paciente.id));
-
-    Promise.all(deletePromises)
-        .then(() => {
-            pacientes.value = pacientes.value.filter((val) => !selectedPacientes.value.includes(val));
-            deletePacientesDialog.value = false;
-            selectedPacientes.value = null;
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Pacientes Eliminados', life: 3000 });
-        })
-        .catch((error) => {
-            console.error('Error al eliminar los pacientes:', error);
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al eliminar los pacientes', life: 3000 });
-        });
-}
 </script>
 
 <template>
     <div>
         <div class="card">
-            <Toolbar class="mb-6">
-                <template #start>
-                    <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
-                    <Button label="Eliminar" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedPacientes || !selectedPacientes.length" />
-                </template>
-
-                <template #end>
-                    <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
-                </template>
-            </Toolbar>
-
             <DataTable
                 ref="dt"
-                v-model:selection="selectedPacientes"
                 :value="pacientes"
                 dataKey="id"
                 :paginator="true"
                 :rows="10"
+                scrollable
+                scrollHeight="600px"
                 :filters="filters"
+                :loading="loading"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
                 currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} pacientes"
             >
                 <template #header>
-                    <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">Pacientes</h4>
-                        <IconField>
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Buscar..." />
-                        </IconField>
+                    <div class="flex flex-col gap-y-4">
+                        <div class="flex flex-wrap gap-2 items-center justify-start">
+                            <h4 class="m-0">Pacientes</h4>
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center justify-between">
+                            <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
+                            <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center justify-end">
+                            <IconField>
+                                <InputIcon>
+                                    <i class="pi pi-search" />
+                                </InputIcon>
+                                <InputText v-model="filters['global'].value" placeholder="Search..." />
+                            </IconField>
+                        </div>
                     </div>
                 </template>
 
@@ -273,17 +254,6 @@ function deleteSelectedPacientes() {
             <template #footer>
                 <Button label="No" icon="pi pi-times" text @click="deletePacienteDialog = false" />
                 <Button label="Sí" icon="pi pi-check" @click="deletePaciente" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deletePacientesDialog" :style="{ width: '450px' }" header="Confirmar" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="paciente">¿Estás seguro de querer eliminar los pacientes seleccionados?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deletePacientesDialog = false" />
-                <Button label="Sí" icon="pi pi-check" text @click="deleteSelectedPacientes" />
             </template>
         </Dialog>
     </div>

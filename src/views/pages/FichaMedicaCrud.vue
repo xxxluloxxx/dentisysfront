@@ -11,9 +11,8 @@ const dt = ref();
 const fichas = ref();
 const fichaDialog = ref(false);
 const deleteFichaDialog = ref(false);
-const deleteFichasDialog = ref(false);
+const multiple = ref('multiple');
 const ficha = ref({});
-const selectedFichass = ref();
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
@@ -28,71 +27,9 @@ onMounted(() => {
         });
 });
 
-function formatCurrency(value) {
-    if (value) return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-    return;
-}
-
-function openNew() {
-    ficha.value = {};
-    submitted.value = false;
-    fichaDialog.value = true;
-}
-
 function hideDialog() {
     fichaDialog.value = false;
     submitted.value = false;
-}
-
-function saveProduct() {
-    submitted.value = true;
-
-    if (ficha?.value.nombre?.trim()) {
-        const productoData = {
-            codigo: ficha.value.codigo,
-            nombre: ficha.value.nombre,
-            descripcion: ficha.value.descripcion,
-            precio: ficha.value.precio,
-            categoria: ficha.value.categoria
-        };
-
-        if (ficha.value.id) {
-            updateProduct(productoData);
-        } else {
-            createProduct(productoData);
-        }
-    }
-}
-
-function createProduct(productoData) {
-    ProductoService.createProduct(productoData)
-        .then((response) => {
-            fichas.value.push(response);
-            fichaDialog.value = false;
-            ficha.value = {};
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Producto Creado', life: 3000 });
-        })
-        .catch((error) => {
-            console.error('Error al crear el producto:', error);
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al crear el producto', life: 3000 });
-        });
-}
-
-function updateProduct(productoData) {
-    ProductoService.updateProduct(ficha.value.id, productoData)
-        .then((response) => {
-            const index = findIndexById(ficha.value.id);
-            if (index !== -1) {
-                fichas.value[index] = response;
-            }
-            fichaDialog.value = false;
-            ficha.value = {};
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Producto Actualizado', life: 3000 });
-        })
-        .catch((error) => {
-            console.error('Error al actualizar el producto:', error);
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al actualizar el producto', life: 3000 });
-        });
 }
 
 function verFicha(prod) {
@@ -102,20 +39,13 @@ function verFicha(prod) {
     });
 }
 
-function editProduct(prod) {
-    /* ficha.value = { ...prod };
-    fichaDialog.value = true; */
-    toast.add({ severity: 'success', summary: 'Éxito', detail: 'Realiiza  la  accion', life: 3000 });
+function confirmDeleteFicha(prod) {
+    ficha.value = prod;
+    deleteFichaDialog.value = true;
 }
 
-function confirmDeleteProduct(prod) {
-    /* ficha.value = prod;
-    deleteFichaDialog.value = true; */
-    toast.add({ severity: 'success', summary: 'Éxito', detail: 'Realiiza  la  accion', life: 3000 });
-}
-
-function deleteProduct() {
-    ProductoService.deleteProduct(ficha.value.id)
+function deleteFicha() {
+    FichaOdontologicaService.deleteProduct(ficha.value.id)
         .then(() => {
             fichas.value = fichas.value.filter((val) => val.id !== ficha.value.id);
             deleteFichaDialog.value = false;
@@ -128,94 +58,75 @@ function deleteProduct() {
         });
 }
 
-function findIndexById(id) {
-    let index = -1;
-    for (let i = 0; i < fichas.value.length; i++) {
-        if (fichas.value[i].id === id) {
-            index = i;
-            break;
-        }
-    }
-
-    return index;
-}
-
 function exportCSV() {
     dt.value.exportCSV();
 }
 
-function confirmDeleteSelected() {
-    deleteFichasDialog.value = true;
-}
-
-function deleteSelectedProducts() {
-    const deletePromises = selectedFichass.value.map((product) => ProductoService.deleteProduct(product.id));
-
-    Promise.all(deletePromises)
-        .then(() => {
-            fichas.value = fichas.value.filter((val) => !selectedFichass.value.includes(val));
-            deleteFichasDialog.value = false;
-            selectedFichass.value = null;
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Productos Eliminados', life: 3000 });
-        })
-        .catch((error) => {
-            console.error('Error al eliminar los productos:', error);
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al eliminar los productos', life: 3000 });
-        });
+function obtenerFecha(value) {
+    if (value) {
+        const fecha = new Date(value);
+        return fecha.toISOString().split('T')[0];
+    }
+    return '';
 }
 </script>
 
 <template>
     <div>
         <div class="card">
-            <Toolbar class="mb-6">
-                <template #start>
-                    <Button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
-                    <Button label="Delete" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedFichass || !selectedFichass.length" />
-                </template>
-
-                <template #end>
-                    <Button label="Export" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
-                </template>
-            </Toolbar>
-
             <DataTable
                 ref="dt"
-                v-model:selection="selectedFichass"
                 :value="fichas"
                 dataKey="id"
                 :paginator="true"
                 :rows="10"
+                scrollable
+                scrollHeight="600px"
+                :sortMode="multiple"
+                :multiSortMeta="[
+                    { field: 'createdAt', order: 1 },
+                    { field: 'medico.nombre', order: 1 },
+                ]"
                 :filters="filters"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} fichas"
             >
-                <template #header>
-                    <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">Fichas médicas</h4>
-                        <IconField>
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Search..." />
-                        </IconField>
+            <template #header>
+                    <div class="flex flex-col gap-y-4">
+                        <div class="flex flex-wrap gap-2 items-center justify-end">
+                            <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center justify-between">
+                            <div class="flex flex-wrap gap-2 items-center justify-start">
+                                <h4 class="m-0">Fichas médicas</h4>
+                            </div>
+                            <IconField>
+                                <InputIcon>
+                                    <i class="pi pi-search" />
+                                </InputIcon>
+                                <InputText v-model="filters['global'].value" placeholder="Search..." />
+                            </IconField>
+                        </div>
                     </div>
                 </template>
 
-                <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
-                <Column field="paciente.nombre" header="Paciente" sortable style="min-width: 12rem">
-                    <template #body="slotProps"> {{ slotProps.data.paciente.nombre }} {{ slotProps.data.paciente.apellido }} </template>
+                <Column field="createdAt" header="Fecha " sortable style="min-width: 10rem">
+                    <template #body="slotProps">
+                        {{ obtenerFecha(slotProps.data.createdAt) }}
+                    </template>
                 </Column>
                 <Column field="medico.nombre" header="Medico" sortable style="min-width: 12rem">
                     <template #body="slotProps"> {{ slotProps.data.medico.nombre }} {{ slotProps.data.medico.apellido }} </template>
                 </Column>
-                <Column field="createdAt" header="Fecha " sortable style="min-width: 10rem"></Column>
+                <Column field="paciente.nombre" header="Paciente" sortable style="min-width: 12rem">
+                    <template #body="slotProps"> {{ slotProps.data.paciente.nombre }} {{ slotProps.data.paciente.apellido }} </template>
+                </Column>
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">
                         <Button icon="pi pi-eye" outlined rounded class="mr-2" @click="verFicha(slotProps.data)" />
                         <Button icon="pi pi-pencil" outlined rounded class="mr-2" severity="warn" @click="editProduct(slotProps.data)" />
-                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
+                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteFicha(slotProps.data)" />
                     </template>
                 </Column>
             </DataTable>
@@ -269,19 +180,9 @@ function deleteSelectedProducts() {
             </div>
             <template #footer>
                 <Button label="No" icon="pi pi-times" text @click="deleteFichaDialog = false" />
-                <Button label="Si" icon="pi pi-check" @click="deleteProduct" />
+                <Button label="Si" icon="pi pi-check" @click="deleteFicha" />
             </template>
         </Dialog>
 
-        <Dialog v-model:visible="deleteFichasDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="ficha">¿Estás seguro que deseas eliminar las fichas seleccionadas?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteFichasDialog = false" />
-                <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedProducts" />
-            </template>
-        </Dialog>
     </div>
 </template>

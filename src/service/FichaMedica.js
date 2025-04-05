@@ -4,7 +4,7 @@ import API_CONFIG from '../config/api.config';
 export const FichaOdontologicaService = {
     async getAll() {
         try {
-            const response = await axios.get(API_CONFIG.getUrl('FICHAS_ODONTOLOGICAS'));
+            const response = await axios.get(API_CONFIG.getUrl('FICHAS_MEDICAS'));
             console.log('✅ Respuesta recibida de la API:', response.data);
             console.log('🔄 Fichas:', response.data);
             console.log(`📊 Total de fichas procesadas: ${response.data.length}`);
@@ -18,7 +18,7 @@ export const FichaOdontologicaService = {
     async getById(id) {
         console.log(`🚀 Obteniendo ficha con ID: ${id}`);
         try {
-            const response = await axios.get(`${API_CONFIG.getUrl('FICHAS_ODONTOLOGICAS')}/${id}`);
+            const response = await axios.get(`${API_CONFIG.getUrl('FICHAS_MEDICAS')}/${id}`);
             console.log('✅ Ficha obtenida exitosamente:', response.data);
             return response.data;
         } catch (error) {
@@ -35,7 +35,7 @@ export const FichaOdontologicaService = {
 
     async getByPaciente(pacienteId) {
         try {
-            const response = await axios.get(`${API_CONFIG.getUrl('FICHAS_ODONTOLOGICAS')}/paciente/${pacienteId}`);
+            const response = await axios.get(`${API_CONFIG.getUrl('FICHAS_MEDICAS')}/paciente/${pacienteId}`);
             console.log(`✅ Fichas del paciente ${pacienteId} obtenidas exitosamente:`, response.data);
             return response.data;
         } catch (error) {
@@ -46,7 +46,7 @@ export const FichaOdontologicaService = {
 
     async getByMedico(medicoId) {
         try {
-            const response = await axios.get(`${API_CONFIG.getUrl('FICHAS_ODONTOLOGICAS')}/medico/${medicoId}`);
+            const response = await axios.get(`${API_CONFIG.getUrl('FICHAS_MEDICAS')}/medico/${medicoId}`);
             console.log(`✅ Fichas del médico ${medicoId} obtenidas exitosamente:`, response.data);
             return response.data;
         } catch (error) {
@@ -58,7 +58,7 @@ export const FichaOdontologicaService = {
     async create(fichaData) {
         try {
             console.log('🔄 Ficha a crear:', fichaData);
-            const response = await axios.post(API_CONFIG.getUrl('FICHAS_ODONTOLOGICAS'), fichaData);
+            const response = await axios.post(API_CONFIG.getUrl('FICHAS_MEDICAS'), fichaData);
             console.log('✅ Ficha creada exitosamente:', response.data);
             return response.data;
         } catch (error) {
@@ -69,7 +69,7 @@ export const FichaOdontologicaService = {
 
     async update(id, fichaData) {
         try {
-            const response = await axios.put(`${API_CONFIG.getUrl('FICHAS_ODONTOLOGICAS')}/${id}`, fichaData);
+            const response = await axios.put(`${API_CONFIG.getUrl('FICHAS_MEDICAS')}/${id}`, fichaData);
             console.log('✅ Ficha actualizada exitosamente:', response.data);
             return response.data;
         } catch (error) {
@@ -80,7 +80,7 @@ export const FichaOdontologicaService = {
 
     async delete(id) {
         try {
-            await axios.delete(`${API_CONFIG.getUrl('FICHAS_ODONTOLOGICAS')}/${id}`);
+            await axios.delete(`${API_CONFIG.getUrl('FICHAS_MEDICAS')}/${id}`);
             console.log('✅ Ficha eliminada exitosamente');
             return true;
         } catch (error) {

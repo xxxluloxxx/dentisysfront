@@ -6,6 +6,24 @@ import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 
+const toast = useToast();
+const dt = ref();
+const citas = ref();
+const citaDialog = ref(false);
+const deleteCitaDialog = ref(false);
+const deleteCitasDialog = ref(false);
+const cita = ref({});
+const selectedCitas = ref();
+const pacientes = ref();
+const medicos = ref();
+const opPaciente = ref(null);
+const opMedico = ref(null);
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
+const submitted = ref(false);
+const multiple = ref('multiple');
+
 onMounted(() => {
     CitaService.getAllCitas()
         .then((data) => (citas.value = data))
@@ -29,22 +47,7 @@ onMounted(() => {
         });
 });
 
-const toast = useToast();
-const dt = ref();
-const citas = ref();
-const citaDialog = ref(false);
-const deleteCitaDialog = ref(false);
-const deleteCitasDialog = ref(false);
-const cita = ref({});
-const selectedCitas = ref();
-const pacientes = ref();
-const medicos = ref();
-const opPaciente = ref(null);
-const opMedico = ref(null);
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
-});
-const submitted = ref(false);
+
 
 function openNew() {
     cita.value = {};
@@ -139,45 +142,6 @@ function updateCita(citaData) {
 }
 
 function editCita(citaData) {
-    /* if (citaData) {
-        // Crear una copia profunda del objeto para evitar mutaciones directas
-        const citaCopy = JSON.parse(JSON.stringify(citaData));
-
-        // Inicializar el objeto cita con los datos básicos
-        cita.value = {
-            id: citaCopy.id,
-            pacienteId: citaCopy.pacienteId,
-            medicoId: citaCopy.medicoId,
-            pacienteNombre: citaCopy.pacienteNombre,
-            medicoNombre: citaCopy.medicoNombre,
-            observaciones: citaCopy.observaciones,
-            estado: citaCopy.estado
-        };
-
-        // Manejar la fecha de la cita
-        if (citaCopy.fechaCita) {
-            const [year, month, day] = citaCopy.fechaCita.split('-');
-            cita.value.fechaCita = new Date(year, month - 1, day);
-        }
-
-        // Manejar la hora de inicio
-        if (citaCopy.horaCita) {
-            const [hours, minutes] = citaCopy.horaCita.split(':');
-            const date = new Date();
-            date.setHours(parseInt(hours), parseInt(minutes), 0);
-            cita.value.horaCita = date;
-        }
-
-        // Manejar la hora de fin
-        if (citaCopy.horaCitaFin) {
-            const [hours, minutes] = citaCopy.horaCitaFin.split(':');
-            const date = new Date();
-            date.setHours(parseInt(hours), parseInt(minutes), 0);
-            cita.value.horaCitaFin = date;
-        }
-
-        citaDialog.value = true;
-    } */
     if (citaData) {
         cita.value = { ...citaData };
         console.log('Datos de la cita:', cita.value);
@@ -287,6 +251,13 @@ function getEstadoSeverity(estado) {
                 dataKey="id"
                 :paginator="true"
                 :rows="10"
+                scrollable
+                scrollHeight="600px"
+                :sortMode="multiple"
+                :multiSortMeta="[
+                    { field: 'fechaCita', order: -1 },
+                    { field: 'horaCita', order: 1 }
+                ]"
                 :filters="filters"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
@@ -304,12 +275,11 @@ function getEstadoSeverity(estado) {
                     </div>
                 </template>
 
-                <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
+                <Column field="fechaCita" header="Fecha Cita" sortable style="min-width: 5rem"></Column>
+                <Column field="horaCita" header="Hora Cita" sortable style="min-width: 5rem"></Column>
                 <Column field="pacienteNombre" header="Paciente" sortable style="min-width: 5rem"></Column>
                 <Column field="medicoNombre" header="Medico" sortable style="min-width: 5rem"></Column>
                 <Column field="observaciones" header="Observaciones" sortable style="min-width: 5rem"></Column>
-                <Column field="fechaCita" header="Fecha Cita" sortable style="min-width: 16rem"></Column>
-                <Column field="horaCita" header="Hora Cita" sortable style="min-width: 12rem"></Column>
                 <Column header="Estado">
                     <template #body="slotProps">
                         <Tag :value="slotProps.data.estado" :severity="getEstadoSeverity(slotProps.data.estado)" />
@@ -400,11 +370,6 @@ function getEstadoSeverity(estado) {
                         <label for="horaCitaInicio" class="block font-bold mb-3">Hora inicio</label>
                         <Calendar id="horaCitaInicio" v-model="cita.horaCita" timeOnly hourFormat="24" :showIcon="true" required="true" :invalid="submitted && !cita.horaCita" />
                         <small v-if="submitted && !cita.horaCita" class="text-red-500">La hora de inicio es requerida.</small>
-                    </div>
-                    <div>
-                        <label for="horaCitaFin" class="block font-bold mb-3">Hora fin</label>
-                        <Calendar id="horaCitaFin" v-model="cita.horaCitaFin" timeOnly hourFormat="24" :showIcon="true" required="true" :invalid="submitted && !cita.horaCitaFin" :manualInput="false" :stepMinute="30" />
-                        <small v-if="submitted && !cita.horaCitaFin" class="text-red-500">La hora de fin es requerida.</small>
                     </div>
                 </div>
             </div>

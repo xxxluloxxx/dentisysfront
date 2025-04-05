@@ -13,7 +13,7 @@ const API_CONFIG = {
         PRODUCTOS: '/api/productos',
         PACIENTES: '/api/pacientes',
         MEDICOS: '/api/medicos',
-        FICHAS_ODONTOLOGICAS: '/api/fichas-odontologicas',
+        FICHAS_MEDICAS: '/api/fichas-medicas',
         PROFORMAS: '/api/proformas',
         GRAFICAS: '/api/graficas',
         CITAS: '/api/citas',
