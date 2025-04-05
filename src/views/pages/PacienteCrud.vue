@@ -23,26 +23,46 @@ const loading = ref(true);
 const pacienteDialog = ref(false);
 const deletePacienteDialog = ref(false);
 const paciente = ref({});
+const sortOrder = ref('asc');
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 const submitted = ref(false);
 
-// Añadir función de filtrado
+// Añadir función de filtrado y ordenamiento
 const filteredPacientes = computed(() => {
-    if (!filters.value.global.value) return pacientes.value;
+    if (!pacientes.value) return [];
 
-    const searchTerm = filters.value.global.value.toLowerCase();
-    return pacientes.value.filter(
-        (paciente) =>
-            paciente.nombre?.toLowerCase().includes(searchTerm) ||
-            paciente.apellido?.toLowerCase().includes(searchTerm) ||
-            paciente.identificacion?.toLowerCase().includes(searchTerm) ||
-            paciente.email?.toLowerCase().includes(searchTerm) ||
-            paciente.telefono?.toLowerCase().includes(searchTerm) ||
-            paciente.direccion?.toLowerCase().includes(searchTerm)
-    );
+    let result = [...pacientes.value];
+
+    // Aplicar filtro
+    if (filters.value.global.value) {
+        const searchTerm = filters.value.global.value.toLowerCase();
+        result = result.filter(
+            (paciente) =>
+                paciente.nombre?.toLowerCase().includes(searchTerm) ||
+                paciente.apellido?.toLowerCase().includes(searchTerm) ||
+                paciente.identificacion?.toLowerCase().includes(searchTerm) ||
+                paciente.email?.toLowerCase().includes(searchTerm) ||
+                paciente.telefono?.toLowerCase().includes(searchTerm) ||
+                paciente.direccion?.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    // Aplicar ordenamiento
+    result.sort((a, b) => {
+        const nombreA = (a.nombre + ' ' + a.apellido).toLowerCase();
+        const nombreB = (b.nombre + ' ' + b.apellido).toLowerCase();
+        return sortOrder.value === 'asc' ? nombreA.localeCompare(nombreB) : nombreB.localeCompare(nombreA);
+    });
+
+    return result;
 });
+
+// Función para cambiar el orden
+function toggleSort() {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+}
 
 function openNew() {
     paciente.value = {};
@@ -220,8 +240,11 @@ function exportCSV() {
                                 <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="flex-1" @click="openNew" />
                                 <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1" @click="exportCSV($event)" />
                             </div>
-                            <div class="relative w-full">
-                                <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                            <div class="flex gap-2">
+                                <div class="relative flex-1">
+                                    <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                                </div>
+                                <Button :icon="sortOrder === 'asc' ? 'pi pi-sort-alpha-down' : 'pi pi-sort-alpha-up'" severity="secondary" @click="toggleSort" class="p-2" />
                             </div>
                         </div>
                     </div>

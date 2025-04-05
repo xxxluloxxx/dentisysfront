@@ -18,19 +18,65 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 const submitted = ref(false);
+const activeTab = ref('0'); // Por defecto mostrar hoy
+const sortOrder = ref(1); // 1 para ascendente (más antiguas primero)
+
+const options = [
+    { label: 'Hoy', value: '0' },
+    { label: 'Últimos 7 días', value: '1' },
+    { label: 'Todos', value: '2' }
+];
+
+const toggleSort = () => {
+    sortOrder.value *= -1;
+};
 
 // Añadir función de filtrado
 const filteredFichas = computed(() => {
-    if (!filters.value.global.value) return fichas.value;
+    if (!fichas.value) return [];
 
-    const searchTerm = filters.value.global.value.toLowerCase();
-    return fichas.value.filter(
-        (ficha) =>
-            ficha.medico?.nombre?.toLowerCase().includes(searchTerm) ||
-            ficha.medico?.apellido?.toLowerCase().includes(searchTerm) ||
-            ficha.paciente?.nombre?.toLowerCase().includes(searchTerm) ||
-            ficha.paciente?.apellido?.toLowerCase().includes(searchTerm)
-    );
+    let filtered = [...fichas.value];
+
+    // Filtro por búsqueda global
+    if (filters.value.global.value) {
+        const searchTerm = filters.value.global.value.toLowerCase();
+        filtered = filtered.filter(
+            (ficha) =>
+                ficha.medico?.nombre?.toLowerCase().includes(searchTerm) ||
+                ficha.medico?.apellido?.toLowerCase().includes(searchTerm) ||
+                ficha.paciente?.nombre?.toLowerCase().includes(searchTerm) ||
+                ficha.paciente?.apellido?.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    // Filtro por fecha
+    if (activeTab.value !== '2') {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        filtered = filtered.filter((ficha) => {
+            const fichaDate = new Date(ficha.createdAt);
+            fichaDate.setHours(0, 0, 0, 0);
+
+            if (activeTab.value === '0') {
+                // Hoy
+                return fichaDate.getTime() === today.getTime();
+            } else if (activeTab.value === '1') {
+                // Últimos 7 días
+                const sevenDaysAgo = new Date(today);
+                sevenDaysAgo.setDate(today.getDate() - 7);
+                return fichaDate >= sevenDaysAgo && fichaDate <= today;
+            }
+            return true;
+        });
+    }
+
+    // Aplicar ordenamiento por fecha
+    return filtered.sort((a, b) => {
+        const fechaA = new Date(a.createdAt);
+        const fechaB = new Date(b.createdAt);
+        return (fechaB - fechaA) * sortOrder.value;
+    });
 });
 
 onMounted(() => {
@@ -96,7 +142,7 @@ function obtenerFecha(value) {
             <!-- Vista de escritorio -->
             <DataTable
                 ref="dt"
-                :value="fichas"
+                :value="filteredFichas"
                 dataKey="id"
                 :paginator="true"
                 :rows="10"
@@ -122,13 +168,17 @@ function obtenerFecha(value) {
                         <div class="flex flex-wrap gap-2 items-center justify-between">
                             <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
                         </div>
-                        <div class="flex flex-wrap gap-2 items-center justify-end">
-                            <IconField>
-                                <InputIcon>
-                                    <i class="pi pi-search" />
-                                </InputIcon>
-                                <InputText v-model="filters['global'].value" placeholder="Buscar..." />
-                            </IconField>
+                        <div class="flex flex-wrap gap-2 items-center justify-between">
+                            <SelectButton v-model="activeTab" :options="options" optionLabel="label" optionValue="value" />
+                            <div class="flex gap-2">
+                                <IconField>
+                                    <InputIcon>
+                                        <i class="pi pi-search" />
+                                    </InputIcon>
+                                    <InputText v-model="filters['global'].value" placeholder="Buscar..." />
+                                </IconField>
+                                <Button :icon="sortOrder === -1 ? 'pi pi-sort-alpha-down' : 'pi pi-sort-alpha-up'" severity="secondary" @click="toggleSort" class="p-2" />
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -165,8 +215,12 @@ function obtenerFecha(value) {
                             <div class="flex gap-2">
                                 <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1" @click="exportCSV($event)" />
                             </div>
-                            <div class="relative w-full">
-                                <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                            <SelectButton v-model="activeTab" :options="options" optionLabel="label" optionValue="value" class="w-full" />
+                            <div class="flex gap-2">
+                                <div class="relative flex-1">
+                                    <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                                </div>
+                                <Button :icon="sortOrder === -1 ? 'pi pi-sort-alpha-down' : 'pi pi-sort-alpha-up'" severity="secondary" @click="toggleSort" class="p-2" />
                             </div>
                         </div>
                     </div>

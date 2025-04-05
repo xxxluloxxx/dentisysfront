@@ -2,7 +2,7 @@
 import { ProductoService } from '@/service/ProductoService';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const toast = useToast();
 const dt = ref();
@@ -15,6 +15,7 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 const submitted = ref(false);
+const sortAsc = ref(true);
 
 onMounted(() => {
     loading.value = true;
@@ -134,6 +135,28 @@ function findIndexById(id) {
 function exportCSV() {
     dt.value.exportCSV();
 }
+
+const filteredProductos = computed(() => {
+    if (!productos.value) return [];
+
+    let result = [...productos.value];
+
+    // Aplicar filtro de búsqueda
+    if (filters.value.global.value) {
+        const searchTerm = filters.value.global.value.toLowerCase();
+        result = result.filter((producto) => producto.nombre.toLowerCase().includes(searchTerm) || producto.categoria.toLowerCase().includes(searchTerm) || producto.descripcion.toLowerCase().includes(searchTerm));
+    }
+
+    // Aplicar ordenamiento
+    return result.sort((a, b) => {
+        const comparison = a.nombre.localeCompare(b.nombre);
+        return sortAsc.value ? comparison : -comparison;
+    });
+});
+
+const toggleSort = () => {
+    sortAsc.value = !sortAsc.value;
+};
 </script>
 
 <template>
@@ -204,15 +227,18 @@ function exportCSV() {
                                 <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="flex-1" @click="openNew" />
                                 <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1" @click="exportCSV($event)" />
                             </div>
-                            <div class="relative w-full">
-                                <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                            <div class="flex gap-2">
+                                <div class="relative flex-1">
+                                    <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                                </div>
+                                <Button :icon="sortAsc ? 'pi pi-sort-alpha-down' : 'pi pi-sort-alpha-up'" severity="secondary" @click="toggleSort" class="p-2" />
                             </div>
                         </div>
                     </div>
 
                     <!-- Lista de productos en tarjetas -->
                     <div class="flex flex-col gap-4 w-full">
-                        <div v-for="producto in productos" :key="producto.id" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 w-full">
+                        <div v-for="producto in filteredProductos" :key="producto.id" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 w-full">
                             <div class="flex justify-between items-start mb-2">
                                 <div>
                                     <h3 class="text-lg font-semibold dark:text-white">{{ producto.nombre }}</h3>

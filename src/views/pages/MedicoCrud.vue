@@ -29,22 +29,39 @@ const filters = ref({
 });
 const multiple = ref('multiple');
 const submitted = ref(false);
+const sortAsc = ref(true);
 
 // Añadir función de filtrado
 const filteredMedicos = computed(() => {
-    if (!filters.value.global.value) return medicos.value;
+    if (!medicos.value) return [];
 
-    const searchTerm = filters.value.global.value.toLowerCase();
-    return medicos.value.filter(
-        (medico) =>
-            medico.nombre?.toLowerCase().includes(searchTerm) ||
-            medico.apellido?.toLowerCase().includes(searchTerm) ||
-            medico.numeroDocumento?.toLowerCase().includes(searchTerm) ||
-            medico.email?.toLowerCase().includes(searchTerm) ||
-            medico.telefono?.toLowerCase().includes(searchTerm) ||
-            medico.especialidad?.toLowerCase().includes(searchTerm)
-    );
+    let result = [...medicos.value];
+
+    // Aplicar filtro de búsqueda
+    if (filters.value.global.value) {
+        const searchTerm = filters.value.global.value.toLowerCase();
+        result = result.filter(
+            (medico) =>
+                medico.nombre?.toLowerCase().includes(searchTerm) ||
+                medico.apellido?.toLowerCase().includes(searchTerm) ||
+                medico.numeroDocumento?.toLowerCase().includes(searchTerm) ||
+                medico.email?.toLowerCase().includes(searchTerm) ||
+                medico.telefono?.toLowerCase().includes(searchTerm) ||
+                medico.especialidad?.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    // Aplicar ordenamiento
+    return result.sort((a, b) => {
+        const nombreA = (a.nombre + ' ' + a.apellido).toLowerCase();
+        const nombreB = (b.nombre + ' ' + b.apellido).toLowerCase();
+        return sortAsc.value ? nombreA.localeCompare(nombreB) : nombreB.localeCompare(nombreA);
+    });
 });
+
+const toggleSort = () => {
+    sortAsc.value = !sortAsc.value;
+};
 
 function openNew() {
     medico.value = {};
@@ -226,8 +243,11 @@ function exportCSV() {
                                 <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="flex-1" @click="openNew" />
                                 <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1" @click="exportCSV($event)" />
                             </div>
-                            <div class="relative w-full">
-                                <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                            <div class="flex gap-2">
+                                <div class="relative flex-1">
+                                    <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                                </div>
+                                <Button :icon="sortAsc ? 'pi pi-sort-alpha-down' : 'pi pi-sort-alpha-up'" severity="secondary" @click="toggleSort" class="p-2" />
                             </div>
                         </div>
                     </div>
