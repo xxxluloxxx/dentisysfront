@@ -181,10 +181,12 @@ function exportCSV() {
                             <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
                         </div>
                         <div class="flex flex-wrap gap-2 items-center justify-end">
-                            <span class="p-input-icon-left w-full md:w-auto">
-                                <i class="pi pi-search" />
-                                <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
-                            </span>
+                            <IconField>
+                                <InputIcon>
+                                    <i class="pi pi-search" />
+                                </InputIcon>
+                                <InputText v-model="filters['global'].value" placeholder="Search..." />
+                            </IconField>
                         </div>
                     </div>
                 </template>
@@ -206,8 +208,8 @@ function exportCSV() {
             </DataTable>
 
             <!-- Vista móvil -->
-            <div class="md:hidden">
-                <div class="flex flex-col gap-4 p-4">
+            <div class="md:hidden -mx-4">
+                <div class="flex flex-col gap-4">
                     <!-- Header móvil con búsqueda y botones -->
                     <div class="flex flex-col gap-4">
                         <div class="flex items-center justify-between">
@@ -225,8 +227,8 @@ function exportCSV() {
                     </div>
 
                     <!-- Lista de pacientes en tarjetas -->
-                    <div class="flex flex-col gap-4">
-                        <div v-for="paciente in filteredPacientes" :key="paciente.id" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                    <div class="flex flex-col gap-4 w-full">
+                        <div v-for="paciente in filteredPacientes" :key="paciente.id" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 w-full">
                             <div class="flex justify-between items-start mb-2">
                                 <div>
                                     <h3 class="text-lg font-semibold dark:text-white">{{ paciente.nombre }} {{ paciente.apellido }}</h3>
