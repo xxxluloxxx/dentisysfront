@@ -117,6 +117,7 @@ export const ProformaService = {
     },
 
     async delete(id) {
+        console.log(`🔄 Eliminando proforma con ID: ${id}`);
         try {
             await axios.delete(`${API_CONFIG.getUrl('PROFORMAS')}/${id}`);
             console.log('✅ Proforma eliminada exitosamente');

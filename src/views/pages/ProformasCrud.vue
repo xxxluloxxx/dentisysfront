@@ -1,5 +1,5 @@
 <script setup>
-import { ProformaService } from '@/service/Proforma';
+import { ProformaService } from '@/service/ProformaService';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
@@ -15,7 +15,7 @@ const multiple = ref('multiple');
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
-const activeTab = ref('2'); // Por defecto mostrar todos
+const activeTab = ref('0'); // Por defecto mostrar hoy
 const sortOrder = ref(-1);
 
 const options = [
@@ -96,8 +96,8 @@ function obtenerFecha(value) {
     return '';
 }
 
-function confirmDeleteProforma(proforma) {
-    proforma.value = proforma;
+function confirmDeleteProforma(proformaData) {
+    proforma.value = proformaData;
     deleteproformaDialog.value = true;
 }
 
@@ -108,6 +108,12 @@ function editProforma(proforma) {
 }
 
 function deleteProforma() {
+    if (!proforma.value || !proforma.value.id) {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'ID de proforma no válido', life: 3000 });
+        return;
+    }
+
+    console.log('Eliminando proforma con ID:', proforma.value.id);
     ProformaService.delete(proforma.value.id)
         .then(() => {
             proformas.value = proformas.value.filter((val) => val.id !== proforma.value.id);
@@ -236,9 +242,9 @@ function toggleExpand(proformaId) {
                     </template>
                 </Column>
                 <template #expansion="slotProps">
-                    <div class="p-4">
-                        <h5>Productos de la proforma</h5>
-                        <DataTable :value="slotProps.data.detalles">
+                    <div class="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow-sm">
+                        <h5 class="text-gray-900 dark:text-white mb-4 font-semibold">Productos de la proforma</h5>
+                        <DataTable :value="slotProps.data.detalles" class="bg-transparent">
                             <Column field="productoNombre" header="Producto" sortable></Column>
                             <Column field="precioUnitario" header="Precio" sortable>
                                 <template #body="slotProps">
@@ -362,3 +368,4 @@ function toggleExpand(proformaId) {
         </Dialog>
     </div>
 </template>
+@/service/ProformaService

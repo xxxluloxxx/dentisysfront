@@ -1,9 +1,10 @@
 <script setup>
 // Importaciones de servicios y componentes necesarios
+import { DetalleProformaService } from '@/service/DetalleProformaService';
 import { MedicoService } from '@/service/MedicoService';
 import { PacienteService } from '@/service/PacienteService';
 import { ProductoService } from '@/service/ProductoService';
-import { ProformaService } from '@/service/Proforma';
+import { ProformaService } from '@/service/ProformaService';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref, watch } from 'vue';
@@ -101,6 +102,7 @@ const guardarProforma = async () => {
     }
 
     try {
+        // Primero creamos la proforma
         const proformaData = {
             paciente: {
                 id: idPaciente.value
@@ -113,17 +115,27 @@ const guardarProforma = async () => {
             iva: iva.value,
             total: total.value,
             estado: estado.value,
-            detalles: servicios.value.map((servicio) => ({
+            observaciones: 'Nueva proforma'
+        };
+
+        const proformaCreada = await ProformaService.create(proformaData);
+
+        // Luego creamos los detalles de la proforma
+        for (const servicio of servicios.value) {
+            const detalleData = {
+                proforma: {
+                    id: proformaCreada.id
+                },
                 producto: {
                     id: servicio.id
                 },
                 cantidad: servicio.cantidad,
                 precioUnitario: servicio.precio,
                 subtotal: servicio.precio * servicio.cantidad
-            }))
-        };
+            };
 
-        await ProformaService.create(proformaData);
+            await DetalleProformaService.create(detalleData);
+        }
 
         toast.add({
             severity: 'success',
@@ -422,3 +434,4 @@ function deleteServicio(servicio) {
         </div>
     </Fluid>
 </template>
+@/service/ProformaService
