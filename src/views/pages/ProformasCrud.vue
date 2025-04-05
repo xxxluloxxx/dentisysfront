@@ -15,13 +15,59 @@ const multiple = ref('multiple');
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
+const activeTab = ref('2'); // Por defecto mostrar todos
+const sortOrder = ref(-1);
+
+const options = [
+    { label: 'Hoy', value: '0' },
+    { label: 'Últimos 7 días', value: '1' },
+    { label: 'Todos', value: '2' }
+];
+
+const toggleSort = () => {
+    sortOrder.value *= -1;
+};
 
 // Añadir función de filtrado
 const filteredProformas = computed(() => {
-    if (!filters.value.global.value) return proformas.value;
+    if (!proformas.value) return [];
 
-    const searchTerm = filters.value.global.value.toLowerCase();
-    return proformas.value.filter((proforma) => proforma.medicoNombre?.toLowerCase().includes(searchTerm) || proforma.pacienteNombre?.toLowerCase().includes(searchTerm) || proforma.estado?.toLowerCase().includes(searchTerm));
+    let filtered = [...proformas.value];
+
+    // Filtro por búsqueda global
+    if (filters.value.global.value) {
+        const searchTerm = filters.value.global.value.toLowerCase();
+        filtered = filtered.filter((proforma) => proforma.medicoNombre?.toLowerCase().includes(searchTerm) || proforma.pacienteNombre?.toLowerCase().includes(searchTerm) || proforma.estado?.toLowerCase().includes(searchTerm));
+    }
+
+    // Filtro por fecha
+    if (activeTab.value !== '2') {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        filtered = filtered.filter((proforma) => {
+            const proformaDate = new Date(proforma.createdAt);
+            proformaDate.setHours(0, 0, 0, 0);
+
+            if (activeTab.value === '0') {
+                // Hoy
+                return proformaDate.getTime() === today.getTime();
+            } else if (activeTab.value === '1') {
+                // Últimos 7 días
+                const sevenDaysAgo = new Date(today);
+                sevenDaysAgo.setDate(today.getDate() - 7);
+                return proformaDate >= sevenDaysAgo && proformaDate <= today;
+            }
+            return true;
+        });
+    }
+
+    // Aplicar ordenamiento por fecha
+    return filtered.sort((a, b) => {
+        const fechaA = new Date(a.createdAt);
+        const fechaB = new Date(b.createdAt);
+        return (fechaB - fechaA) * sortOrder.value;
+    });
 });
 
 onMounted(() => {
@@ -53,6 +99,12 @@ function obtenerFecha(value) {
 function confirmDeleteProforma(proforma) {
     proforma.value = proforma;
     deleteproformaDialog.value = true;
+}
+
+function editProforma(proforma) {
+    // Aquí puedes implementar la lógica para editar la proforma
+    // Por ejemplo, redirigir a una página de edición o abrir un diálogo
+    console.log('Editar proforma:', proforma);
 }
 
 function deleteProforma() {
@@ -106,7 +158,7 @@ function toggleExpand(proformaId) {
             <DataTable
                 ref="dt"
                 v-model:expandedRows="expandedRows"
-                :value="proformas"
+                :value="filteredProformas"
                 :loading="loading"
                 :paginator="true"
                 :rows="10"
@@ -137,13 +189,17 @@ function toggleExpand(proformaId) {
                             </div>
                             <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
                         </div>
-                        <div class="flex flex-wrap gap-2 items-center justify-end">
-                            <IconField>
-                                <InputIcon>
-                                    <i class="pi pi-search" />
-                                </InputIcon>
-                                <InputText v-model="filters['global'].value" placeholder="Buscar..." />
-                            </IconField>
+                        <div class="flex flex-wrap gap-2 items-center justify-between">
+                            <SelectButton v-model="activeTab" :options="options" optionLabel="label" optionValue="value" />
+                            <div class="flex gap-2">
+                                <IconField>
+                                    <InputIcon>
+                                        <i class="pi pi-search" />
+                                    </InputIcon>
+                                    <InputText v-model="filters['global'].value" placeholder="Buscar..." />
+                                </IconField>
+                                <Button :icon="sortOrder === -1 ? 'pi pi-sort-alpha-down' : 'pi pi-sort-alpha-up'" severity="secondary" @click="toggleSort" class="p-2" />
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -214,8 +270,10 @@ function toggleExpand(proformaId) {
                                 <Button text icon="pi pi-minus" label="Collapse All" class="flex-1" @click="collapseAll" />
                                 <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1" @click="exportCSV($event)" />
                             </div>
-                            <div class="relative w-full">
+                            <SelectButton v-model="activeTab" :options="options" optionLabel="label" optionValue="value" class="w-full" />
+                            <div class="flex gap-2 w-full">
                                 <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                                <Button :icon="sortOrder === -1 ? 'pi pi-sort-alpha-down' : 'pi pi-sort-alpha-up'" severity="secondary" @click="toggleSort" class="p-2" />
                             </div>
                         </div>
                     </div>
