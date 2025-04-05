@@ -24,25 +24,91 @@ const filters = ref({
 const submitted = ref(false);
 const loading = ref(true);
 const multiple = ref('multiple');
+const sortOrder = ref(-1);
+const activeTab = ref('2'); // Por defecto mostrar todos
 
-// Añadir función de filtrado
+const options = [
+    { label: 'Hoy', value: '0' },
+    { label: 'Últimos 7 días', value: '1' },
+    { label: 'Todos', value: '2' }
+];
+
 const filteredCitas = computed(() => {
-    if (!filters.value.global.value) return citas.value;
+    let filtered = citas.value;
 
-    const searchTerm = filters.value.global.value.toLowerCase();
-    return citas.value.filter(
-        (cita) => cita.pacienteNombre?.toLowerCase().includes(searchTerm) || cita.medicoNombre?.toLowerCase().includes(searchTerm) || cita.estado?.toLowerCase().includes(searchTerm) || cita.observaciones?.toLowerCase().includes(searchTerm)
-    );
+    // Filtro por búsqueda global
+    if (filters.value.global.value) {
+        const searchTerm = filters.value.global.value.toLowerCase();
+        filtered = filtered.filter(
+            (cita) => cita.pacienteNombre?.toLowerCase().includes(searchTerm) || cita.medicoNombre?.toLowerCase().includes(searchTerm) || cita.estado?.toLowerCase().includes(searchTerm) || cita.observaciones?.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    // Filtro por fecha
+    if (activeTab.value !== '2') {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        filtered = filtered.filter((cita) => {
+            // Convertir la fecha de la cita (que viene en formato YYYY-MM-DD)
+            const [year, month, day] = cita.fechaCita.split('-').map(Number);
+            const citaDate = new Date(year, month - 1, day); // month - 1 porque los meses en JS son 0-11
+
+            if (activeTab.value === '0') {
+                // Hoy
+                return citaDate.getFullYear() === today.getFullYear() && citaDate.getMonth() === today.getMonth() && citaDate.getDate() === today.getDate();
+            } else if (activeTab.value === '1') {
+                // Últimos 7 días
+                const sevenDaysAgo = new Date(today);
+                sevenDaysAgo.setDate(today.getDate() - 7);
+                return citaDate >= sevenDaysAgo && citaDate <= today;
+            }
+            return true;
+        });
+    }
+
+    return filtered;
 });
 
 const sortedCitas = computed(() => {
     if (!filteredCitas.value || !Array.isArray(filteredCitas.value)) return [];
-    return [...filteredCitas.value].sort((a, b) => {
+
+    // Aplicar el mismo filtrado por fechas que en filteredCitas
+    let filtered = [...filteredCitas.value];
+
+    if (activeTab.value !== '2') {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        filtered = filtered.filter((cita) => {
+            // Convertir la fecha de la cita (que viene en formato YYYY-MM-DD)
+            const [year, month, day] = cita.fechaCita.split('-').map(Number);
+            const citaDate = new Date(year, month - 1, day); // month - 1 porque los meses en JS son 0-11
+
+            if (activeTab.value === '0') {
+                // Hoy
+                return citaDate.getFullYear() === today.getFullYear() && citaDate.getMonth() === today.getMonth() && citaDate.getDate() === today.getDate();
+            } else if (activeTab.value === '1') {
+                // Últimos 7 días
+                const sevenDaysAgo = new Date(today);
+                sevenDaysAgo.setDate(today.getDate() - 7);
+                return citaDate >= sevenDaysAgo && citaDate <= today;
+            }
+            return true;
+        });
+    }
+
+    // Aplicar el ordenamiento
+    return filtered.sort((a, b) => {
         const fechaA = new Date(a.fechaCita + 'T' + a.horaCita);
         const fechaB = new Date(b.fechaCita + 'T' + b.horaCita);
-        return fechaB - fechaA;
+        return (fechaB - fechaA) * sortOrder.value;
     });
 });
+
+const toggleSort = () => {
+    sortOrder.value *= -1;
+};
 
 onMounted(() => {
     loading.value = true;
@@ -265,7 +331,7 @@ function getEstadoSeverity(estado) {
             <DataTable
                 ref="dt"
                 v-model:selection="selectedCitas"
-                :value="citas"
+                :value="sortedCitas"
                 dataKey="id"
                 :paginator="true"
                 :rows="10"
@@ -290,10 +356,10 @@ function getEstadoSeverity(estado) {
                         </div>
                         <div class="flex flex-wrap gap-2 items-center justify-between">
                             <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
-                            <Button label="Eliminar" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedCitas || !selectedCitas.length" />
                             <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
                         </div>
-                        <div class="flex flex-wrap gap-2 items-center justify-end">
+                        <div class="flex flex-wrap gap-2 items-center justify-between">
+                            <SelectButton v-model="activeTab" :options="options" optionLabel="label" optionValue="value" />
                             <IconField>
                                 <InputIcon>
                                     <i class="pi pi-search" />
@@ -339,7 +405,9 @@ function getEstadoSeverity(estado) {
                             <div class="flex gap-2">
                                 <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="flex-1" @click="openNew" />
                                 <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1" @click="exportCSV($event)" />
+                                <Button :icon="sortOrder === -1 ? 'pi pi-sort-amount-down' : 'pi pi-sort-amount-up'" severity="secondary" @click="toggleSort" :tooltip="sortOrder === -1 ? 'Ordenar ascendente' : 'Ordenar descendente'" />
                             </div>
+                            <SelectButton v-model="activeTab" :options="options" optionLabel="label" optionValue="value" class="w-full" />
                             <div class="relative w-full">
                                 <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
                             </div>
