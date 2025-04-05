@@ -2,7 +2,7 @@
 import { PacienteService } from '@/service/PacienteService';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 onMounted(() => {
     PacienteService.getAll()
@@ -27,6 +27,22 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 const submitted = ref(false);
+
+// Añadir función de filtrado
+const filteredPacientes = computed(() => {
+    if (!filters.value.global.value) return pacientes.value;
+
+    const searchTerm = filters.value.global.value.toLowerCase();
+    return pacientes.value.filter(
+        (paciente) =>
+            paciente.nombre?.toLowerCase().includes(searchTerm) ||
+            paciente.apellido?.toLowerCase().includes(searchTerm) ||
+            paciente.identificacion?.toLowerCase().includes(searchTerm) ||
+            paciente.email?.toLowerCase().includes(searchTerm) ||
+            paciente.telefono?.toLowerCase().includes(searchTerm) ||
+            paciente.direccion?.toLowerCase().includes(searchTerm)
+    );
+});
 
 function openNew() {
     paciente.value = {};
@@ -139,6 +155,7 @@ function exportCSV() {
 <template>
     <div>
         <div class="card">
+            <!-- Vista de escritorio -->
             <DataTable
                 ref="dt"
                 :value="pacientes"
@@ -152,6 +169,7 @@ function exportCSV() {
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
                 currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} pacientes"
+                class="hidden md:block"
             >
                 <template #header>
                     <div class="flex flex-col gap-y-4">
@@ -163,12 +181,10 @@ function exportCSV() {
                             <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
                         </div>
                         <div class="flex flex-wrap gap-2 items-center justify-end">
-                            <IconField>
-                                <InputIcon>
-                                    <i class="pi pi-search" />
-                                </InputIcon>
-                                <InputText v-model="filters['global'].value" placeholder="Search..." />
-                            </IconField>
+                            <span class="p-input-icon-left w-full md:w-auto">
+                                <i class="pi pi-search" />
+                                <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                            </span>
                         </div>
                     </div>
                 </template>
@@ -188,58 +204,122 @@ function exportCSV() {
                     </template>
                 </Column>
             </DataTable>
+
+            <!-- Vista móvil -->
+            <div class="md:hidden">
+                <div class="flex flex-col gap-4 p-4">
+                    <!-- Header móvil con búsqueda y botones -->
+                    <div class="flex flex-col gap-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="m-0 text-xl font-semibold">Pacientes</h4>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <div class="flex gap-2">
+                                <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="flex-1" @click="openNew" />
+                                <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1" @click="exportCSV($event)" />
+                            </div>
+                            <div class="relative w-full">
+                                <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de pacientes en tarjetas -->
+                    <div class="flex flex-col gap-4">
+                        <div v-for="paciente in filteredPacientes" :key="paciente.id" class="bg-white rounded-lg shadow p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-lg font-semibold">{{ paciente.nombre }} {{ paciente.apellido }}</h3>
+                                    <p class="text-sm text-gray-600">ID: {{ paciente.identificacion }}</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <Button icon="pi pi-pencil" outlined rounded class="p-2" @click="editPaciente(paciente)" />
+                                    <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2" @click="confirmDeletePaciente(paciente)" />
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div>
+                                    <span class="font-semibold">Email:</span>
+                                    <p class="text-gray-600">{{ paciente.email }}</p>
+                                </div>
+                                <div>
+                                    <span class="font-semibold">Teléfono:</span>
+                                    <p class="text-gray-600">{{ paciente.telefono }}</p>
+                                </div>
+                                <div>
+                                    <span class="font-semibold">Género:</span>
+                                    <p class="text-gray-600">{{ paciente.genero }}</p>
+                                </div>
+                                <div>
+                                    <span class="font-semibold">Dirección:</span>
+                                    <p class="text-gray-600">{{ paciente.direccion }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <Dialog v-model:visible="pacienteDialog" :style="{ width: '450px' }" header="Detalles del Paciente" :modal="true">
-            <div class="flex flex-col gap-6">
-                <div>
-                    <label for="identificacion" class="block font-bold mb-3">Identificacion</label>
-                    <InputText id="identificacion" v-model.trim="paciente.identificacion" required="true" autofocus :invalid="submitted && !paciente.identificacion" fluid />
-                    <small v-if="submitted && !paciente.identificacion" class="text-red-500">El nombre es requerido.</small>
-                </div>
-                <div>
-                    <label for="nombre" class="block font-bold mb-3">Nombre</label>
-                    <InputText id="nombre" v-model.trim="paciente.nombre" required="true" autofocus :invalid="submitted && !paciente.nombre" fluid />
-                    <small v-if="submitted && !paciente.nombre" class="text-red-500">El nombre es requerido.</small>
-                </div>
-                <div>
-                    <label for="apellido" class="block font-bold mb-3">Apellido</label>
-                    <InputText id="apellido" v-model.trim="paciente.apellido" required="true" autofocus :invalid="submitted && !paciente.apellido" fluid />
-                    <small v-if="submitted && !paciente.apellido" class="text-red-500">El apellido es requerido.</small>
-                </div>
-                <div>
-                    <label for="email" class="block font-bold mb-3">Email</label>
-                    <InputText id="email" v-model.trim="paciente.email" required="true" autofocus :invalid="submitted && !paciente.email" fluid />
-                    <small v-if="submitted && !paciente.email" class="text-red-500">El email es requerido.</small>
+        <Dialog v-model:visible="pacienteDialog" :style="{ width: '90vw', maxWidth: '450px' }" header="Detalles del Paciente" :modal="true" class="p-fluid">
+            <div class="flex flex-col gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="field">
+                        <label for="identificacion" class="block font-bold mb-2">Identificación</label>
+                        <InputText id="identificacion" v-model.trim="paciente.identificacion" required="true" autofocus :invalid="submitted && !paciente.identificacion" class="w-full" />
+                        <small v-if="submitted && !paciente.identificacion" class="text-red-500">La identificación es requerida.</small>
+                    </div>
+                    <div class="field">
+                        <label for="nombre" class="block font-bold mb-2">Nombre</label>
+                        <InputText id="nombre" v-model.trim="paciente.nombre" required="true" :invalid="submitted && !paciente.nombre" class="w-full" />
+                        <small v-if="submitted && !paciente.nombre" class="text-red-500">El nombre es requerido.</small>
+                    </div>
                 </div>
 
-                <div>
-                    <label for="direccion" class="block font-bold mb-3">Dirección</label>
-                    <InputText id="direccion" v-model.trim="paciente.direccion" required="true" autofocus :invalid="submitted && !paciente.direccion" fluid />
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="field">
+                        <label for="apellido" class="block font-bold mb-2">Apellido</label>
+                        <InputText id="apellido" v-model.trim="paciente.apellido" required="true" :invalid="submitted && !paciente.apellido" class="w-full" />
+                        <small v-if="submitted && !paciente.apellido" class="text-red-500">El apellido es requerido.</small>
+                    </div>
+                    <div class="field">
+                        <label for="email" class="block font-bold mb-2">Email</label>
+                        <InputText id="email" v-model.trim="paciente.email" required="true" :invalid="submitted && !paciente.email" class="w-full" />
+                        <small v-if="submitted && !paciente.email" class="text-red-500">El email es requerido.</small>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="direccion" class="block font-bold mb-2">Dirección</label>
+                    <InputText id="direccion" v-model.trim="paciente.direccion" required="true" :invalid="submitted && !paciente.direccion" class="w-full" />
                     <small v-if="submitted && !paciente.direccion" class="text-red-500">La dirección es requerida.</small>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="telefono" class="block font-bold mb-3">Teléfono</label>
-                        <InputText id="telefono" v-model.trim="paciente.telefono" required="true" autofocus :invalid="submitted && !paciente.telefono" fluid />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="field">
+                        <label for="telefono" class="block font-bold mb-2">Teléfono</label>
+                        <InputText id="telefono" v-model.trim="paciente.telefono" required="true" :invalid="submitted && !paciente.telefono" class="w-full" />
                         <small v-if="submitted && !paciente.telefono" class="text-red-500">El teléfono es requerido.</small>
                     </div>
-                    <div>
-                        <label for="genero" class="block font-bold mb-3">Genero</label>
+                    <div class="field">
+                        <label for="genero" class="block font-bold mb-2">Género</label>
                         <Select id="genero" v-model="paciente.genero" :options="['M', 'F']" placeholder="Seleccione un tipo" class="w-full" />
-                        <small v-if="submitted && !paciente.genero" class="text-red-500">El genero es requerido.</small>
+                        <small v-if="submitted && !paciente.genero" class="text-red-500">El género es requerido.</small>
                     </div>
                 </div>
-                <div>
-                    <label for="fechaNacimiento" class="block font-bold mb-3">Fecha de Nacimiento</label>
-                    <DatePicker id="fechaNacimiento" v-model="paciente.fechaNacimiento" dateFormat="dd/mm/yy" :showIcon="true" required="true" :invalid="submitted && !paciente.fechaNacimiento" />
+
+                <div class="field">
+                    <label for="fechaNacimiento" class="block font-bold mb-2">Fecha de Nacimiento</label>
+                    <DatePicker id="fechaNacimiento" v-model="paciente.fechaNacimiento" dateFormat="dd/mm/yy" :showIcon="true" required="true" :invalid="submitted && !paciente.fechaNacimiento" class="w-full" />
                     <small v-if="submitted && !paciente.fechaNacimiento" class="text-red-500">La fecha de nacimiento es requerida.</small>
                 </div>
             </div>
 
             <template #footer>
-                <Button label="Cancelar" icon="pi pi-times" text @click="hideDialog" />
-                <Button label="Guardar" icon="pi pi-check" @click="savePaciente" />
+                <div class="flex justify-end gap-2">
+                    <Button label="Cancelar" icon="pi pi-times" text @click="hideDialog" />
+                    <Button label="Guardar" icon="pi pi-check" @click="savePaciente" />
+                </div>
             </template>
         </Dialog>
 
