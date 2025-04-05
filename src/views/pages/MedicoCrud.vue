@@ -23,11 +23,11 @@ const medicos = ref();
 const medicoDialog = ref(false);
 const deletemedicoDialog = ref(false);
 const medico = ref({});
-const selectedMedicos = ref();
 const loading = ref(true);
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
+const multiple = ref('multiple');
 const submitted = ref(false);
 
 function openNew() {
@@ -107,7 +107,7 @@ function confirmDeleteMedico(cli) {
     deletemedicoDialog.value = true;
 }
 
-function deletePaciente() {
+function deleteMedico() {
     MedicoService.delete(medico.value.id)
         .then(() => {
             medicos.value = medicos.value.filter((val) => val.id !== medico.value.id);
@@ -149,6 +149,11 @@ function exportCSV() {
                 :rows="10"
                 scrollable
                 scrollHeight="600px"
+                :sortMode="multiple"
+                :multiSortMeta="[
+                    { field: 'createdAt', order: 1 },
+                    { field: 'medico.nombre', order: 1 },
+                ]"
                 :filters="filters"
                 :loading="loading"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
@@ -182,7 +187,6 @@ function exportCSV() {
                 <Column field="especialidad" header="Identificación" sortable style="min-width: 5rem"></Column>
                 <Column field="telefono" header="Telefono" sortable style="min-width: 5rem"></Column>
                 <Column field="email" header="Email" sortable style="min-width: 16rem"></Column>
-                <Column field="telefono" header="Teléfono" sortable style="min-width: 12rem"></Column>
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">
                         <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editMedico(slotProps.data)" />
