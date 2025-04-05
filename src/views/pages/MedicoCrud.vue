@@ -199,8 +199,9 @@ function exportCSV() {
                 </template>
 
                 <Column field="numeroDocumento" header="Identificación" sortable style="min-width: 5rem"></Column>
-                <Column field="nombre" header="Nombre" sortable style="min-width: 5rem"></Column>
-                <Column field="apellido" header="Apellido" sortable style="min-width: 5rem"></Column>
+                <Column header="Nombre" sortable style="min-width: 10rem">
+                    <template #body="slotProps"> {{ slotProps.data.nombre }} {{ slotProps.data.apellido }} </template>
+                </Column>
                 <Column field="especialidad" header="Especialidad" sortable style="min-width: 5rem"></Column>
                 <Column field="telefono" header="Teléfono" sortable style="min-width: 5rem"></Column>
                 <Column field="email" header="Email" sortable style="min-width: 16rem"></Column>
