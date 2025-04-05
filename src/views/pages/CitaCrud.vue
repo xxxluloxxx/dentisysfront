@@ -77,8 +77,7 @@ function saveCita() {
     submitted.value = true;
     console.log('Datos de la cita:', cita.value);
 
-    // Validar campos requeridos
-    if (!cita.value.pacienteId || !cita.value.medicoId || !cita.value.fechaCita || !cita.value.horaCita || !cita.value.estado || !cita.value.observaciones) {
+    if (!cita.value.pacienteId || !cita.value.medicoId || !cita.value.fechaCita || !cita.value.horaCita || !cita.value.estado) {
         toast.add({
             severity: 'error',
             summary: 'Error',
@@ -121,11 +120,18 @@ function saveCita() {
 
 function createCita(citaData) {
     CitaService.create(citaData)
-        .then((response) => {
-            citas.value.push(response);
-            citaDialog.value = false;
-            cita.value = {};
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Cita Creada', life: 3000 });
+        .then(() => {
+            CitaService.getAllCitas()
+                .then((data) => {
+                    citas.value = data;
+                    citaDialog.value = false;
+                    cita.value = {};
+                    toast.add({ severity: 'success', summary: 'Éxito', detail: 'Cita Creada', life: 3000 });
+                })
+                .catch((error) => {
+                    console.error('Error al recargar las citas:', error);
+                    toast.add({ severity: 'error', summary: 'Error', detail: 'Error al recargar las citas', life: 3000 });
+                });
         })
         .catch((error) => {
             console.error('Error al crear la cita:', error);
@@ -259,7 +265,7 @@ function getEstadoSeverity(estado) {
                 :sortMode="multiple"
                 :multiSortMeta="[
                     { field: 'fechaCita', order: -1 },
-                    { field: 'horaCita', order: 1 }
+                    { field: 'horaCita', order: -1 }
                 ]"
                 :filters="filters"
                 :loading="loading"
@@ -291,11 +297,15 @@ function getEstadoSeverity(estado) {
 
                 <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
                 <Column field="fechaCita" header="Fecha Cita" sortable style="min-width: 5rem"></Column>
-                <Column field="horaCita" header="Hora Cita" sortable style="min-width: 5rem"></Column>
+                <Column field="horaCita" header="Hora Cita" sortable style="min-width: 5rem">
+                    <template #body="slotProps">
+                        {{ slotProps.data.horaCita.substring(0, 5) }}
+                    </template>
+                </Column>
                 <Column field="pacienteNombre" header="Paciente" sortable style="min-width: 5rem"></Column>
                 <Column field="medicoNombre" header="Medico" sortable style="min-width: 5rem"></Column>
                 <Column field="observaciones" header="Observaciones" sortable style="min-width: 5rem"></Column>
-                <Column header="Estado">
+                <Column header="Estado" sortable style="min-width: 1rem" sortField="estado" :sortFunction="(a, b) => a.estado.localeCompare(b.estado)">
                     <template #body="slotProps">
                         <Tag :value="slotProps.data.estado" :severity="getEstadoSeverity(slotProps.data.estado)" />
                     </template>
@@ -387,8 +397,7 @@ function getEstadoSeverity(estado) {
 
                 <div class="field">
                     <label for="observaciones" class="block font-bold mb-2">Observaciones</label>
-                    <InputText id="observaciones" v-model.trim="cita.observaciones" required="true" autofocus :invalid="submitted && !cita.observaciones" class="w-full" />
-                    <small v-if="submitted && !cita.observaciones" class="text-red-500">Las observaciones son requeridas.</small>
+                    <InputText id="observaciones" v-model.trim="cita.observaciones" class="w-full" />
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -406,7 +415,7 @@ function getEstadoSeverity(estado) {
 
                 <div class="field">
                     <label for="horaCita" class="block font-bold mb-2">Hora</label>
-                    <Calendar id="horaCita" v-model="cita.horaCita" timeOnly hourFormat="24" :showIcon="true" required="true" :invalid="submitted && !cita.horaCita" class="w-full" />
+                    <Calendar id="horaCita" v-model="cita.horaCita" timeOnly hourFormat="24" :showIcon="true" :stepMinute="15" required="true" :invalid="submitted && !cita.horaCita" class="w-full" />
                     <small v-if="submitted && !cita.horaCita" class="text-red-500">La hora es requerida.</small>
                 </div>
             </div>

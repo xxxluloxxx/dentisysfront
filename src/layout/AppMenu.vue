@@ -6,7 +6,7 @@ import AppMenuItem from './AppMenuItem.vue';
 const model = ref([
     {
         label: 'Home',
-        items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
+        items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/dashboard' }]
     },
     {
         label: 'Odontología',
@@ -70,12 +70,12 @@ const model = ref([
                 icon: 'pi pi-fw pi-calendar',
                 items: [
                     {
-                        label: 'Ver Agenda',
+                        label: 'Agenda',
                         icon: 'pi pi-fw pi-calendar',
                         to: '/pages/agenda'
                     },
                     {
-                        label: 'Agendar cita',
+                        label: 'Citas',
                         icon: 'pi pi-fw pi-calendar-plus',
                         to: '/pages/agendarCita'
                     }
