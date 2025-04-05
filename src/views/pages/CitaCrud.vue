@@ -35,6 +35,15 @@ const filteredCitas = computed(() => {
     );
 });
 
+const sortedCitas = computed(() => {
+    if (!filteredCitas.value || !Array.isArray(filteredCitas.value)) return [];
+    return [...filteredCitas.value].sort((a, b) => {
+        const fechaA = new Date(a.fechaCita + 'T' + a.horaCita);
+        const fechaB = new Date(b.fechaCita + 'T' + b.horaCita);
+        return fechaB - fechaA;
+    });
+});
+
 onMounted(() => {
     loading.value = true;
     CitaService.getAllCitas()
@@ -339,7 +348,7 @@ function getEstadoSeverity(estado) {
 
                     <!-- Lista de citas en tarjetas -->
                     <div class="flex flex-col gap-4 w-full">
-                        <div v-for="cita in filteredCitas" :key="cita.id" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 w-full">
+                        <div v-for="cita in sortedCitas" :key="cita.id" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 w-full">
                             <div class="flex justify-between items-start mb-2">
                                 <div>
                                     <h3 class="text-lg font-semibold dark:text-white">{{ cita.pacienteNombre }}</h3>
@@ -357,7 +366,7 @@ function getEstadoSeverity(estado) {
                                 </div>
                                 <div>
                                     <span class="font-semibold dark:text-white">Hora:</span>
-                                    <p class="text-gray-600 dark:text-gray-400">{{ cita.horaCita }}</p>
+                                    <p class="text-gray-600 dark:text-gray-400">{{ cita.horaCita.substring(0, 5) }}</p>
                                 </div>
                                 <div>
                                     <span class="font-semibold dark:text-white">Estado:</span>
