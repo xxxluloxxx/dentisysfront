@@ -160,6 +160,11 @@ const router = createRouter({
                     component: () => import('@/views/pages/ProformasCrud.vue')
                 },
                 {
+                    path: '/pages/proformaVista/:id',
+                    name: 'proformaVista',
+                    component: () => import('@/views/pages/ProformaVista.vue')
+                },
+                {
                     path: '/pages/graficas',
                     name: 'graficas',
                     component: () => import('@/views/pages/Graficas.vue')

@@ -441,4 +441,3 @@ function deleteServicio(servicio) {
         </div>
     </Fluid>
 </template>
-@/service/ProformaService

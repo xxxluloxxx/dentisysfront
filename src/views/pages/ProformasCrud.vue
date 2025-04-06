@@ -3,6 +3,7 @@ import { ProformaService } from '@/service/ProformaService';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 const toast = useToast();
 const dt = ref();
@@ -17,6 +18,7 @@ const filters = ref({
 });
 const activeTab = ref('0'); // Por defecto mostrar hoy
 const sortOrder = ref(-1);
+const router = useRouter();
 
 const options = [
     { label: 'Hoy', value: '0' },
@@ -102,9 +104,7 @@ function confirmDeleteProforma(proformaData) {
 }
 
 function editProforma(proforma) {
-    // Aquí puedes implementar la lógica para editar la proforma
-    // Por ejemplo, redirigir a una página de edición o abrir un diálogo
-    console.log('Editar proforma:', proforma);
+    router.push(`/pages/proformaVista/${proforma.id}`);
 }
 
 function deleteProforma() {
