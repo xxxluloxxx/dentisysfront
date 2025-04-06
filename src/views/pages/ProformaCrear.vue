@@ -41,6 +41,7 @@ const subtotal = ref(0);
 const iva = ref(0);
 const total = ref(0);
 const estado = ref('PENDIENTE');
+const descripcion = ref('');
 
 // Configuración de filtros para las tablas de datos
 const filters = ref({
@@ -112,10 +113,10 @@ const guardarProforma = async () => {
             },
             fecha: fechaProforma.value,
             subtotal: subtotal.value,
-            iva: iva.value,
+            iva: 12,
             total: total.value,
             estado: estado.value,
-            observaciones: 'Nueva proforma'
+            observaciones: descripcion.value
         };
 
         const proformaCreada = await ProformaService.create(proformaData);
@@ -176,6 +177,7 @@ const cancelarProforma = () => {
     iva.value = 0;
     total.value = 0;
     estado.value = 'PENDIENTE';
+    descripcion.value = '';
 };
 
 // Carga inicial de datos al montar el componente
@@ -273,13 +275,9 @@ function deleteServicio(servicio) {
 <template>
     <Fluid>
         <div class="flex flex-col gap-4 p-2 md:p-4">
-            <!-- Encabezado -->
-            <div class="flex justify-between items-center">
-                <h1 class="text-xl md:text-2xl font-bold">Nueva Proforma</h1>
-            </div>
 
             <!-- Contenido principal -->
-            <div class="grid grid-cols-1 gap-4">
+            <div class="grid grid-cols-1">
                 <!-- Sección de datos -->
                 <div class="card p-3 md:p-4">
                     <h2 class="text-lg md:text-xl font-semibold mb-3 md:mb-4">Datos</h2>
@@ -304,10 +302,20 @@ function deleteServicio(servicio) {
                     </div>
                 </div>
 
+                <!-- Sección de descripción -->
+                <div class="card p-3 md:p-4">
+                    <h2 class="text-lg md:text-xl font-semibold mb-3 md:mb-4">Descripción</h2>
+                    <div class="flex flex-col gap-2">
+                        <span class="p-float-label">
+                            <Textarea v-model="descripcion" rows="3" class="w-full" />
+                        </span>
+                    </div>
+                </div>
+
                 <!-- Sección de servicios -->
                 <div class="card p-3 md:p-4">
                     <div class="flex justify-between items-center mb-2">
-                        <h2 class="text-lg md:text-xl font-semibold">Servicios</h2>
+                        <h2 class="text-lg md:text-xl font-semibold">Servicios y productos</h2>
                         <Button type="button" icon="pi pi-plus" class="!w-8 !h-8 !p-0" rounded @click="toggleDataTableProductos" />
                     </div>
 
@@ -380,8 +388,9 @@ function deleteServicio(servicio) {
                         </div>
                     </template>
                     <Column field="identificacion" header="Identificación" sortable style="min-width: 12rem"></Column>
-                    <Column field="nombre" header="Nombre" sortable style="min-width: 12rem"></Column>
-                    <Column field="apellido" header="Apellido" sortable style="min-width: 12rem"></Column>
+                    <Column field="nombre" header="Nombre" sortable style="min-width: 12rem">
+                        <template #body="slotProps"> {{ slotProps.data.nombre }} {{ slotProps.data.apellido }} </template>
+                    </Column>
                 </DataTable>
             </Popover>
 
@@ -399,8 +408,9 @@ function deleteServicio(servicio) {
                         </div>
                     </template>
                     <Column field="especialidad" header="Especialidad" sortable style="min-width: 12rem"></Column>
-                    <Column field="nombre" header="Nombre" sortable style="min-width: 12rem"></Column>
-                    <Column field="apellido" header="Apellido" sortable style="min-width: 12rem"></Column>
+                    <Column field="nombre" header="Nombre" sortable style="min-width: 12rem">
+                        <template #body="slotProps"> {{ slotProps.data.nombre }} {{ slotProps.data.apellido }} </template>
+                    </Column>
                 </DataTable>
             </Popover>
 
