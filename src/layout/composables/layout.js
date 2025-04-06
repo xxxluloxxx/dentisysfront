@@ -4,9 +4,14 @@ const layoutConfig = reactive({
     preset: 'Aura',
     primary: 'emerald',
     surface: null,
-    darkTheme: false,
+    darkTheme: true,
     menuMode: 'static'
 });
+
+// Inicializar el modo oscuro al cargar la aplicación
+if (layoutConfig.darkTheme) {
+    document.documentElement.classList.add('app-dark');
+}
 
 const layoutState = reactive({
     staticMenuDesktopInactive: false,
