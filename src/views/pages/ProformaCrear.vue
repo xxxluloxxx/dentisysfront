@@ -36,7 +36,6 @@ const productos = ref();
 const servicios = ref([]);
 
 // Variable reactiva para la proforma
-const fechaProforma = ref(new Date().toLocaleDateString('es-EC'));
 const subtotal = ref(0);
 const iva = ref(0);
 const total = ref(0);
@@ -111,7 +110,6 @@ const guardarProforma = async () => {
             medico: {
                 id: idMedico.value
             },
-            fecha: fechaProforma.value,
             subtotal: subtotal.value,
             iva: 12,
             total: total.value,
@@ -172,7 +170,6 @@ const cancelarProforma = () => {
     nombreMedico.value = '';
     apellidoMedico.value = '';
     servicios.value = [];
-    fechaProforma.value = new Date().toLocaleDateString('es-EC');
     subtotal.value = 0;
     iva.value = 0;
     total.value = 0;
