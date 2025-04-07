@@ -98,6 +98,17 @@ function obtenerFecha(value) {
     return '';
 }
 
+function obtenerHora(value) {
+    if (value) {
+        const fecha = new Date(value);
+        return fecha.toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    return '';
+}
+
 function confirmDeleteProforma(proformaData) {
     proforma.value = proformaData;
     deleteproformaDialog.value = true;
@@ -172,6 +183,7 @@ function toggleExpand(proformaId) {
                 scrollHeight="600px"
                 :sortMode="multiple"
                 :multiSortMeta="[
+                    { field: 'createdAt', order: 1 },
                     { field: 'medicoNombre', order: 1 },
                     { field: 'pacienteNombre', order: 1 }
                 ]"
@@ -204,20 +216,25 @@ function toggleExpand(proformaId) {
                                     </InputIcon>
                                     <InputText v-model="filters['global'].value" placeholder="Buscar..." />
                                 </IconField>
-                                <Button :icon="sortOrder === -1 ? 'pi pi-sort-alpha-down' : 'pi pi-sort-alpha-up'" severity="secondary" @click="toggleSort" class="p-2" />
                             </div>
                         </div>
                     </div>
                 </template>
 
                 <Column expander style="width: 5rem" />
-                <Column field="medicoNombre" header="Medico" sortable style="min-width: 1rem"></Column>
-                <Column field="pacienteNombre" header="Paciente" sortable style="min-width: 1rem"></Column>
                 <Column field="createdAt" header="Fecha" sortable style="min-width: 1rem">
                     <template #body="slotProps">
                         {{ obtenerFecha(slotProps.data.createdAt) }}
                     </template>
                 </Column>
+                <Column field="createdAt" header="Hora" sortable style="min-width: 1rem">
+                    <template #body="slotProps">
+                        {{ obtenerHora(slotProps.data.createdAt) }}
+                    </template>
+                </Column>
+                <Column field="medicoNombre" header="Medico" sortable style="min-width: 1rem"></Column>
+                <Column field="pacienteNombre" header="Paciente" sortable style="min-width: 1rem"></Column>
+
                 <Column field="subtotal" header="Subtotal">
                     <template #body="slotProps">
                         {{ formatCurrency(slotProps.data.subtotal) }}
