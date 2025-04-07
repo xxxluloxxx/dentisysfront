@@ -262,7 +262,7 @@ const limpiarCamposCobranza = () => {
                     </div>
                     <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <p class="font-semibold text-lg">Total Pagado</p>
-                        <p class="text-2xl font-bold text-green-500">{{ formatCurrency(calcularTotalPagado()) }}</p>
+                        <p class="text-2xl font-bold text-yellow-500">{{ formatCurrency(calcularTotalPagado()) }}</p>
                     </div>
                     <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <p class="font-semibold text-lg">Faltante</p>
@@ -270,8 +270,6 @@ const limpiarCamposCobranza = () => {
                     </div>
                 </div>
             </div>
-
-
         </div>
         <div v-else class="text-center p-4">
             <p class="text-xl">No se encontró la proforma</p>
