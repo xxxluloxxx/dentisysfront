@@ -7,7 +7,7 @@ import { ProductoService } from '@/service/ProductoService';
 import { ProformaService } from '@/service/ProformaService';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 // Referencias para los componentes de la interfaz
 const opPaciente = ref(null);
@@ -39,6 +39,8 @@ const servicios = ref([]);
 const subtotal = ref(0);
 const iva = ref(0);
 const total = ref(0);
+const porcentajeDescuento = ref(0);
+const aplicarIva = ref(false);
 const estado = ref('PENDIENTE');
 const descripcion = ref('');
 
@@ -60,18 +62,25 @@ const calcularSubtotalServicio = (servicio) => {
     return servicio.precio * (servicio.cantidad || 1);
 };
 
+// Función para calcular el valor del descuento
+const valorDescuento = computed(() => {
+    const subtotalConIva = aplicarIva.value ? subtotal.value + iva.value : subtotal.value;
+    return (subtotalConIva * porcentajeDescuento.value) / 100;
+});
+
 // Función para calcular los totales
 const calcularTotales = () => {
     subtotal.value = servicios.value.reduce((sum, item) => {
         return sum + calcularSubtotalServicio(item);
     }, 0);
-    iva.value = subtotal.value * 0.12; // 12% IVA
-    total.value = subtotal.value + iva.value;
+    iva.value = aplicarIva.value ? subtotal.value * 0.12 : 0; // 12% IVA solo si está activado
+    const subtotalConIva = aplicarIva.value ? subtotal.value + iva.value : subtotal.value;
+    total.value = subtotalConIva - valorDescuento.value;
 };
 
-// Observar cambios en servicios para actualizar los totales
+// Observar cambios en servicios, porcentajeDescuento y aplicarIva para actualizar los totales
 watch(
-    servicios,
+    [servicios, porcentajeDescuento, aplicarIva],
     () => {
         calcularTotales();
     },
@@ -111,10 +120,11 @@ const guardarProforma = async () => {
                 id: idMedico.value
             },
             subtotal: subtotal.value,
-            iva: 12,
+            iva: aplicarIva.value ? 15 : 0,
             total: total.value,
             estado: estado.value,
-            observaciones: descripcion.value
+            observaciones: descripcion.value,
+            descuento: porcentajeDescuento.value
         };
 
         const proformaCreada = await ProformaService.create(proformaData);
@@ -173,6 +183,8 @@ const cancelarProforma = () => {
     subtotal.value = 0;
     iva.value = 0;
     total.value = 0;
+    porcentajeDescuento.value = 0;
+    aplicarIva.value = false;
     estado.value = 'PENDIENTE';
     descripcion.value = '';
 };
@@ -272,40 +284,42 @@ function deleteServicio(servicio) {
 <template>
     <Fluid>
         <div class="flex flex-col gap-4 p-2 md:p-4">
-
             <!-- Contenido principal -->
-            <div class="grid grid-cols-1">
-                <!-- Sección de datos -->
-                <div class="card p-3 md:p-4">
-                    <h2 class="text-lg md:text-xl font-semibold mb-3 md:mb-4">Datos</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                        <!-- Datos del paciente -->
-                        <div class="flex flex-col gap-2 md:gap-4">
-                            <div class="flex items-center gap-2">
-                                <span class="font-semibold text-sm md:text-base">Paciente:</span>
-                                <span class="text-sm md:text-base">{{ nombrePaciente }} {{ apellidoPaciente }}</span>
+            <div class="grid grid-cols-1 gap-4">
+                <!-- Sección de datos y descripción -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Sección de datos -->
+                    <div class="card p-3 md:p-4">
+                        <h2 class="text-lg md:text-xl font-semibold mb-3 md:mb-4">Datos</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                            <!-- Datos del paciente -->
+                            <div class="flex flex-col gap-2 md:gap-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-sm md:text-base">Paciente:</span>
+                                    <span class="text-sm md:text-base">{{ nombrePaciente }} {{ apellidoPaciente }}</span>
+                                </div>
+                                <Button type="button" label="Seleccionar Paciente" class="text-sm" @click="toggleDataTablePacientes" />
                             </div>
-                            <Button type="button" label="Seleccionar Paciente" class="text-sm" @click="toggleDataTablePacientes" />
-                        </div>
 
-                        <!-- Datos del médico -->
-                        <div class="flex flex-col gap-2 md:gap-4">
-                            <div class="flex items-center gap-2">
-                                <span class="font-semibold text-sm md:text-base">Médico:</span>
-                                <span class="text-sm md:text-base">{{ nombreMedico }} {{ apellidoMedico }}</span>
+                            <!-- Datos del médico -->
+                            <div class="flex flex-col gap-2 md:gap-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-sm md:text-base">Médico:</span>
+                                    <span class="text-sm md:text-base">{{ nombreMedico }} {{ apellidoMedico }}</span>
+                                </div>
+                                <Button type="button" label="Seleccionar Médico" icon="pi pi-user-md" class="text-sm" @click="toggleDataTableMedicos" />
                             </div>
-                            <Button type="button" label="Seleccionar Médico" icon="pi pi-user-md" class="text-sm" @click="toggleDataTableMedicos" />
                         </div>
                     </div>
-                </div>
 
-                <!-- Sección de descripción -->
-                <div class="card p-3 md:p-4">
-                    <h2 class="text-lg md:text-xl font-semibold mb-3 md:mb-4">Descripción</h2>
-                    <div class="flex flex-col gap-2">
-                        <span class="p-float-label">
-                            <Textarea v-model="descripcion" rows="3" class="w-full" />
-                        </span>
+                    <!-- Sección de descripción -->
+                    <div class="card p-3 md:p-4">
+                        <h2 class="text-lg md:text-xl font-semibold mb-3 md:mb-4">Descripción</h2>
+                        <div class="flex flex-col gap-2">
+                            <span class="p-float-label">
+                                <Textarea v-model="descripcion" rows="3" class="w-full" />
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -359,8 +373,18 @@ function deleteServicio(servicio) {
                             <span class="text-sm md:text-base">{{ formatCurrency(subtotal) }}</span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="font-semibold text-sm md:text-base">IVA (12%):</span>
+                            <div class="flex items-center gap-2">
+                                <Checkbox v-model="aplicarIva" :binary="true" />
+                                <span class="font-semibold text-sm md:text-base">IVA (12%):</span>
+                            </div>
                             <span class="text-sm md:text-base">{{ formatCurrency(iva) }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="font-semibold text-sm md:text-base">Descuento:</span>
+                                <InputNumber v-model="porcentajeDescuento" :min="0" :max="100" class="w-12" size="small" />
+                            </div>
+                            <span class="text-sm md:text-base">{{ formatCurrency(valorDescuento) }}</span>
                         </div>
                         <div class="flex justify-between items-center text-lg md:text-xl font-bold">
                             <span>Total:</span>
