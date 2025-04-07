@@ -29,6 +29,11 @@ const model = ref([
                 to: '/pages/medicos'
             },
             {
+                label: 'Cuentas',
+                icon: 'pi pi-fw pi-money-bill',
+                to: '/pages/cuentas'
+            },
+            {
                 label: 'Ficha medica',
                 icon: 'pi pi-fw pi-book',
                 items: [
