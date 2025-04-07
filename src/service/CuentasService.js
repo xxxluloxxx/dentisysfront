@@ -1,15 +1,18 @@
 import axios from 'axios';
+import API_CONFIG from '../config/api.config';
 
-const API_URL = 'http://localhost:8081/api';
-
-export default {
-    async getCuentas() {
+export const CuentasService = {
+    async getAll() {
         try {
-            const response = await axios.get(`${API_URL}/cuentas`);
+            const response = await axios.get(API_CONFIG.getUrl('CUENTAS'));
+            console.log('✅ Respuesta recibida de la API:', response.data);
+            console.log('🔄 Cuentas:', response.data);
+            console.log(`📊 Total de cuentas procesadas: ${response.data.length}`);
             return response.data;
         } catch (error) {
-            console.error('Error al obtener las cuentas:', error);
+            console.error('Error al obtener cuentas:', error);
             throw error;
         }
     }
 };
+

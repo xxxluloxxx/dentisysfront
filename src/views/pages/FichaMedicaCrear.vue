@@ -65,7 +65,7 @@ const guardarFicha = async () => {
             alergias: alergias.value,
             medicamentos_actuales: medicamentosActuales.value,
             observaciones: observaciones.value,
-            estado: "ACTIVA"
+            estado: 'ACTIVA'
         };
 
         await FichaOdontologicaService.create(fichaData);

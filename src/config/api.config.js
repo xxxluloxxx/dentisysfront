@@ -20,7 +20,8 @@ const API_CONFIG = {
         ODONTOGRAMA: '/api/odontograma',
         IMAGENES_FICHA: '/api/imagenes-fichas',
         DETALLES_PROFORMA: '/api/detalles-proforma',
-        COBRANZAS: '/api/cobranzas'
+        COBRANZAS: '/api/cobranzas',
+        CUENTAS: '/api/cuentas'
     },
 
     // Función helper para obtener la URL base según el ambiente
