@@ -190,6 +190,11 @@ const router = createRouter({
                     component: () => import('@/views/pages/Odontograma.vue')
                 },
                 {
+                    path: '/pages/categorias-financieras',
+                    name: 'categorias-financieras',
+                    component: () => import('@/views/pages/CategoriaFinanciera.vue')
+                },
+                {
                     path: '/documentation',
                     name: 'documentation',
                     component: () => import('@/views/pages/Documentation.vue')

@@ -21,7 +21,8 @@ const API_CONFIG = {
         IMAGENES_FICHA: '/api/imagenes-fichas',
         DETALLES_PROFORMA: '/api/detalles-proforma',
         COBRANZAS: '/api/cobranzas',
-        CUENTAS: '/api/cuentas'
+        CUENTAS: '/api/cuentas',
+        CATEGORIA_FINANCIERA: '/api/categorias'
     },
 
     // Función helper para obtener la URL base según el ambiente

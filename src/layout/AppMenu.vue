@@ -91,6 +91,11 @@ const model = ref([
                 icon: 'pi pi-fw pi-chart-bar',
                 to: '/pages/odontograma'
             },
+            {
+                label: 'Categorías Financieras',
+                icon: 'pi pi-fw pi-tags',
+                to: '/pages/categorias-financieras'
+            },
         ]
     }
 ]);
