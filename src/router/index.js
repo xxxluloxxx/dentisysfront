@@ -198,6 +198,11 @@ const router = createRouter({
                     path: '/documentation',
                     name: 'documentation',
                     component: () => import('@/views/pages/Documentation.vue')
+                },
+                {
+                    path: '/pages/ficha-crear',
+                    name: 'ficha-crear',
+                    component: () => import('@/views/pages/FichaCrear.vue')
                 }
             ]
         },
