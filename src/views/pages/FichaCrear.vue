@@ -7,18 +7,18 @@ const router = useRouter();
 // Estado del formulario
 const formData = reactive({
     motivoConsulta: '',
-    descripcion: '',
+    problemaActual: '',
     antecedentes: [
-        { antecedente: 'Alergia antibiótico', tiene: false, descripcion: '' },
-        { antecedente: 'Alergia anestesia', tiene: false, descripcion: '' },
-        { antecedente: 'Hemorragias', tiene: false, descripcion: '' },
-        { antecedente: 'VIH/Sida', tiene: false, descripcion: '' },
-        { antecedente: 'Tuberculosis', tiene: false, descripcion: '' },
-        { antecedente: 'Asma', tiene: false, descripcion: '' },
-        { antecedente: 'Diabetes', tiene: false, descripcion: '' },
-        { antecedente: 'Hipertensión', tiene: false, descripcion: '' },
-        { antecedente: 'Enf. Cardíacas', tiene: false, descripcion: '' },
-        { antecedente: 'Otro', tiene: false, descripcion: '' }
+        { nombre: 'Alergia antibiótico', check: false, descripcion: '' },
+        { nombre: 'Alergia anestesia', check: false, descripcion: '' },
+        { nombre: 'Hemorragias', check: false, descripcion: '' },
+        { nombre: 'VIH/Sida', check: false, descripcion: '' },
+        { nombre: 'Tuberculosis', check: false, descripcion: '' },
+        { nombre: 'Asma', check: false, descripcion: '' },
+        { nombre: 'Diabetes', check: false, descripcion: '' },
+        { nombre: 'Hipertensión', check: false, descripcion: '' },
+        { nombre: 'Enf. Cardíacas', check: false, descripcion: '' },
+        { nombre: 'Otro', check: false, descripcion: '' }
     ],
     signosVitales: [
         { signo: 'Temperatura', valor: '' },
@@ -126,7 +126,7 @@ watch(
 // Métodos
 const toggleAntecedentes = () => {
     formData.antecedentes.forEach((antecedente) => {
-        antecedente.tiene = false;
+        antecedente.check = false;
         antecedente.descripcion = '';
     });
 };
@@ -139,14 +139,78 @@ const toggleExamenEstomatognatico = () => {
 };
 
 const guardarFicha = () => {
-    // Aquí irá la lógica para guardar la ficha
-    console.log('Guardando ficha:', formData);
+    // Crear objeto con los datos formateados
+    const fichaData = {
+        datosFicha: {
+            motivoConsulta: formData.motivoConsulta,
+            descripcion: formData.descripcion
+        },
+        antecedentes: formData.antecedentes
+            .filter((antecedente) => antecedente.check)
+            .map((antecedente) => ({
+                nombre: antecedente.nombre,
+                descripcion: antecedente.descripcion,
+                check: antecedente.check
+            })),
+        signosVitales: formData.signosVitales.map((signo) => ({
+            nombre: signo.signo,
+            valor: signo.valor
+        })),
+        examenEstomatognatico: formData.examenEstomatognatico
+            .filter((examen) => examen.tiene)
+            .map((examen) => ({
+                nombre: examen.examen,
+                descripcion: examen.descripcion
+            })),
+        odontograma: {
+            superiorDerecho: formData.odontograma.superiorDerecho
+                .filter((diente) => diente.descripcion)
+                .map((diente) => ({
+                    diente: diente.diente,
+                    descripcion: diente.descripcion
+                })),
+            superiorIzquierdo: formData.odontograma.superiorIzquierdo
+                .filter((diente) => diente.descripcion)
+                .map((diente) => ({
+                    diente: diente.diente,
+                    descripcion: diente.descripcion
+                })),
+            inferiorDerecho: formData.odontograma.inferiorDerecho
+                .filter((diente) => diente.descripcion)
+                .map((diente) => ({
+                    diente: diente.diente,
+                    descripcion: diente.descripcion
+                })),
+            inferiorIzquierdo: formData.odontograma.inferiorIzquierdo
+                .filter((diente) => diente.descripcion)
+                .map((diente) => ({
+                    diente: diente.diente,
+                    descripcion: diente.descripcion
+                }))
+        },
+        higieneOral: formData.higieneOral.map((item, index) => ({
+            sextante: index + 1,
+            puntos: {
+                p1: { valor: item.p1, marcado: item.check1 },
+                p2: { valor: item.p2, marcado: item.check2 },
+                p3: { valor: item.p3, marcado: item.check3 }
+            },
+            placa: item.placa,
+            calculo: item.calculo,
+            gingivitis: item.gingivitis
+        })),
+        totales: formData.totales
+    };
+
+    // Imprimir el objeto JSON completo
+    console.log('Datos de la ficha:', JSON.stringify(fichaData, null, 2));
+
     // Redirigir después de guardar
-    router.push('/fichas');
+    //router.push('/fichas');
 };
 
 const cancelar = () => {
-    router.push('/fichas');
+    //router.push('/fichas');
 };
 </script>
 <template>
@@ -156,7 +220,6 @@ const cancelar = () => {
                 <div class="card">
                     <h5>Crear Nueva Ficha</h5>
                     <div class="grid">
-                        <!-- Información Básica -->
                         <div class="col-12 md:col-6">
                             <div class="card">
                                 <div class="field mb-4">
@@ -164,8 +227,8 @@ const cancelar = () => {
                                     <InputText id="motivoConsulta" v-model="formData.motivoConsulta" class="w-full" />
                                 </div>
                                 <div class="field mb-4">
-                                    <label for="descripcion" class="font-bold block mb-2">Enfermedad o problema actual</label>
-                                    <Textarea id="descripcion" v-model="formData.descripcion" rows="3" class="w-full" />
+                                    <label for="problemaActual" class="font-bold block mb-2">Enfermedad o problema actual</label>
+                                    <Textarea id="problemaActual" v-model="formData.problemaActual" rows="3" class="w-full" />
                                 </div>
                             </div>
                         </div>
@@ -181,10 +244,10 @@ const cancelar = () => {
                                 <label class="ml-2">No tiene antecedentes</label>
                             </div>
                             <DataTable :value="formData.antecedentes" class="p-datatable-sm">
-                                <Column field="antecedente" header="Antecedente" style="width: 10%"></Column>
-                                <Column field="tiene" header="Sí/No" style="width: 5%">
+                                <Column field="nombre" header="Antecedente" style="width: 10%"></Column>
+                                <Column field="check" header="Sí/No" style="width: 5%">
                                     <template #body="slotProps">
-                                        <Checkbox v-model="slotProps.data.tiene" :binary="true" />
+                                        <Checkbox v-model="slotProps.data.check" :binary="true" />
                                     </template>
                                 </Column>
                                 <Column field="descripcion" header="Descripción" style="width: 85%">
