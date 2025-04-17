@@ -211,7 +211,6 @@ function exportCSV() {
                     </div>
                 </template>
 
-                <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
                 <Column field="identificacion" header="Identificación" sortable style="min-width: 5rem"></Column>
                 <Column field="nombre" header="Nombre" sortable style="min-width: 5rem"></Column>
                 <Column field="apellido" header="Apellido" sortable style="min-width: 5rem"></Column>
