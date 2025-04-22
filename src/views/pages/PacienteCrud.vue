@@ -186,10 +186,11 @@ function exportCSV() {
                 scrollHeight="600px"
                 :filters="filters"
                 :loading="loading"
+                striped
+                class="p-datatable-striped hidden md:block"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
                 currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} pacientes"
-                class="hidden md:block"
             >
                 <template #header>
                     <div class="flex flex-col gap-y-4">
@@ -211,14 +212,37 @@ function exportCSV() {
                     </div>
                 </template>
 
-                <Column field="identificacion" header="Identificación" sortable style="min-width: 5rem"></Column>
-                <Column field="nombre" header="Nombre" sortable style="min-width: 5rem"></Column>
-                <Column field="apellido" header="Apellido" sortable style="min-width: 5rem"></Column>
-                <Column field="genero" header="Genero" sortable style="min-width: 5rem"></Column>
-                <Column field="email" header="Email" sortable style="min-width: 16rem"></Column>
-                <Column field="telefono" header="Teléfono" sortable style="min-width: 12rem"></Column>
-                <Column field="direccion" header="Direccion" sortable style="min-width: 12rem"></Column>
-                <Column :exportable="false" style="min-width: 12rem">
+                <Column field="identificacion" sortable style="min-width: 5rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">Identificación</span>
+                    </template>
+                </Column>
+                <Column field="nombreCompleto" sortable style="min-width: 5rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">NombreCompleto</span>
+                    </template>
+                </Column>
+                <Column field="genero" sortable style="min-width: 5rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">Genero</span>
+                    </template>
+                </Column>
+                <Column field="email" sortable style="min-width: 16rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">Email</span>
+                    </template>
+                </Column>
+                <Column field="telefono" sortable style="min-width: 12rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">Teléfono</span>
+                    </template>
+                </Column>
+                <Column field="direccion" sortable style="min-width: 12rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">Direccion</span>
+                    </template>
+                </Column>
+                <Column :exportable="false" style="min-width: 12rem" class="text-primary-600 dark:text-primary-400 font-bold">
                     <template #body="slotProps">
                         <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editPaciente(slotProps.data)" />
                         <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeletePaciente(slotProps.data)" />

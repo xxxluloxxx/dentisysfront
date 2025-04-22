@@ -1,9 +1,14 @@
 <script setup>
-import { computed, reactive, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { ProcedimientoService } from '@/service/ProcedimientoService';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 
-const router = useRouter();
+const procedimiento = ref(null);
 
+onMounted(() => {
+    console.log('Iniciando la ficha, con el procedimiento id: ', 1);
+    procedimiento.value = ProcedimientoService.getById(1);
+    console.log(procedimiento.value);
+});
 // Estado del formulario
 const formData = reactive({
     motivoConsulta: '',
@@ -143,7 +148,7 @@ const guardarFicha = () => {
     const fichaData = {
         datosFicha: {
             motivoConsulta: formData.motivoConsulta,
-            descripcion: formData.descripcion
+            descripcion: formData.problemaActual
         },
         antecedentes: formData.antecedentes
             .filter((antecedente) => antecedente.check)
@@ -243,7 +248,7 @@ const cancelar = () => {
                                 <InputSwitch v-model="formData.sinAntecedentes" @change="toggleAntecedentes" />
                                 <label class="ml-2">No tiene antecedentes</label>
                             </div>
-                            <DataTable :value="formData.antecedentes" class="p-datatable-sm">
+                            <DataTable :value="formData.antecedentes" class="p-datatable-sm" stripedRows rowHover>
                                 <Column field="nombre" header="Antecedente" style="width: 10%"></Column>
                                 <Column field="check" header="Sí/No" style="width: 5%">
                                     <template #body="slotProps">
@@ -265,7 +270,7 @@ const cancelar = () => {
                     <div class="col-12">
                         <div class="card">
                             <h5>Signos Vitales</h5>
-                            <DataTable :value="formData.signosVitales" class="p-datatable-sm">
+                            <DataTable :value="formData.signosVitales" class="p-datatable-sm" stripedRows rowHover>
                                 <Column field="signo" header="Signo Vital" style="width: 20%"></Column>
                                 <Column field="valor" header="Valor" style="width: 80%">
                                     <template #body="slotProps">
@@ -286,7 +291,7 @@ const cancelar = () => {
                                 <InputSwitch v-model="formData.sinExamenEstomatognatico" @change="toggleExamenEstomatognatico" />
                                 <label class="ml-2">No tiene hallazgos</label>
                             </div>
-                            <DataTable :value="formData.examenEstomatognatico" class="p-datatable-sm">
+                            <DataTable :value="formData.examenEstomatognatico" class="p-datatable-sm" stripedRows rowHover>
                                 <Column field="examen" header="Examen" style="width: 10%"></Column>
                                 <Column field="tiene" header="Sí/No" style="width: 5%">
                                     <template #body="slotProps">
@@ -307,7 +312,7 @@ const cancelar = () => {
                     <h5>Odontograma</h5>
                     <div class="mb-4">
                         <h6>Superior Derecho</h6>
-                        <DataTable :value="formData.odontograma.superiorDerecho" class="p-datatable-sm">
+                        <DataTable :value="formData.odontograma.superiorDerecho" class="p-datatable-sm" stripedRows rowHover>
                             <Column field="diente" header="Diente" style="width: 20%"></Column>
                             <Column field="descripcion" header="Descripción" style="width: 80%">
                                 <template #body="slotProps">
@@ -319,7 +324,7 @@ const cancelar = () => {
 
                     <div class="mb-4">
                         <h6>Superior Izquierdo</h6>
-                        <DataTable :value="formData.odontograma.superiorIzquierdo" class="p-datatable-sm">
+                        <DataTable :value="formData.odontograma.superiorIzquierdo" class="p-datatable-sm" stripedRows rowHover>
                             <Column field="diente" header="Diente" style="width: 20%"></Column>
                             <Column field="descripcion" header="Descripción" style="width: 80%">
                                 <template #body="slotProps">
@@ -331,7 +336,7 @@ const cancelar = () => {
 
                     <div class="mb-4">
                         <h6>Inferior Derecho</h6>
-                        <DataTable :value="formData.odontograma.inferiorDerecho" class="p-datatable-sm">
+                        <DataTable :value="formData.odontograma.inferiorDerecho" class="p-datatable-sm" stripedRows rowHover>
                             <Column field="diente" header="Diente" style="width: 20%"></Column>
                             <Column field="descripcion" header="Descripción" style="width: 80%">
                                 <template #body="slotProps">
@@ -343,7 +348,7 @@ const cancelar = () => {
 
                     <div class="mb-4">
                         <h6>Inferior Izquierdo</h6>
-                        <DataTable :value="formData.odontograma.inferiorIzquierdo" class="p-datatable-sm">
+                        <DataTable :value="formData.odontograma.inferiorIzquierdo" class="p-datatable-sm" stripedRows rowHover>
                             <Column field="diente" header="Diente" style="width: 20%"></Column>
                             <Column field="descripcion" header="Descripción" style="width: 80%">
                                 <template #body="slotProps">
@@ -359,7 +364,7 @@ const cancelar = () => {
                     <div class="col-12">
                         <div class="card">
                             <h5>Higiene oral simplificada</h5>
-                            <DataTable :value="formData.higieneOral" class="p-datatable-sm">
+                            <DataTable :value="formData.higieneOral" class="p-datatable-sm" stripedRows rowHover>
                                 <Column field="p1" header="P1" style="width: 5%">
                                     <template #body="slotProps">
                                         <span>{{ slotProps.data.p1 }}</span>
@@ -450,4 +455,31 @@ const cancelar = () => {
     </Fluid>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* Estilos personalizados para las filas alternadas de las tablas */
+:deep(.p-datatable-tbody > tr:nth-child(even)) {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+:deep(.p-datatable-tbody > tr:nth-child(odd)) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Estilo para resaltar la fila al pasar el cursor */
+:deep(.p-datatable-tbody > tr:hover) {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+    cursor: pointer;
+}
+
+/* Estilo para los encabezados de las tablas */
+:deep(.p-datatable .p-datatable-thead > tr > th) {
+    background-color: var(--primary-color);
+    color: var(--primary-color-text);
+    font-weight: bold;
+}
+
+/* Estilo para las celdas de las tablas */
+:deep(.p-datatable .p-datatable-tbody > tr > td) {
+    padding: 0.5rem;
+}
+</style>

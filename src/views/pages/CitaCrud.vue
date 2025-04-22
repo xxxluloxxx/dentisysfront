@@ -344,10 +344,11 @@ function getEstadoSeverity(estado) {
                 ]"
                 :filters="filters"
                 :loading="loading"
+                striped
+                class="p-datatable-striped hidden md:block"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
                 currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} citas"
-                class="hidden md:block"
             >
                 <template #header>
                     <div class="flex flex-col gap-y-4">
@@ -371,16 +372,38 @@ function getEstadoSeverity(estado) {
                 </template>
 
                 <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
-                <Column field="fechaCita" header="Fecha Cita" sortable style="min-width: 5rem"></Column>
-                <Column field="horaCita" header="Hora Cita" sortable style="min-width: 5rem">
+                <Column field="fechaCita" sortable style="min-width: 5rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">Fecha Cita</span>
+                    </template>
+                </Column>
+                <Column field="horaCita" sortable style="min-width: 5rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">Hora Cita</span>
+                    </template>
                     <template #body="slotProps">
                         {{ slotProps.data.horaCita.substring(0, 5) }}
                     </template>
                 </Column>
-                <Column field="pacienteNombre" header="Paciente" sortable style="min-width: 5rem"></Column>
-                <Column field="medicoNombre" header="Medico" sortable style="min-width: 5rem"></Column>
-                <Column field="observaciones" header="Observaciones" sortable style="min-width: 5rem"></Column>
-                <Column header="Estado" sortable style="min-width: 1rem" sortField="estado" :sortFunction="(a, b) => a.estado.localeCompare(b.estado)">
+                <Column field="pacienteNombre" sortable style="min-width: 5rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">Paciente</span>
+                    </template>
+                </Column>
+                <Column field="medicoNombre" sortable style="min-width: 5rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">Medico</span>
+                    </template>
+                </Column>
+                <Column field="observaciones" sortable style="min-width: 5rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">Observaciones</span>
+                    </template>
+                </Column>
+                <Column sortable style="min-width: 1rem" sortField="estado" :sortFunction="(a, b) => a.estado.localeCompare(b.estado)">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">Estado</span>
+                    </template>
                     <template #body="slotProps">
                         <Tag :value="slotProps.data.estado" :severity="getEstadoSeverity(slotProps.data.estado)" />
                     </template>

@@ -22,6 +22,7 @@ const API_CONFIG = {
         DETALLES_PROFORMA: '/api/detalles-proforma',
         COBRANZAS: '/api/cobranzas',
         CUENTAS: '/api/cuentas',
+        PROCEDIMIENTO: '/api/procedimientos',
         CATEGORIA_FINANCIERA: '/api/categorias'
     },
 

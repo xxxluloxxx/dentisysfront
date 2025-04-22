@@ -174,10 +174,11 @@ const toggleSort = () => {
                 scrollHeight="600px"
                 :loading="loading"
                 loadingIcon="pi pi-spin pi-spinner"
+                striped
+                class="p-datatable-striped hidden md:block"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
                 currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} productos"
-                class="hidden md:block"
             >
                 <template #header>
                     <div class="flex flex-col gap-y-4">
@@ -198,15 +199,33 @@ const toggleSort = () => {
                         </div>
                     </div>
                 </template>
-                <Column field="nombre" header="Nombre" sortable style="min-width: 10rem"></Column>
-                <Column field="precio" header="Precio" sortable style="min-width: 8rem">
+                <Column field="nombre" sortable style="min-width: 10rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">Nombre</span>
+                    </template>
+                </Column>
+                <Column field="precio" sortable style="min-width: 8rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">Precio</span>
+                    </template>
                     <template #body="slotProps">
                         {{ formatCurrency(slotProps.data.precio) }}
                     </template>
                 </Column>
-                <Column field="categoria" header="Categoria" sortable style="min-width: 10rem"></Column>
-                <Column field="descripcion" header="Descripcion" sortable style="min-width: 10rem"></Column>
+                <Column field="categoria" sortable style="min-width: 10rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">Categoria</span>
+                    </template>
+                </Column>
+                <Column field="descripcion" sortable style="min-width: 10rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">Descripcion</span>
+                    </template>
+                </Column>
                 <Column :exportable="false" style="min-width: 12rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold">Acciones</span>
+                    </template>
                     <template #body="slotProps">
                         <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editProduct(slotProps.data)" />
                         <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
