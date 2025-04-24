@@ -274,14 +274,18 @@ function exportCSV() {
 
                     <!-- Lista de pacientes en tarjetas -->
                     <div class="flex flex-col gap-4 w-full">
-                        <div v-for="paciente in filteredPacientes" :key="paciente.id" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 w-full">
+                        <div
+                            v-for="paciente in filteredPacientes"
+                            :key="paciente.id"
+                            class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 w-full cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            @click="editPaciente(paciente)"
+                        >
                             <div class="flex justify-between items-start mb-2">
                                 <div>
                                     <h3 class="text-lg font-semibold dark:text-white">{{ paciente.nombre }} {{ paciente.apellido }}</h3>
                                     <p class="text-sm text-gray-600 dark:text-gray-400">ID: {{ paciente.identificacion }}</p>
                                 </div>
                                 <div class="flex gap-2">
-                                    <Button icon="pi pi-pencil" outlined rounded class="p-2" @click="editPaciente(paciente)" />
                                     <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2" @click="confirmDeletePaciente(paciente)" />
                                 </div>
                             </div>
