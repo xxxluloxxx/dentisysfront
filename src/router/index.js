@@ -203,6 +203,11 @@ const router = createRouter({
                     path: '/pages/ficha-crear',
                     name: 'ficha-crear',
                     component: () => import('@/views/pages/FichaCrear.vue')
+                },
+                {
+                    path: '/pages/configuracion',
+                    name: 'configuracion',
+                    component: () => import('@/views/pages/ConfiguracionUsuario.vue')
                 }
             ]
         },

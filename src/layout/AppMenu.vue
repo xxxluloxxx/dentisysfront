@@ -66,11 +66,6 @@ const model = ref([
                 ]
             },
             {
-                label: 'Graficas',
-                icon: 'pi pi-fw pi-chart-bar',
-                to: '/pages/graficas'
-            },
-            {
                 label: 'Agenda',
                 icon: 'pi pi-fw pi-calendar',
                 items: [
@@ -96,6 +91,11 @@ const model = ref([
                 icon: 'pi pi-fw pi-tags',
                 to: '/pages/categorias-financieras'
             },
+            {
+                label: 'Configuración',
+                icon: 'pi pi-fw pi-cog',
+                to: '/pages/configuracion'
+            }
         ]
     }
 ]);
