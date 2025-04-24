@@ -24,7 +24,9 @@ const API_CONFIG = {
         CUENTAS: '/api/cuentas',
         PROCEDIMIENTO: '/api/procedimientos',
         CATEGORIA_FINANCIERA: '/api/categorias',
-        USUARIOS: '/api/usuarios'
+        USUARIOS: '/api/usuarios',
+        MENU1: '/api/menu/menu1',
+        MENU2: '/api/menu/menu2'
     },
 
     // Función helper para obtener la URL base según el ambiente

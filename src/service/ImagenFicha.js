@@ -35,5 +35,22 @@ export const ImagenFichaService = {
             }
             throw error;
         }
+    },
+
+    async delete(id) {
+        try {
+            await axios.delete(`${API_CONFIG.getUrl('IMAGENES_FICHA')}/${id}`);
+            console.log('✅ Imagen de ficha eliminada exitosamente');
+            return true;
+        } catch (error) {
+            console.error('❌ Error al eliminar la imagen de ficha:', error.message);
+            if (error.response) {
+                console.error('📝 Detalles del error:', {
+                    status: error.response.status,
+                    data: error.response.data
+                });
+            }
+            throw error;
+        }
     }
 };

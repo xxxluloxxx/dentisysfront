@@ -1,5 +1,6 @@
 <script setup>
 import { FichaService } from '@/service/FichaMedica';
+import { ImagenFichaService } from '@/service/ImagenFicha';
 import { ProcedimientoService } from '@/service/ProcedimientoService';
 import Column from 'primevue/column';
 import DataTable from 'primevue/datatable';
@@ -19,10 +20,40 @@ const error = ref(null);
 const mostrarDialogoProcedimiento = ref(false);
 const mostrarDialogoConfirmacion = ref(false);
 const procedimientoAEliminar = ref(null);
+const imagenAEliminar = ref(null);
+const fileupload = ref(null);
 const nuevoProcedimiento = ref({
     procedimiento: '',
     observaciones: ''
 });
+const imagenesFicha = ref([]);
+const visible = ref(false);
+const imagenSeleccionada = ref(null);
+const mostrarDialogoImagen = ref(false);
+const nuevaImagen = ref({
+    nombre: '',
+    descripcion: '',
+    tipoImagen: 'radiografia',
+    imagenBase64: ''
+});
+
+const carouselResponsiveOptions = ref([
+    {
+        breakpoint: '1024px',
+        numVisible: 3,
+        numScroll: 3
+    },
+    {
+        breakpoint: '768px',
+        numVisible: 2,
+        numScroll: 2
+    },
+    {
+        breakpoint: '560px',
+        numVisible: 1,
+        numScroll: 1
+    }
+]);
 
 onMounted(async () => {
     try {
@@ -32,6 +63,22 @@ onMounted(async () => {
             router.push('/pages/fichasMedicas');
             return;
         }
+
+        ImagenFichaService.getAll()
+            .then((data) => {
+                imagenesFicha.value = data.map((imagen) => ({
+                    ...imagen,
+                    imagenBase64: imagen.imagen || imagen.imagenBase64
+                }));
+                toast.add({ severity: 'success', summary: 'Éxito', detail: 'Imágenes cargadas correctamente', life: 3000 });
+            })
+            .catch((error) => {
+                console.error('Error al cargar las imágenes:', error);
+                toast.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar las imágenes', life: 3000 });
+            });
+
+        console.log('🔄 Imágenes cargadas:');
+        console.log(imagenesFicha.value);
 
         const data = await FichaService.getById(fichaId);
 
@@ -403,25 +450,137 @@ const deleteServicio = async (procedimiento) => {
     mostrarDialogoConfirmacion.value = true;
 };
 
+const deleteImagen = async (imagen) => {
+    imagenAEliminar.value = imagen;
+    mostrarDialogoConfirmacion.value = true;
+};
+
 const confirmarEliminacion = async () => {
     try {
-        await ProcedimientoService.delete(procedimientoAEliminar.value.id);
-        procedimientos.value = await ProcedimientoService.getByFichaId(route.params.id);
+        if (imagenAEliminar.value) {
+            await ImagenFichaService.delete(imagenAEliminar.value.id);
+            // Actualizar la lista de imágenes
+            const data = await ImagenFichaService.getAll();
+            imagenesFicha.value = data.map((imagen) => ({
+                ...imagen,
+                imagenBase64: imagen.imagen || imagen.imagenBase64
+            }));
+            toast.add({
+                severity: 'success',
+                summary: 'Éxito',
+                detail: 'Imagen eliminada correctamente',
+                life: 3000
+            });
+        } else if (procedimientoAEliminar.value) {
+            await ProcedimientoService.delete(procedimientoAEliminar.value.id);
+            procedimientos.value = await ProcedimientoService.getByFichaId(route.params.id);
+            toast.add({
+                severity: 'success',
+                summary: 'Éxito',
+                detail: 'Procedimiento eliminado correctamente',
+                life: 3000
+            });
+        }
         mostrarDialogoConfirmacion.value = false;
+        imagenAEliminar.value = null;
         procedimientoAEliminar.value = null;
+    } catch (error) {
+        console.error('Error al eliminar:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Error al eliminar el elemento',
+            life: 3000
+        });
+    }
+};
+
+const mostrarImagen = (imagen) => {
+    imagenSeleccionada.value = imagen;
+    visible.value = true;
+};
+
+const onUpload = (event) => {
+    console.log('Evento de upload recibido:', event);
+    if (event.files && event.files.length > 0) {
+        const file = event.files[0];
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            const base64 = e.target.result;
+            console.log('Base64 de la imagen:', base64);
+            nuevaImagen.value.imagenBase64 = base64;
+            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Imagen convertida a base64', life: 3000 });
+        };
+
+        reader.onerror = (error) => {
+            console.error('Error al leer el archivo:', error);
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al procesar la imagen', life: 3000 });
+        };
+
+        reader.readAsDataURL(file);
+    } else {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'No se seleccionó ningún archivo', life: 3000 });
+    }
+};
+
+const upload = async () => {
+    console.log('Botón upload presionado');
+    if (!nuevaImagen.value.nombre || !nuevaImagen.value.descripcion || !nuevaImagen.value.imagenBase64) {
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Por favor complete todos los campos requeridos',
+            life: 3000
+        });
+        return;
+    }
+
+    try {
+        console.log('Iniciando upload...');
+
+        // Crear el objeto con el formato requerido
+        const imagenData = {
+            fichaId: route.params.id,
+            nombre: nuevaImagen.value.nombre,
+            tipoImagen: nuevaImagen.value.tipoImagen,
+            descripcion: nuevaImagen.value.descripcion,
+            imagenBase64: nuevaImagen.value.imagenBase64
+        };
+
+        // Enviar al servicio
+        await ImagenFichaService.create(imagenData);
+
+        // Actualizar la lista de imágenes
+        const data = await ImagenFichaService.getAll();
+        imagenesFicha.value = data.map((imagen) => ({
+            ...imagen,
+            imagenBase64: imagen.imagen || imagen.imagenBase64
+        }));
+
+        // Limpiar el formulario
+        nuevaImagen.value = {
+            nombre: '',
+            descripcion: '',
+            tipoImagen: 'radiografia',
+            imagenBase64: ''
+        };
+
+        // Cerrar el diálogo
+        mostrarDialogoImagen.value = false;
 
         toast.add({
             severity: 'success',
             summary: 'Éxito',
-            detail: 'Procedimiento eliminado correctamente',
+            detail: 'Imagen subida correctamente',
             life: 3000
         });
     } catch (error) {
-        console.error('Error al eliminar el procedimiento:', error);
+        console.error('Error al subir la imagen:', error);
         toast.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Error al eliminar el procedimiento',
+            detail: 'Error al subir la imagen',
             life: 3000
         });
     }
@@ -721,7 +880,7 @@ const confirmarEliminacion = async () => {
                             <Dialog v-model:visible="mostrarDialogoConfirmacion" header="Confirmar Eliminación" :modal="true" :style="{ width: '30vw' }">
                                 <div class="confirmation-content">
                                     <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                                    <span>¿Está seguro de que desea eliminar este procedimiento?</span>
+                                    <span>¿Está seguro de que desea eliminar {{ imagenAEliminar ? 'esta imagen' : 'este procedimiento' }}?</span>
                                 </div>
                                 <template #footer>
                                     <Button label="No" icon="pi pi-times" class="p-button-text" @click="mostrarDialogoConfirmacion = false" />
@@ -732,8 +891,24 @@ const confirmarEliminacion = async () => {
                             <!-- Contenido de Imágenes -->
                             <div v-if="activeTab === '2'" class="col-12">
                                 <div class="card">
-                                    <h5>Galería de Imágenes</h5>
-                                    <p>Contenido de imágenes pendiente de implementar</p>
+                                    <div class="flex align-items-center gap-3 mb-4">
+                                        <Button icon="pi pi-plus" class="!w-2rem !h-2rem" rounded @click="mostrarDialogoImagen = true" />
+                                        <div class="font-semibold text-xl">Carousel de Imágenes de Ficha</div>
+                                    </div>
+                                    <div class="relative">
+                                        <Carousel :value="imagenesFicha" :numVisible="3" :numScroll="3" :responsiveOptions="carouselResponsiveOptions">
+                                            <template #item="slotProps">
+                                                <div class="border border-surface-200 dark:border-surface-700 rounded m-2 p-4">
+                                                    <div class="mb-4">
+                                                        <div class="relative mx-auto">
+                                                            <img :src="slotProps.data.imagenBase64" :alt="'Imagen de ficha'" class="w-full rounded cursor-pointer hover:opacity-80 transition-opacity" @click="mostrarImagen(slotProps.data)" />
+                                                            <Button icon="pi pi-trash" class="p-button-danger p-button-rounded p-button-text absolute top-0 right-0 m-2" @click.stop="deleteImagen(slotProps.data)" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </Carousel>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -742,6 +917,41 @@ const confirmarEliminacion = async () => {
             </div>
         </div>
     </Fluid>
+
+    <!-- Diálogo para mostrar la imagen seleccionada -->
+    <Dialog v-model:visible="visible" modal :style="{ width: '90vw', maxWidth: '800px' }">
+        <div class="image-container">
+            <img v-if="imagenSeleccionada" :src="imagenSeleccionada.imagenBase64" :alt="'Imagen de ficha'" class="w-full rounded" />
+        </div>
+    </Dialog>
+
+    <!-- Diálogo para agregar nueva imagen -->
+    <Dialog v-model:visible="mostrarDialogoImagen" header="Agregar Nueva Imagen" :modal="true" :style="{ width: '50vw' }">
+        <div class="grid">
+            <div class="col-12">
+                <div class="field mb-4">
+                    <label for="nombreImagen" class="font-bold block mb-2">Nombre</label>
+                    <InputText id="nombreImagen" v-model="nuevaImagen.nombre" class="w-full" />
+                </div>
+                <div class="field mb-4">
+                    <label for="descripcionImagen" class="font-bold block mb-2">Descripción</label>
+                    <Textarea id="descripcionImagen" v-model="nuevaImagen.descripcion" rows="3" class="w-full" />
+                </div>
+                <div class="field mb-4">
+                    <label for="tipoImagen" class="font-bold block mb-2">Tipo de Imagen</label>
+                    <Dropdown id="tipoImagen" v-model="nuevaImagen.tipoImagen" :options="['radiografia', 'foto', 'otro']" class="w-full" />
+                </div>
+                <div class="field mb-4">
+                    <label class="font-bold block mb-2">Imagen</label>
+                    <FileUpload ref="fileupload" mode="basic" name="demo[]" accept="image/*" :maxFileSize="1000000" @select="onUpload" :auto="false" />
+                </div>
+            </div>
+        </div>
+        <template #footer>
+            <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="mostrarDialogoImagen = false" />
+            <Button label="Guardar" icon="pi pi-check" @click="upload" />
+        </template>
+    </Dialog>
 </template>
 
 <style scoped>

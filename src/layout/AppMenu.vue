@@ -1,7 +1,43 @@
 <script setup>
-import { ref } from 'vue';
+import { MenuService } from '@/service/MenuService';
+import { ref, onMounted } from 'vue';
 
 import AppMenuItem from './AppMenuItem.vue';
+
+const menu = ref();
+
+const convertMenuFormat = (menuData) => {
+    if (!menuData || !menuData.menu) return [];
+    return menuData.menu;
+};
+
+onMounted(() => {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    const rolId = userData.rolId;
+
+    if (rolId === 1) {
+        MenuService.getAll1()
+            .then((data) => {
+                menu.value = convertMenuFormat(data);
+                console.log('🚀 Menú cargado2:', menu.value);
+            })
+            .catch((error) => {
+                console.error('Error al cargar el menú 1:', error);
+            });
+    } else if (rolId === 2) {
+        MenuService.getAll2()
+            .then((data) => {
+                menu.value = convertMenuFormat(data);
+            })
+            .catch((error) => {
+                console.error('Error al cargar el menú 2:', error);
+            });
+    }
+    console.log('🚀 Menú cargado:', menu.value);
+});
+
+const model1 = ref([]);
+model1.value = convertMenuFormat(menu.value);
 
 const model = ref([
     {
@@ -103,7 +139,7 @@ const model = ref([
 
 <template>
     <ul class="layout-menu">
-        <template v-for="(item, i) in model" :key="item">
+        <template v-for="(item, i) in menu" :key="item">
             <app-menu-item v-if="!item.separator" :item="item" :index="i"></app-menu-item>
             <li v-if="item.separator" class="menu-separator"></li>
         </template>
