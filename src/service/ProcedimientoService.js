@@ -2,7 +2,6 @@ import axios from 'axios';
 import API_CONFIG from '../config/api.config';
 
 export const ProcedimientoService = {
-
     async create(procedimientoData) {
         try {
             const response = await axios.post(API_CONFIG.getUrl('PROCEDIMIENTO'), procedimientoData);
@@ -41,6 +40,24 @@ export const ProcedimientoService = {
             return response.data;
         } catch (error) {
             console.error('❌ Error al obtener el procedimiento:', error.message);
+            if (error.response) {
+                console.error('📝 Detalles del error:', {
+                    status: error.response.status,
+                    data: error.response.data
+                });
+            }
+            throw error;
+        }
+    },
+
+    async getByFichaId(fichaId) {
+        console.log(`🚀 Obteniendo procedimientos para la ficha: ${fichaId}`);
+        try {
+            const response = await axios.get(API_CONFIG.getUrl('PROCEDIMIENTO') + '/ficha/' + fichaId);
+            console.log('✅ Procedimientos obtenidos exitosamente:', response.data);
+            return response.data;
+        } catch (error) {
+            console.error('❌ Error al obtener los procedimientos de la ficha:', error.message);
             if (error.response) {
                 console.error('📝 Detalles del error:', {
                     status: error.response.status,
