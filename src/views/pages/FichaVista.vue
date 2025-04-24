@@ -23,8 +23,6 @@ onMounted(async () => {
         }
 
         const data = await FichaService.getById(fichaId);
-        console.log('🔄 Ficha obtenida:');
-        console.log(data);
 
         if (!data || !data.paciente) {
             throw new Error('No se encontró información del paciente');
@@ -231,69 +229,95 @@ const toggleExamenEstomatognatico = () => {
     });
 };
 
-const guardarFicha = () => {
+const actualizarFicha = async () => {
     // Crear objeto con los datos formateados
     const fichaData = {
-        datosFicha: {
-            motivoConsulta: formData.motivoConsulta,
-            descripcion: formData.problemaActual
+        paciente: {
+            id: paciente.value.id
         },
-        antecedentes: formData.antecedentes.map((antecedente) => ({
-            nombre: antecedente.nombre,
-            descripcion: antecedente.descripcion,
-            check: antecedente.check
-        })),
-        signosVitales: formData.signosVitales.map((signo) => ({
-            nombre: signo.signo,
-            valor: signo.valor
-        })),
-        examenEstomatognatico: formData.examenEstomatognatico.map((examen) => ({
-            nombre: examen.examen,
-            descripcion: examen.descripcion,
-            tiene: examen.tiene
-        })),
-        odontograma: {
-            superiorDerecho: formData.odontograma.superiorDerecho
-                .filter((diente) => diente.descripcion)
-                .map((diente) => ({
-                    diente: diente.diente,
-                    descripcion: diente.descripcion
-                })),
-            superiorIzquierdo: formData.odontograma.superiorIzquierdo
-                .filter((diente) => diente.descripcion)
-                .map((diente) => ({
-                    diente: diente.diente,
-                    descripcion: diente.descripcion
-                })),
-            inferiorDerecho: formData.odontograma.inferiorDerecho
-                .filter((diente) => diente.descripcion)
-                .map((diente) => ({
-                    diente: diente.diente,
-                    descripcion: diente.descripcion
-                })),
-            inferiorIzquierdo: formData.odontograma.inferiorIzquierdo
-                .filter((diente) => diente.descripcion)
-                .map((diente) => ({
-                    diente: diente.diente,
-                    descripcion: diente.descripcion
-                }))
+        medico: {
+            id: JSON.parse(localStorage.getItem('userData'))?.id
         },
-        higieneOral: formData.higieneOral.map((item, index) => ({
-            sextante: index + 1,
-            puntos: {
-                p1: { valor: item.p1, marcado: item.check1 },
-                p2: { valor: item.p2, marcado: item.check2 },
-                p3: { valor: item.p3, marcado: item.check3 }
+        datos: {
+            datosFicha: {
+                motivoConsulta: formData.motivoConsulta,
+                descripcion: formData.problemaActual
             },
-            placa: item.placa,
-            calculo: item.calculo,
-            gingivitis: item.gingivitis
-        })),
-        totales: formData.totales
+            antecedentes: formData.antecedentes.map((antecedente) => ({
+                nombre: antecedente.nombre,
+                descripcion: antecedente.descripcion,
+                check: antecedente.check
+            })),
+            signosVitales: formData.signosVitales.map((signo) => ({
+                nombre: signo.signo,
+                valor: signo.valor
+            })),
+            examenEstomatognatico: formData.examenEstomatognatico.map((examen) => ({
+                nombre: examen.examen,
+                descripcion: examen.descripcion,
+                tiene: examen.tiene
+            })),
+            odontograma: {
+                superiorDerecho: formData.odontograma.superiorDerecho
+                    .filter((diente) => diente.descripcion)
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        descripcion: diente.descripcion
+                    })),
+                superiorIzquierdo: formData.odontograma.superiorIzquierdo
+                    .filter((diente) => diente.descripcion)
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        descripcion: diente.descripcion
+                    })),
+                inferiorDerecho: formData.odontograma.inferiorDerecho
+                    .filter((diente) => diente.descripcion)
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        descripcion: diente.descripcion
+                    })),
+                inferiorIzquierdo: formData.odontograma.inferiorIzquierdo
+                    .filter((diente) => diente.descripcion)
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        descripcion: diente.descripcion
+                    }))
+            },
+            higieneOral: formData.higieneOral.map((item, index) => ({
+                sextante: index + 1,
+                puntos: {
+                    p1: { valor: item.p1, marcado: item.check1 },
+                    p2: { valor: item.p2, marcado: item.check2 },
+                    p3: { valor: item.p3, marcado: item.check3 }
+                },
+                placa: item.placa,
+                calculo: item.calculo,
+                gingivitis: item.gingivitis
+            })),
+            totales: formData.totales
+        }
     };
 
     // Imprimir el objeto JSON completo
-    console.log('Datos de la ficha:', JSON.stringify(fichaData, null, 2));
+    //console.log('Datos de la ficha:', JSON.stringify(fichaData, null, 2));
+
+    try {
+        await FichaService.update(route.params.id, fichaData);
+        toast.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: 'Ficha médica actualizada correctamente',
+            life: 3000
+        });
+    } catch (error) {
+        console.error('Error al actualizar la ficha:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Error al actualizar la ficha médica',
+            life: 3000
+        });
+    }
 };
 
 const cancelar = () => {
@@ -534,7 +558,7 @@ const cancelar = () => {
                             <div class="card">
                                 <div class="flex justify-content-end gap-2">
                                     <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="cancelar" />
-                                    <Button label="Guardar" icon="pi pi-check" @click="guardarFicha" />
+                                    <Button label="Actualizar" icon="pi pi-check" @click="actualizarFicha" />
                                 </div>
                             </div>
                         </div>

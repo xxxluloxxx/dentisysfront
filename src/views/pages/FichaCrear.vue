@@ -5,6 +5,9 @@ import { ProcedimientoService } from '@/service/ProcedimientoService';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const procedimiento = ref(null);
 const opPaciente = ref(null);
@@ -52,10 +55,9 @@ async function onPacienteSelect(event) {
                 detail: 'Este paciente ya tiene una ficha médica creada',
                 life: 3000
             });
+            opPaciente.value.hide();
             return;
         }
-
-        opPaciente.value.hide();
         idPaciente.value = event.data.id;
         nombrePaciente.value = event.data.nombreCompleto;
         identificacionPaciente.value = event.data.identificacion;
@@ -206,7 +208,7 @@ const toggleExamenEstomatognatico = () => {
     });
 };
 
-const guardarFicha = () => {
+const guardarFicha = async () => {
     // Crear objeto con los datos formateados
     const fichaData = {
         paciente: {
@@ -275,16 +277,28 @@ const guardarFicha = () => {
         }
     };
 
-    // Imprimir el objeto JSON completo
-    console.log('Datos de la ficha:', JSON.stringify(fichaData, null, 2));
-
-    FichaService.create(fichaData);
-    // Redirigir después de guardar
-    //router.push('/fichas');
+    try {
+        await FichaService.create(fichaData);
+        toast.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: 'Ficha médica guardada correctamente',
+            life: 3000
+        });
+        router.push('/pages/fichasMedicas');
+    } catch (error) {
+        console.error('Error al guardar la ficha médica:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Error al guardar la ficha médica',
+            life: 3000
+        });
+    }
 };
 
 const cancelar = () => {
-    //router.push('/fichas');
+    router.push('/pages/fichasMedicas');
 };
 </script>
 <template>

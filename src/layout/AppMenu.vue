@@ -43,11 +43,6 @@ const model = ref([
                         to: '/pages/fichasMedicas'
                     },
                     {
-                        label: 'Crear ficha medica',
-                        icon: 'pi pi-fw pi-plus-circle',
-                        to: '/pages/fichaMedica'
-                    },
-                    {
                         label: 'Ficha Crear',
                         icon: 'pi pi-fw pi-file-edit',
                         to: '/pages/ficha-crear'

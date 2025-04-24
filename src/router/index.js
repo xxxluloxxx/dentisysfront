@@ -140,11 +140,6 @@ const router = createRouter({
                     component: () => import('@/views/pages/MedicoCrud.vue')
                 },
                 {
-                    path: '/pages/fichaMedica',
-                    name: 'fichaMedica',
-                    component: () => import('@/views/pages/FichaMedicaCrear.vue')
-                },
-                {
                     path: '/pages/fichasMedicas',
                     name: 'fichasMedicas',
                     component: () => import('@/views/pages/FichaMedicaCrud.vue')
