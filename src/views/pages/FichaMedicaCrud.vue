@@ -1,5 +1,5 @@
 <script setup>
-import { FichaOdontologicaService } from '@/service/FichaMedica';
+import { FichaService } from '@/service/FichaMedica';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
@@ -81,7 +81,7 @@ const filteredFichas = computed(() => {
 
 onMounted(() => {
     loading.value = true;
-    FichaOdontologicaService.getAll()
+    FichaService.getAll()
         .then((data) => (fichas.value = data))
         .catch((error) => {
             console.error('Error al cargar los productos:', error);
@@ -97,20 +97,20 @@ function hideDialog() {
     submitted.value = false;
 }
 
-function verFicha(prod) {
+function verFicha(fichaData) {
     router.push({
-        name: 'ficha-medica-vista',
-        params: { id: prod.id }
+        name: 'ficha-vista',
+        params: { id: fichaData.id }
     });
 }
 
-function confirmDeleteFicha(prod) {
-    ficha.value = prod;
+function confirmDeleteFicha(fichaData) {
+    ficha.value = fichaData;
     deleteFichaDialog.value = true;
 }
 
 function deleteFicha() {
-    FichaOdontologicaService.deleteProduct(ficha.value.id)
+    FichaService.deleteProduct(ficha.value.id)
         .then(() => {
             fichas.value = fichas.value.filter((val) => val.id !== ficha.value.id);
             deleteFichaDialog.value = false;

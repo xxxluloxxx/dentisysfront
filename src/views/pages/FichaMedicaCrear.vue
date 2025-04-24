@@ -1,6 +1,6 @@
 <script setup>
 // Importaciones de servicios y componentes necesarios
-import { FichaOdontologicaService } from '@/service/FichaMedica';
+import { FichaService } from '@/service/FichaMedica';
 import { MedicoService } from '@/service/MedicoService';
 import { PacienteService } from '@/service/PacienteService';
 import { FilterMatchMode } from '@primevue/core/api';
@@ -68,7 +68,7 @@ const guardarFicha = async () => {
             estado: 'ACTIVA'
         };
 
-        await FichaOdontologicaService.create(fichaData);
+        await FichaService.create(fichaData);
 
         toast.add({
             severity: 'success',

@@ -15,9 +15,9 @@ export const PacienteService = {
         }
     },
 
-    async create(clienteData) {
+    async create(pacienteData) {
         try {
-            const response = await axios.post(API_CONFIG.getUrl('PACIENTES'), clienteData);
+            const response = await axios.post(API_CONFIG.getUrl('PACIENTES'), pacienteData);
             return response.data;
         } catch (error) {
             console.error('Error al crear el pacientes:', error);
@@ -25,9 +25,9 @@ export const PacienteService = {
         }
     },
 
-    async update(id, clienteData) {
+    async update(id, pacienteData) {
         try {
-            const response = await axios.put(API_CONFIG.getUrl('PACIENTES') + '/' + id, clienteData);
+            const response = await axios.put(API_CONFIG.getUrl('PACIENTES') + '/' + id, pacienteData);
             return response.data;
         } catch (error) {
             console.error('Error al actualizar el pacientes:', error);

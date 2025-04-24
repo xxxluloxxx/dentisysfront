@@ -1,6 +1,6 @@
 <script setup>
 // Importaciones de servicios y componentes necesarios
-import { FichaOdontologicaService } from '@/service/FichaMedica';
+import { FichaService } from '@/service/FichaMedica';
 import { MedicoService } from '@/service/MedicoService';
 import { PacienteService } from '@/service/PacienteService';
 import { FilterMatchMode } from '@primevue/core/api';
@@ -13,8 +13,6 @@ import { ImagenFichaService } from '@/service/ImagenFicha';
 import Button from 'primevue/button';
 import Carousel from 'primevue/carousel';
 import Dialog from 'primevue/dialog';
-import FileUpload from 'primevue/fileupload';
-import Toast from 'primevue/toast';
 // Referencias para los componentes de la interfaz
 const opPaciente = ref(null);
 const opMedico = ref(null);
@@ -91,7 +89,7 @@ const guardarFicha = async () => {
             estado: 'ACTIVA'
         };
 
-        await FichaOdontologicaService.create(fichaData);
+        await FichaService.create(fichaData);
 
         toast.add({
             severity: 'success',
@@ -137,7 +135,7 @@ onMounted(async () => {
         const fichaId = route.params.id;
 
         // Cargar los datos de la ficha
-        const fichaData = await FichaOdontologicaService.getById(fichaId);
+        const fichaData = await FichaService.getById(fichaId);
 
         // Asignar los datos a las variables reactivas
         idPaciente.value = fichaData.paciente.id;

@@ -231,7 +231,7 @@ function toggleDataTableProductos(event) {
 function onPacienteSelect(event) {
     opPaciente.value.hide();
     idPaciente.value = event.data.id;
-    nombrePaciente.value = event.data.nombre;
+    nombrePaciente.value = event.data.nombreCompleto;
     apellidoPaciente.value = event.data.apellido;
     identificacionPaciente.value = event.data.identificacion;
     fechaNacimientoPaciente.value = event.data.fechaNacimiento;
@@ -242,7 +242,7 @@ function onMedicoSelect(event) {
     opMedico.value.hide();
     idMedico.value = event.data.id;
     especialidadMedico.value = event.data.especialidad;
-    nombreMedico.value = event.data.nombre;
+    nombreMedico.value = event.data.nombreCompleto;
     apellidoMedico.value = event.data.apellido;
 }
 
@@ -335,24 +335,36 @@ function deleteServicio(servicio) {
                             <template #header>
                                 <div class="flex flex-wrap gap-2 items-center justify-between"></div>
                             </template>
-                            <Column field="nombre" header="Producto" sortable>
+                            <Column field="nombre" sortable>
                                 <template #body="slotProps">
                                     <div class="font-semibold">{{ slotProps.data.nombre }}</div>
                                 </template>
+                                <template #header>
+                                    <span class="text-primary-600 dark:text-primary-400 font-bold">Producto</span>
+                                </template>
                             </Column>
-                            <Column field="precio" header="Precio" sortable>
+                            <Column field="precio" sortable>
                                 <template #body="slotProps">
                                     <div class="text-primary font-semibold">{{ formatCurrency(slotProps.data.precio) }}</div>
                                 </template>
+                                <template #header>
+                                    <span class="text-primary-600 dark:text-primary-400 font-bold">Precio</span>
+                                </template>
                             </Column>
-                            <Column header="Cantidad">
+                            <Column>
                                 <template #body="slotProps">
                                     <InputNumber v-model="slotProps.data.cantidad" :min="1" :max="99" class="w-full md:w-auto" size="small" @update:modelValue="(val) => actualizarCantidad(slotProps.data, val)" />
                                 </template>
+                                <template #header>
+                                    <span class="text-primary-600 dark:text-primary-400 font-bold">Cantidad</span>
+                                </template>
                             </Column>
-                            <Column header="Subtotal">
+                            <Column>
                                 <template #body="slotProps">
                                     <div class="text-primary font-semibold">{{ formatCurrency(slotProps.data.subtotal) }}</div>
+                                </template>
+                                <template #header>
+                                    <span class="text-primary-600 dark:text-primary-400 font-bold">Subtotal</span>
                                 </template>
                             </Column>
                             <Column :exportable="false">
@@ -409,9 +421,7 @@ function deleteServicio(servicio) {
                         </div>
                     </template>
                     <Column field="identificacion" header="Identificación" sortable style="min-width: 12rem"></Column>
-                    <Column field="nombre" header="Nombre" sortable style="min-width: 12rem">
-                        <template #body="slotProps"> {{ slotProps.data.nombre }} {{ slotProps.data.apellido }} </template>
-                    </Column>
+                    <Column field="nombreCompleto" header="Nombre" sortable style="min-width: 12rem"></Column>
                 </DataTable>
             </Popover>
 
@@ -429,9 +439,7 @@ function deleteServicio(servicio) {
                         </div>
                     </template>
                     <Column field="especialidad" header="Especialidad" sortable style="min-width: 12rem"></Column>
-                    <Column field="nombre" header="Nombre" sortable style="min-width: 12rem">
-                        <template #body="slotProps"> {{ slotProps.data.nombre }} {{ slotProps.data.apellido }} </template>
-                    </Column>
+                    <Column field="nombreCompleto" header="Nombre" sortable style="min-width: 12rem"></Column>
                 </DataTable>
             </Popover>
 

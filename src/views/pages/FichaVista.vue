@@ -1,76 +1,101 @@
 <script setup>
 import { FichaService } from '@/service/FichaMedica';
-import { PacienteService } from '@/service/PacienteService';
 import { ProcedimientoService } from '@/service/ProcedimientoService';
-import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const procedimiento = ref(null);
-const opPaciente = ref(null);
-const pacientes = ref();
+const route = useRoute();
+const router = useRouter();
 const toast = useToast();
+const loading = ref(true);
+const paciente = ref(null);
+const error = ref(null);
 
-// Variables reactivas para almacenar datos del paciente
-const idPaciente = ref('');
-const nombrePaciente = ref('');
-const identificacionPaciente = ref('');
-const fechaNacimientoPaciente = ref('');
-const generoPaciente = ref('');
-
-// Funciones para controlar la visualización de las tablas de selección
-function toggleDataTablePacientes(event) {
-    opPaciente.value.toggle(event);
-}
-
-// Configuración de filtros para las tablas de datos
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
-});
-
-onMounted(() => {
-    console.log('Iniciando la ficha, con el procedimiento id: ', 1);
-    procedimiento.value = ProcedimientoService.getById(1);
-    console.log(procedimiento.value);
-
-    PacienteService.getAll()
-        .then((data) => (pacientes.value = data))
-        .catch((error) => {
-            console.error('Error al cargar los pacientes:', error);
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al conectarse al servidor', life: 3000 });
-        });
-});
-
-// Manejadores de eventos para la selección de paciente y médico
-async function onPacienteSelect(event) {
+onMounted(async () => {
     try {
-        const fichasPaciente = await FichaService.getByPaciente(event.data.id);
-        if (fichasPaciente === true || (fichasPaciente && fichasPaciente.length > 0)) {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'Este paciente ya tiene una ficha médica creada',
-                life: 3000
-            });
+        const fichaId = route.params.id;
+        if (!fichaId) {
+            toast.add({ severity: 'error', summary: 'Error', detail: 'ID de proforma no válido', life: 3000 });
+            router.push('/pages/fichasMedicas');
             return;
         }
 
-        opPaciente.value.hide();
-        idPaciente.value = event.data.id;
-        nombrePaciente.value = event.data.nombreCompleto;
-        identificacionPaciente.value = event.data.identificacion;
-        fechaNacimientoPaciente.value = event.data.fechaNacimiento;
-        generoPaciente.value = event.data.genero;
+        const data = await FichaService.getById(fichaId);
+        console.log('🔄 Ficha obtenida:');
+        console.log(data);
+
+        if (!data || !data.paciente) {
+            throw new Error('No se encontró información del paciente');
+        }
+
+        paciente.value = data.paciente;
+        console.log('🔄 Paciente obtenido:');
+        console.log(paciente.value);
+
+        // Mapear los datos recibidos a las variables reactivas
+        formData.motivoConsulta = data.datos.datosFicha.motivoConsulta;
+        formData.problemaActual = data.datos.datosFicha.descripcion;
+
+        // Mapear signos vitales
+        formData.signosVitales = data.datos.signosVitales.map((signo) => ({
+            signo: signo.nombre,
+            valor: signo.valor
+        }));
+
+        // Mapear odontograma
+        formData.odontograma.superiorDerecho = data.datos.odontograma.superiorDerecho;
+        formData.odontograma.superiorIzquierdo = data.datos.odontograma.superiorIzquierdo;
+        formData.odontograma.inferiorDerecho = data.datos.odontograma.inferiorDerecho;
+        formData.odontograma.inferiorIzquierdo = data.datos.odontograma.inferiorIzquierdo;
+
+        // Mapear higiene oral
+        formData.higieneOral = data.datos.higieneOral.map((item) => ({
+            p1: item.puntos.p1.valor,
+            check1: item.puntos.p1.marcado,
+            p2: item.puntos.p2.valor,
+            check2: item.puntos.p2.marcado,
+            p3: item.puntos.p3.valor,
+            check3: item.puntos.p3.marcado,
+            placa: item.placa || '',
+            calculo: item.calculo || '',
+            gingivitis: item.gingivitis || ''
+        }));
+
+        // Actualizar totales
+        formData.totales = data.datos.totales;
+
+        // Mapear antecedentes
+        if (data.datos.antecedentes && data.datos.antecedentes.length > 0) {
+            formData.antecedentes = data.datos.antecedentes.map((antecedente) => ({
+                nombre: antecedente.nombre,
+                check: antecedente.check,
+                descripcion: antecedente.descripcion
+            }));
+        }
+
+        // Mapear examen estomatognático
+        if (data.datos.examenEstomatognatico && data.datos.examenEstomatognatico.length > 0) {
+            formData.examenEstomatognatico = data.datos.examenEstomatognatico.map((examen) => ({
+                examen: examen.nombre,
+                tiene: true,
+                descripcion: examen.descripcion
+            }));
+        }
     } catch (error) {
-        console.error('Error al verificar fichas del paciente:', error);
-        toast.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Error al verificar las fichas del paciente',
-            life: 3000
-        });
+        console.error('Error al cargar la proforma:', error);
+        error.value = error.message || 'Error al cargar la proforma';
+        toast.add({ severity: 'error', summary: 'Error', detail: error.value, life: 3000 });
+        router.push('/pages/fichasMedicas');
+    } finally {
+        loading.value = false;
     }
-}
+
+    console.log('Iniciando la ficha, con el procedimiento id: ', 1);
+    procedimiento.value = ProcedimientoService.getById(1);
+    console.log(procedimiento.value);
+});
 
 // Estado del formulario
 const formData = reactive({
@@ -209,82 +234,70 @@ const toggleExamenEstomatognatico = () => {
 const guardarFicha = () => {
     // Crear objeto con los datos formateados
     const fichaData = {
-        paciente: {
-            id: JSON.parse(localStorage.getItem('userData'))?.id
+        datosFicha: {
+            motivoConsulta: formData.motivoConsulta,
+            descripcion: formData.problemaActual
         },
-        medico: {
-            id: 1
+        antecedentes: formData.antecedentes.map((antecedente) => ({
+            nombre: antecedente.nombre,
+            descripcion: antecedente.descripcion,
+            check: antecedente.check
+        })),
+        signosVitales: formData.signosVitales.map((signo) => ({
+            nombre: signo.signo,
+            valor: signo.valor
+        })),
+        examenEstomatognatico: formData.examenEstomatognatico.map((examen) => ({
+            nombre: examen.examen,
+            descripcion: examen.descripcion,
+            tiene: examen.tiene
+        })),
+        odontograma: {
+            superiorDerecho: formData.odontograma.superiorDerecho
+                .filter((diente) => diente.descripcion)
+                .map((diente) => ({
+                    diente: diente.diente,
+                    descripcion: diente.descripcion
+                })),
+            superiorIzquierdo: formData.odontograma.superiorIzquierdo
+                .filter((diente) => diente.descripcion)
+                .map((diente) => ({
+                    diente: diente.diente,
+                    descripcion: diente.descripcion
+                })),
+            inferiorDerecho: formData.odontograma.inferiorDerecho
+                .filter((diente) => diente.descripcion)
+                .map((diente) => ({
+                    diente: diente.diente,
+                    descripcion: diente.descripcion
+                })),
+            inferiorIzquierdo: formData.odontograma.inferiorIzquierdo
+                .filter((diente) => diente.descripcion)
+                .map((diente) => ({
+                    diente: diente.diente,
+                    descripcion: diente.descripcion
+                }))
         },
-        datos: {
-            datosFicha: {
-                motivoConsulta: formData.motivoConsulta,
-                descripcion: formData.problemaActual
+        higieneOral: formData.higieneOral.map((item, index) => ({
+            sextante: index + 1,
+            puntos: {
+                p1: { valor: item.p1, marcado: item.check1 },
+                p2: { valor: item.p2, marcado: item.check2 },
+                p3: { valor: item.p3, marcado: item.check3 }
             },
-            antecedentes: formData.antecedentes.map((antecedente) => ({
-                nombre: antecedente.nombre,
-                descripcion: antecedente.descripcion,
-                check: antecedente.check
-            })),
-            signosVitales: formData.signosVitales.map((signo) => ({
-                nombre: signo.signo,
-                valor: signo.valor
-            })),
-            examenEstomatognatico: formData.examenEstomatognatico.map((examen) => ({
-                nombre: examen.examen,
-                descripcion: examen.descripcion,
-                tiene: examen.tiene
-            })),
-            odontograma: {
-                superiorDerecho: formData.odontograma.superiorDerecho
-                    .filter((diente) => diente.descripcion)
-                    .map((diente) => ({
-                        diente: diente.diente,
-                        descripcion: diente.descripcion
-                    })),
-                superiorIzquierdo: formData.odontograma.superiorIzquierdo
-                    .filter((diente) => diente.descripcion)
-                    .map((diente) => ({
-                        diente: diente.diente,
-                        descripcion: diente.descripcion
-                    })),
-                inferiorDerecho: formData.odontograma.inferiorDerecho
-                    .filter((diente) => diente.descripcion)
-                    .map((diente) => ({
-                        diente: diente.diente,
-                        descripcion: diente.descripcion
-                    })),
-                inferiorIzquierdo: formData.odontograma.inferiorIzquierdo
-                    .filter((diente) => diente.descripcion)
-                    .map((diente) => ({
-                        diente: diente.diente,
-                        descripcion: diente.descripcion
-                    }))
-            },
-            higieneOral: formData.higieneOral.map((item, index) => ({
-                sextante: index + 1,
-                puntos: {
-                    p1: { valor: item.p1, marcado: item.check1 },
-                    p2: { valor: item.p2, marcado: item.check2 },
-                    p3: { valor: item.p3, marcado: item.check3 }
-                },
-                placa: item.placa,
-                calculo: item.calculo,
-                gingivitis: item.gingivitis
-            })),
-            totales: formData.totales
-        }
+            placa: item.placa,
+            calculo: item.calculo,
+            gingivitis: item.gingivitis
+        })),
+        totales: formData.totales
     };
 
     // Imprimir el objeto JSON completo
     console.log('Datos de la ficha:', JSON.stringify(fichaData, null, 2));
-
-    FichaService.create(fichaData);
-    // Redirigir después de guardar
-    //router.push('/fichas');
 };
 
 const cancelar = () => {
-    //router.push('/fichas');
+    router.push('/pages/fichasMedicas');
 };
 </script>
 <template>
@@ -292,63 +305,25 @@ const cancelar = () => {
         <div class="grid">
             <div class="col-12">
                 <div class="card">
-                    <h5>Crear Nueva Ficha</h5>
-                    <div class="grid">
-                        <div class="font-semibold text-xl mb-4">Datos del paciente</div>
-                        <div class="flex flex-wrap gap-4">
-                            <div class="flex flex-col grow basis-0 gap-2">
-                                <label for="identificacion">Cedula</label>
-                                <InputText id="identificacion" v-model="identificacionPaciente" type="text" :disabled="true" />
-                            </div>
-                            <div class="flex flex-col grow basis-0 gap-2">
-                                <label for="nombre">Nombre</label>
-                                <InputText id="nombre" v-model="nombrePaciente" type="text" :disabled="true" />
-                            </div>
-                            <div class="flex flex-col grow basis-0 gap-2">
-                                <label for="generoPaciente">Genero</label>
-                                <InputText id="generoPaciente" v-model="generoPaciente" type="text" :disabled="true" />
-                            </div>
-                            <div class="flex flex-col grow basis-0 gap-2">
-                                <label for="fechaNacimientoPaciente">Fecha Nacimiento</label>
-                                <InputText id="fechaNacimientoPaciente" v-model="fechaNacimientoPaciente" type="text" :disabled="true" />
-                            </div>
-                            <div class="flex flex-col grow basis-0 gap-2">
-                                <label>&nbsp;</label>
-                                <div class="flex gap-2">
-                                    <Button type="button" label="Pacientes" icon="pi pi-search" @click="toggleDataTablePacientes" class="w-full" />
-                                    <Popover ref="opPaciente" id="overlay_panel" style="width: 450px">
-                                        <DataTable :value="pacientes" selectionMode="single" :paginator="true" :rows="5" @row-select="onPacienteSelect" :filters="filters">
-                                            <template #header>
-                                                <div class="flex flex-wrap gap-2 items-center justify-between">
-                                                    <h4 class="m-0">Pacientes</h4>
-                                                    <IconField>
-                                                        <InputIcon>
-                                                            <i class="pi pi-search" />
-                                                        </InputIcon>
-                                                        <InputText v-model="filters['global'].value" placeholder="Buscar..." />
-                                                    </IconField>
-                                                </div>
-                                            </template>
-                                            <Column field="identificacion" header="Identificacion" sortable style="min-width: 12rem"></Column>
-                                            <Column field="nombreCompleto" header="Nombre" sortable style="min-width: 12rem"></Column>
-                                        </DataTable>
-                                    </Popover>
-                                </div>
-                            </div>
-                        </div>
+                    <div v-if="loading" class="flex justify-content-center">
+                        <ProgressSpinner />
                     </div>
-                </div>
-                <div class="card">
-                    <div class="grid">
-                        <div class="col-12 md:col-6">
-                            <div class="card">
-                                <div class="field mb-4">
-                                    <label for="motivoConsulta" class="font-bold block mb-2">Motivo de la consulta</label>
-                                    <InputText id="motivoConsulta" v-model="formData.motivoConsulta" class="w-full" />
-                                </div>
-                                <div class="field mb-4">
-                                    <label for="problemaActual" class="font-bold block mb-2">Enfermedad o problema actual</label>
-                                    <Textarea id="problemaActual" v-model="formData.problemaActual" rows="3" class="w-full" />
+                    <div v-else-if="error" class="flex justify-content-center">
+                        <div class="text-red-500">{{ error }}</div>
+                    </div>
+                    <div v-else>
+                        <h5>Ficha de {{ paciente?.nombre }} {{ paciente?.apellido }}</h5>
+                        <div class="grid">
+                            <div class="col-12 md:col-6">
+                                <div class="card">
+                                    <div class="field mb-4">
+                                        <label for="motivoConsulta" class="font-bold block mb-2">Motivo de la consulta</label>
+                                        <InputText id="motivoConsulta" v-model="formData.motivoConsulta" class="w-full" />
+                                    </div>
+                                    <div class="field mb-4">
+                                        <label for="problemaActual" class="font-bold block mb-2">Enfermedad o problema actual</label>
+                                        <Textarea id="problemaActual" v-model="formData.problemaActual" rows="3" class="w-full" />
+                                    </div>
                                 </div>
                             </div>
                         </div>

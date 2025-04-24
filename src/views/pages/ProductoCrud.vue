@@ -199,29 +199,14 @@ const toggleSort = () => {
                         </div>
                     </div>
                 </template>
-                <Column field="nombre" sortable style="min-width: 10rem">
-                    <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">Nombre</span>
-                    </template>
-                </Column>
-                <Column field="precio" sortable style="min-width: 8rem">
-                    <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">Precio</span>
-                    </template>
+                <Column field="nombre" header="Nombre" sortable style="min-width: 10rem"></Column>
+                <Column field="precio" header="Precio" sortable style="min-width: 8rem">
                     <template #body="slotProps">
                         {{ formatCurrency(slotProps.data.precio) }}
                     </template>
                 </Column>
-                <Column field="categoria" sortable style="min-width: 10rem">
-                    <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">Categoria</span>
-                    </template>
-                </Column>
-                <Column field="descripcion" sortable style="min-width: 10rem">
-                    <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">Descripcion</span>
-                    </template>
-                </Column>
+                <Column field="categoria" header="Categoria" sortable style="min-width: 10rem"> </Column>
+                <Column field="descripcion" header="Descripcion" sortable style="min-width: 10rem"></Column>
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #header>
                         <span class="text-primary-600 dark:text-primary-400 font-bold">Acciones</span>
@@ -333,3 +318,33 @@ const toggleSort = () => {
         </Dialog>
     </div>
 </template>
+
+<style scoped>
+/* Estilos personalizados para las filas alternadas de las tablas */
+:deep(.p-datatable-tbody > tr:nth-child(even)) {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+:deep(.p-datatable-tbody > tr:nth-child(odd)) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Estilo para resaltar la fila al pasar el cursor */
+:deep(.p-datatable-tbody > tr:hover) {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+    cursor: pointer;
+}
+
+/* Estilo para los encabezados de las tablas */
+:deep(.p-datatable .p-datatable-thead > tr > th) {
+    background-color: var(--primary-color);
+    color: var(--primary-color-text);
+    font-weight: bold;
+}
+
+/* Estilo para las celdas de las tablas */
+:deep(.p-datatable .p-datatable-tbody > tr > td) {
+    padding: 0.5rem;
+}
+</style>
+

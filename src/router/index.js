@@ -155,6 +155,11 @@ const router = createRouter({
                     component: () => import('@/views/pages/FichaMedicaVista.vue')
                 },
                 {
+                    path: '/pages/ficha-vista/:id',
+                    name: 'ficha-vista',
+                    component: () => import('@/views/pages/FichaVista.vue')
+                },
+                {
                     path: '/pages/proforma',
                     name: 'proforma',
                     component: () => import('@/views/pages/ProformaCrear.vue')

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import API_CONFIG from '../config/api.config';
 
-export const FichaOdontologicaService = {
+export const FichaService = {
     async getAll() {
         try {
             const response = await axios.get(API_CONFIG.getUrl('FICHAS_MEDICAS'));
