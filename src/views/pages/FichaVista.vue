@@ -507,19 +507,19 @@ const cancelar = () => {
                                     <div class="flex-1">
                                         <div class="p-3 surface-card border-round shadow-2">
                                             <div class="text-500 mb-2">Total Placa</div>
-                                            <div class="text-2xl font-bold text-900">{{ totales.placa }}</div>
+                                            <div class="text-2xl font-bold text-primary">{{ totales.placa }}</div>
                                         </div>
                                     </div>
                                     <div class="flex-1">
                                         <div class="p-3 surface-card border-round shadow-2">
                                             <div class="text-500 mb-2">Total Cálculo</div>
-                                            <div class="text-2xl font-bold text-900">{{ totales.calculo }}</div>
+                                            <div class="text-2xl font-bold text-primary">{{ totales.calculo }}</div>
                                         </div>
                                     </div>
                                     <div class="flex-1">
                                         <div class="p-3 surface-card border-round shadow-2">
                                             <div class="text-500 mb-2">Total Gingivitis</div>
-                                            <div class="text-2xl font-bold text-900">{{ totales.gingivitis }}</div>
+                                            <div class="text-2xl font-bold text-primary">{{ totales.gingivitis }}</div>
                                         </div>
                                     </div>
                                 </div>
