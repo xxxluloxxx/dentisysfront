@@ -10,7 +10,6 @@ const dialogoCuenta = ref(false);
 const dialogoEliminar = ref(false);
 const selectedCuentas = ref(null);
 const loading = ref(false);
-const globalFilter = ref(null);
 const fechaInicio = ref(null);
 const fechaFin = ref(null);
 const filtroSeleccionado = ref(null);
@@ -18,14 +17,16 @@ const opcionesFiltro = ref([
     { label: 'Todos', value: 'todos' },
     { label: 'Hoy', value: 'hoy' },
     { label: 'Esta semana', value: 'semana' },
-    { label: 'Este mes', value: 'mes' },
-    { label: 'Personalizado', value: 'personalizado' }
+    { label: 'Este mes', value: 'mes' }
 ]);
 const categorias = ref([
     { id: 1, nombre: 'Ingresos' },
     { id: 2, nombre: 'Gastos Operativos' },
     { id: 3, nombre: 'Gastos de Personal' }
 ]);
+const filters = ref({
+    global: { value: null, matchMode: 'contains' }
+});
 
 // Propiedades calculadas
 const cuentasFiltradas = computed(() => {
@@ -43,20 +44,14 @@ const cuentasFiltradas = computed(() => {
     const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     inicioMes.setHours(0, 0, 0, 0);
 
-    console.log('Fecha actual:', hoy.toISOString());
-    console.log('Filtro seleccionado:', filtroSeleccionado.value.value);
-
     return cuentas.value.filter((cuenta) => {
         // Aseguramos que la fecha se procese correctamente
         const [year, month, day] = cuenta.fechaMovimiento.split('-').map(Number);
         const fechaCuenta = new Date(year, month - 1, day);
         fechaCuenta.setHours(0, 0, 0, 0);
 
-        console.log('Fecha cuenta:', fechaCuenta.toISOString(), 'Descripción:', cuenta.descripcion);
-
         if (filtroSeleccionado.value.value === 'hoy') {
             const esHoy = fechaCuenta.getTime() === hoy.getTime();
-            console.log('¿Es hoy?:', esHoy, 'Fecha cuenta:', fechaCuenta.toISOString(), 'Fecha hoy:', hoy.toISOString());
             return esHoy;
         } else if (filtroSeleccionado.value.value === 'semana') {
             return fechaCuenta >= inicioSemana && fechaCuenta <= hoy;
@@ -249,8 +244,7 @@ const openNewDialog = () => {
         categoriaId: null,
         fechaMovimiento: new Date(),
         monto: 0,
-        descripcion: '',
-        estado: true
+        descripcion: ''
     };
     dialogoCuenta.value = true;
 };
@@ -266,12 +260,21 @@ const cerrarDialogo = () => {
 };
 
 const guardarCuenta = async () => {
-    // Aquí iría la lógica para guardar la cuenta
-    // Por ahora solo cerramos el diálogo
-    dialogoCuenta.value = false;
-    // En un caso real, llamaríamos a un método del servicio para guardar
-    // await CuentasService.saveCuenta(cuenta.value);
-    // fetchCuentas();
+    try {
+        const cuentaData = {
+            descripcion: cuenta.value.descripcion,
+            monto: cuenta.value.monto,
+            fechaMovimiento: cuenta.value.fechaMovimiento,
+            categoriaId: cuenta.value.categoriaId,
+            cobranzaId: null // Valor fijo por ahora
+        };
+
+        await CuentasService.create(cuentaData);
+        await fetchCuentas(); // Recargar la lista de cuentas
+        dialogoCuenta.value = false;
+    } catch (error) {
+        console.error('Error al guardar la cuenta:', error);
+    }
 };
 
 const confirmarEliminar = (cuentaItem) => {
@@ -325,14 +328,7 @@ onMounted(() => {
                     <label class="mb-2 font-medium">Filtrar por:</label>
                     <Dropdown v-model="filtroSeleccionado" :options="opcionesFiltro" optionLabel="label" placeholder="Seleccionar filtro" class="w-full" />
                 </div>
-                <div class="flex flex-col">
-                    <label class="mb-2 font-medium">Fecha Inicio:</label>
-                    <Calendar v-model="fechaInicio" dateFormat="dd/mm/yy" placeholder="Seleccionar fecha" class="w-full" />
-                </div>
-                <div class="flex flex-col">
-                    <label class="mb-2 font-medium">Fecha Fin:</label>
-                    <Calendar v-model="fechaFin" dateFormat="dd/mm/yy" placeholder="Seleccionar fecha" class="w-full" />
-                </div>
+
                 <div class="flex flex-col justify-end">
                     <Button label="Aplicar Filtro" icon="pi pi-filter" class="p-button-primary w-full" @click="aplicarFiltro" />
                 </div>
@@ -383,17 +379,21 @@ onMounted(() => {
                 dataKey="id"
                 :loading="loading"
                 stripedRows
+                :filters="filters"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
                 :globalFilterFields="['descripcion', 'categoriaNombre']"
-                :globalFilter="globalFilter"
                 emptyMessage="No se encontraron registros"
+                :sortField="'fechaMovimiento'"
+                :sortOrder="-1"
+                :defaultSortOrder="1"
+                sortMode="single"
             >
                 <template #header>
                     <div class="flex justify-between items-center">
                         <span class="p-input-icon-left">
                             <i class="pi pi-search" />
-                            <InputText v-model="globalFilter" placeholder="Buscar..." class="p-inputtext-sm" />
+                            <InputText v-model="filters['global'].value" placeholder="Buscar..." class="p-inputtext-sm" />
                         </span>
                         <div class="flex gap-2">
                             <Button icon="pi pi-trash" class="p-button-danger p-button-sm" @click="confirmarEliminarSeleccionados" :disabled="!selectedCuentas || selectedCuentas.length === 0" />
@@ -418,16 +418,6 @@ onMounted(() => {
                 <Column field="monto" header="Monto" sortable>
                     <template #body="slotProps">
                         <span :class="slotProps.data.categoriaNombre === 'Ingresos' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"> ${{ slotProps.data.monto.toFixed(2) }} </span>
-                    </template>
-                </Column>
-                <Column field="estado" header="Estado" sortable>
-                    <template #body="slotProps">
-                        <span
-                            class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-                            :class="slotProps.data.estado ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'"
-                        >
-                            {{ slotProps.data.estado ? 'Activo' : 'Inactivo' }}
-                        </span>
                     </template>
                 </Column>
                 <Column header="Acciones" :exportable="false" style="min-width: 8rem">
@@ -456,10 +446,6 @@ onMounted(() => {
             <div class="field">
                 <label for="descripcion">Descripción</label>
                 <InputText id="descripcion" v-model="cuenta.descripcion" required autofocus />
-            </div>
-            <div class="field">
-                <label for="estado">Estado</label>
-                <InputSwitch id="estado" v-model="cuenta.estado" />
             </div>
             <template #footer>
                 <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="cerrarDialogo" />

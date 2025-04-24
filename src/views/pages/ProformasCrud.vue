@@ -16,7 +16,7 @@ const multiple = ref('multiple');
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
-const activeTab = ref('0'); // Por defecto mostrar hoy
+const activeTab = ref('2'); // Por defecto mostrar hoy
 const sortOrder = ref(-1);
 const router = useRouter();
 
@@ -241,6 +241,7 @@ function toggleExpand(proformaId) {
                     </template>
                 </Column>
                 <Column field="iva" header="IVA" sortable style="min-width: 1rem"></Column>
+                <Column field="descuento" header="Descuento" sortable style="min-width: 1rem"></Column>
                 <Column field="total" header="Total">
                     <template #body="slotProps">
                         {{ formatCurrency(slotProps.data.total) }}
@@ -303,16 +304,15 @@ function toggleExpand(proformaId) {
 
                     <!-- Lista de proformas en tarjetas -->
                     <div class="flex flex-col gap-4 w-full">
-                        <div v-for="proforma in filteredProformas" :key="proforma.id" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 w-full">
+                        <div v-for="proforma in filteredProformas" :key="proforma.id" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 w-full cursor-pointer" @click="editProforma(proforma)">
                             <div class="flex justify-between items-start mb-2">
                                 <div>
                                     <h3 class="text-lg font-semibold dark:text-white">{{ proforma.medicoNombre }}</h3>
                                     <p class="text-sm text-gray-600 dark:text-gray-400">Paciente: {{ proforma.pacienteNombre }}</p>
                                 </div>
                                 <div class="flex gap-2">
-                                    <Button icon="pi pi-eye" outlined rounded class="p-2" @click="editProforma(proforma)" />
-                                    <Button icon="pi pi-pencil" outlined rounded severity="warn" class="p-2" @click="editProforma(proforma)" />
-                                    <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2" @click="confirmDeleteProforma(proforma)" />
+                                    <Button icon="pi pi-pencil" outlined rounded severity="warn" class="p-2" @click.stop="editProforma(proforma)" />
+                                    <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2" @click.stop="confirmDeleteProforma(proforma)" />
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2 text-sm">
@@ -331,6 +331,10 @@ function toggleExpand(proformaId) {
                                 <div>
                                     <span class="font-semibold dark:text-white">IVA:</span>
                                     <p class="text-gray-600 dark:text-gray-400">{{ proforma.iva }}%</p>
+                                </div>
+                                <div>
+                                    <span class="font-semibold dark:text-white">Descuento:</span>
+                                    <p class="text-gray-600 dark:text-gray-400">{{ proforma.descuento }}%</p>
                                 </div>
                                 <div>
                                     <span class="font-semibold dark:text-white">Total:</span>

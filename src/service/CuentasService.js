@@ -13,6 +13,15 @@ export const CuentasService = {
             console.error('Error al obtener cuentas:', error);
             throw error;
         }
+    },
+
+    async create(cuentaData) {
+        try {
+            const response = await axios.post(API_CONFIG.getUrl('CUENTAS'), cuentaData);
+            return response.data;
+        } catch (error) {
+            console.error('Error al crear la cuenta:', error);
+            throw error;
+        }
     }
 };
-

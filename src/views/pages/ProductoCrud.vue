@@ -175,6 +175,9 @@ const toggleSort = () => {
                 :loading="loading"
                 loadingIcon="pi pi-spin pi-spinner"
                 striped
+                :sortField="'nombre'"
+                :sortOrder="1"
+                :defaultSortOrder="1"
                 class="p-datatable-striped hidden md:block"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
