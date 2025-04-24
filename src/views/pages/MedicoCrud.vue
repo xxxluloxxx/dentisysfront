@@ -216,35 +216,12 @@ function exportCSV() {
                     </div>
                 </template>
 
-                <Column field="numeroDocumento" sortable style="min-width: 5rem">
-                    <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">Identificación</span>
-                    </template>
-                </Column>
-                <Column field="nombreCompleto" sortable style="min-width: 5rem">
-                    <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">NombreCompleto</span>
-                    </template>
-                </Column>
-                <Column field="especialidad" sortable style="min-width: 5rem">
-                    <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">Especialidad</span>
-                    </template>
-                </Column>
-                <Column field="telefono" sortable style="min-width: 5rem">
-                    <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">Teléfono</span>
-                    </template>
-                </Column>
-                <Column field="email" sortable style="min-width: 16rem">
-                    <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">Email</span>
-                    </template>
-                </Column>
-                <Column :exportable="false" style="min-width: 12rem">
-                    <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">Acciones</span>
-                    </template>
+                <Column field="numeroDocumento" header="Identificación" sortable style="min-width: 5rem"></Column>
+                <Column field="nombreCompleto" header="Nombre Completo" sortable style="min-width: 5rem"></Column>
+                <Column field="especialidad" header="Especialidad" sortable style="min-width: 5rem"></Column>
+                <Column field="telefono" header="Teléfono" sortable style="min-width: 5rem"></Column>
+                <Column field="email" header="Email" sortable style="min-width: 16rem"></Column>
+                <Column :exportable="false" header="Acciones" style="min-width: 12rem">
                     <template #body="slotProps">
                         <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editMedico(slotProps.data)" />
                         <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteMedico(slotProps.data)" />
@@ -391,5 +368,31 @@ function exportCSV() {
     .p-dialog {
         width: 90vw !important;
     }
+}
+/* Estilos personalizados para las filas alternadas de las tablas */
+:deep(.p-datatable-tbody > tr:nth-child(even)) {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+:deep(.p-datatable-tbody > tr:nth-child(odd)) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Estilo para resaltar la fila al pasar el cursor */
+:deep(.p-datatable-tbody > tr:hover) {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+    cursor: pointer;
+}
+
+/* Estilo para los encabezados de las tablas */
+:deep(.p-datatable .p-datatable-thead > tr > th) {
+    background-color: var(--primary-color);
+    color: var(--primary-color-text);
+    font-weight: bold;
+}
+
+/* Estilo para las celdas de las tablas */
+:deep(.p-datatable .p-datatable-tbody > tr > td) {
+    padding: 0.5rem;
 }
 </style>

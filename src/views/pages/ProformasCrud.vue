@@ -385,4 +385,33 @@ function toggleExpand(proformaId) {
         </Dialog>
     </div>
 </template>
+
+<style scoped>
+/* Estilos personalizados para las filas alternadas de las tablas */
+:deep(.p-datatable-tbody > tr:nth-child(even)) {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+:deep(.p-datatable-tbody > tr:nth-child(odd)) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Estilo para resaltar la fila al pasar el cursor */
+:deep(.p-datatable-tbody > tr:hover) {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+    cursor: pointer;
+}
+
+/* Estilo para los encabezados de las tablas */
+:deep(.p-datatable .p-datatable-thead > tr > th) {
+    background-color: var(--primary-color);
+    color: var(--primary-color-text);
+    font-weight: bold;
+}
+
+/* Estilo para las celdas de las tablas */
+:deep(.p-datatable .p-datatable-tbody > tr > td) {
+    padding: 0.5rem;
+}
+</style>
 @/service/ProformaService

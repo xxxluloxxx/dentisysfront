@@ -371,39 +371,16 @@ function getEstadoSeverity(estado) {
                     </div>
                 </template>
 
-                <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
-                <Column field="fechaCita" sortable style="min-width: 5rem">
-                    <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">Fecha Cita</span>
-                    </template>
-                </Column>
-                <Column field="horaCita" sortable style="min-width: 5rem">
-                    <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">Hora Cita</span>
-                    </template>
+                <Column field="fechaCita" header="Fecha Cita" sortable style="min-width: 5rem"></Column>
+                <Column field="horaCita" header="Hora Cita" sortable style="min-width: 5rem">
                     <template #body="slotProps">
                         {{ slotProps.data.horaCita.substring(0, 5) }}
                     </template>
                 </Column>
-                <Column field="pacienteNombre" sortable style="min-width: 5rem">
-                    <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">Paciente</span>
-                    </template>
-                </Column>
-                <Column field="medicoNombre" sortable style="min-width: 5rem">
-                    <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">Medico</span>
-                    </template>
-                </Column>
-                <Column field="observaciones" sortable style="min-width: 5rem">
-                    <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">Observaciones</span>
-                    </template>
-                </Column>
-                <Column sortable style="min-width: 1rem" sortField="estado" :sortFunction="(a, b) => a.estado.localeCompare(b.estado)">
-                    <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">Estado</span>
-                    </template>
+                <Column field="pacienteNombre" header="Paciente" sortable style="min-width: 5rem"></Column>
+                <Column field="medicoNombre" header="Medico" sortable style="min-width: 5rem"></Column>
+                <Column field="observaciones" header="Observaciones" style="min-width: 5rem"></Column>
+                <Column header="Estado" sortable style="min-width: 1rem" sortField="estado" :sortFunction="(a, b) => a.estado.localeCompare(b.estado)">
                     <template #body="slotProps">
                         <Tag :value="slotProps.data.estado" :severity="getEstadoSeverity(slotProps.data.estado)" />
                     </template>
@@ -589,3 +566,32 @@ function getEstadoSeverity(estado) {
         </Popover>
     </div>
 </template>
+
+<style scoped>
+/* Estilos personalizados para las filas alternadas de las tablas */
+:deep(.p-datatable-tbody > tr:nth-child(even)) {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+:deep(.p-datatable-tbody > tr:nth-child(odd)) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Estilo para resaltar la fila al pasar el cursor */
+:deep(.p-datatable-tbody > tr:hover) {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+    cursor: pointer;
+}
+
+/* Estilo para los encabezados de las tablas */
+:deep(.p-datatable .p-datatable-thead > tr > th) {
+    background-color: var(--primary-color);
+    color: var(--primary-color-text);
+    font-weight: bold;
+}
+
+/* Estilo para las celdas de las tablas */
+:deep(.p-datatable .p-datatable-tbody > tr > td) {
+    padding: 0.5rem;
+}
+</style>
