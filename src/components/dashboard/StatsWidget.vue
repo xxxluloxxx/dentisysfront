@@ -41,7 +41,7 @@ onMounted(() => {
                         <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">{{ estadisticas.cantidadCitasHoy }}</div>
                     </div>
                     <div class="flex items-center justify-center bg-blue-100 dark:bg-blue-400/10 rounded-border" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-shopping-cart text-blue-500 !text-xl"></i>
+                        <i class="pi pi-calendar text-blue-500 !text-xl"></i>
                     </div>
                 </div>
                 <span class="text-primary font-medium">{{ estadisticas.cantidadCitasAyer }} nuevas </span>
@@ -62,7 +62,7 @@ onMounted(() => {
                         <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">{{ estadisticas.cantidadProformas }}</div>
                     </div>
                     <div class="flex items-center justify-center bg-orange-100 dark:bg-orange-400/10 rounded-border" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-dollar text-orange-500 !text-xl"></i>
+                        <i class="pi pi-file-edit text-orange-500 !text-xl"></i>
                     </div>
                 </div>
                 <span class="text-primary font-medium">{{ porcentajeCambio.toFixed(0) }}% </span>
@@ -104,7 +104,7 @@ onMounted(() => {
                         <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">{{ estadisticas.cantidadFichasEstaSemana }}</div>
                     </div>
                     <div class="flex items-center justify-center bg-purple-100 dark:bg-purple-400/10 rounded-border" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-comment text-purple-500 !text-xl"></i>
+                        <i class="pi pi-file text-purple-500 !text-xl"></i>
                     </div>
                 </div>
                 <span class="text-primary font-medium">{{ estadisticas.cantidadFichasSemanaAnterior }} </span>

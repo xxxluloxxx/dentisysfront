@@ -31,5 +31,16 @@ export const GraficaService = {
             console.error('❌ Error al obtener los productos frecuentes:', error);
             throw error;
         }
+    },
+    async getEstadisticasCitasSemana() {
+        try {
+            const response = await axios.get(`${API_CONFIG.getUrl('GRAFICAS')}/estadisticas-citas-semana`);
+            console.log('✅ Estadísticas citas semana obtenidas exitosamente:', response.data);
+            return response.data;
+        } catch (error) {
+            console.error('❌ Error al obtener las estadísticas de citas semana:', error);
+            throw error;
+        }
     }
+
 };

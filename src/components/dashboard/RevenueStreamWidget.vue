@@ -1,76 +1,75 @@
 <script setup>
 import { useLayout } from '@/layout/composables/layout';
+import { GraficaService } from '@/service/GraficaService';
+import { useToast } from 'primevue/usetoast';
 import { onMounted, ref, watch } from 'vue';
+
+const toast = useToast();
+const citas = ref(null);
+const loading = ref(true);
+const lineData = ref(null);
+const lineOptions = ref(null);
 
 const { getPrimary, getSurface, isDarkTheme } = useLayout();
 
-const chartData = ref(null);
-const chartOptions = ref(null);
+function setColorOptions(data) {
+    if (!data) return;
 
-function setChartData() {
     const documentStyle = getComputedStyle(document.documentElement);
+    const textColor = documentStyle.getPropertyValue('--text-color');
+    const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
+    const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
 
-    return {
-        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+    const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+    lineData.value = {
+        labels: dias,
         datasets: [
             {
-                type: 'bar',
-                label: 'Subscriptions',
-                backgroundColor: documentStyle.getPropertyValue('--p-primary-400'),
-                data: [4000, 10000, 15000, 4000],
-                barThickness: 32
+                label: 'Semana Actual',
+                data: [data.semanaActual.lunes, data.semanaActual.martes, data.semanaActual.miercoles, data.semanaActual.jueves, data.semanaActual.viernes, data.semanaActual.sabado, data.semanaActual.domingo],
+                fill: false,
+                backgroundColor: documentStyle.getPropertyValue('--p-primary-500'),
+                borderColor: documentStyle.getPropertyValue('--p-primary-500'),
+                tension: 0.4
             },
             {
-                type: 'bar',
-                label: 'Advertising',
-                backgroundColor: documentStyle.getPropertyValue('--p-primary-300'),
-                data: [2100, 8400, 2400, 7500],
-                barThickness: 32
-            },
-            {
-                type: 'bar',
-                label: 'Affiliate',
+                label: 'Semana Anterior',
+                data: [data.semanaAnterior.lunes, data.semanaAnterior.martes, data.semanaAnterior.miercoles, data.semanaAnterior.jueves, data.semanaAnterior.viernes, data.semanaAnterior.sabado, data.semanaAnterior.domingo],
+                fill: false,
                 backgroundColor: documentStyle.getPropertyValue('--p-primary-200'),
-                data: [4100, 5200, 3400, 7400],
-                borderRadius: {
-                    topLeft: 8,
-                    topRight: 8
-                },
-                borderSkipped: true,
-                barThickness: 32
+                borderColor: documentStyle.getPropertyValue('--p-primary-200'),
+                tension: 0.4
             }
         ]
     };
-}
 
-function setChartOptions() {
-    const documentStyle = getComputedStyle(document.documentElement);
-    const borderColor = documentStyle.getPropertyValue('--surface-border');
-    const textMutedColor = documentStyle.getPropertyValue('--text-color-secondary');
-
-    return {
-        maintainAspectRatio: false,
-        aspectRatio: 0.8,
+    lineOptions.value = {
+        plugins: {
+            legend: {
+                labels: {
+                    fontColor: textColor
+                }
+            }
+        },
         scales: {
             x: {
-                stacked: true,
                 ticks: {
-                    color: textMutedColor
+                    color: textColorSecondary
                 },
                 grid: {
-                    color: 'transparent',
-                    borderColor: 'transparent'
+                    color: surfaceBorder,
+                    drawBorder: false
                 }
             },
             y: {
-                stacked: true,
                 ticks: {
-                    color: textMutedColor
+                    color: textColorSecondary,
+                    stepSize: 1
                 },
                 grid: {
-                    color: borderColor,
-                    borderColor: 'transparent',
-                    drawTicks: false
+                    color: surfaceBorder,
+                    drawBorder: false
                 }
             }
         }
@@ -78,19 +77,35 @@ function setChartOptions() {
 }
 
 watch([getPrimary, getSurface, isDarkTheme], () => {
-    chartData.value = setChartData();
-    chartOptions.value = setChartOptions();
+    if (citas.value) {
+        setColorOptions(citas.value);
+    }
 });
 
 onMounted(() => {
-    chartData.value = setChartData();
-    chartOptions.value = setChartOptions();
+    GraficaService.getEstadisticasCitasSemana()
+        .then((data) => {
+            citas.value = data;
+            setColorOptions(data);
+        })
+        .catch((error) => {
+            console.error('Error al cargar las estadísticas de citas:', error);
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al conectarse al servidor', life: 3000 });
+        })
+        .finally(() => {
+            loading.value = false;
+        });
 });
 </script>
 
 <template>
-    <div class="card">
-        <div class="font-semibold text-xl mb-4">Revenue Stream</div>
-        <Chart type="bar" :data="chartData" :options="chartOptions" class="h-80" />
+    <div class="col-span-12 xl:col-span-6">
+        <div class="card">
+            <div class="font-semibold text-xl mb-4">Estadísticas de Citas Semanales</div>
+            <div v-if="loading" class="flex justify-center items-center py-8">
+                <ProgressSpinner />
+            </div>
+            <Chart v-else type="line" :data="lineData" :options="lineOptions"></Chart>
+        </div>
     </div>
 </template>

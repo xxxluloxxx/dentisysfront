@@ -3,15 +3,9 @@ import { GraficaService } from '@/service/GraficaService';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 
-const menu = ref(null);
 const toast = useToast();
 const productosFrecuentes = ref([]);
 const loading = ref(true);
-
-const items = ref([
-    { label: 'Add New', icon: 'pi pi-fw pi-plus' },
-    { label: 'Remove', icon: 'pi pi-fw pi-trash' }
-]);
 
 const colores = ['orange-500', 'cyan-500', 'pink-500', 'green-500', 'purple-500', 'teal-500', 'blue-500'];
 
@@ -32,10 +26,6 @@ onMounted(() => {
     <div class="card">
         <div class="flex justify-between items-center mb-6">
             <div class="font-semibold text-xl">Servicios más solicitados</div>
-            <div>
-                <Button icon="pi pi-ellipsis-v" class="p-button-text p-button-plain p-button-rounded" @click="$refs.menu.toggle($event)"></Button>
-                <Menu ref="menu" popup :model="items" class="!min-w-40"></Menu>
-            </div>
         </div>
         <div v-if="loading" class="flex justify-center items-center py-8">
             <ProgressSpinner />
