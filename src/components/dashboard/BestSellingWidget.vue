@@ -1,94 +1,55 @@
 <script setup>
-import { ref } from 'vue';
+import { GraficaService } from '@/service/GraficaService';
+import { useToast } from 'primevue/usetoast';
+import { onMounted, ref } from 'vue';
 
 const menu = ref(null);
+const toast = useToast();
+const productosFrecuentes = ref([]);
+const loading = ref(true);
 
 const items = ref([
     { label: 'Add New', icon: 'pi pi-fw pi-plus' },
     { label: 'Remove', icon: 'pi pi-fw pi-trash' }
 ]);
+
+const colores = ['orange-500', 'cyan-500', 'pink-500', 'green-500', 'purple-500', 'teal-500', 'blue-500'];
+
+onMounted(() => {
+    GraficaService.getEstadisticasProductosFrecuentes()
+        .then((data) => (productosFrecuentes.value = data))
+        .catch((error) => {
+            console.error('Error al cargar los productos frecuentes:', error);
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al conectarse al servidor', life: 3000 });
+        })
+        .finally(() => {
+            loading.value = false;
+        });
+});
 </script>
 
 <template>
     <div class="card">
         <div class="flex justify-between items-center mb-6">
-            <div class="font-semibold text-xl">Best Selling Products</div>
+            <div class="font-semibold text-xl">Servicios más solicitados</div>
             <div>
                 <Button icon="pi pi-ellipsis-v" class="p-button-text p-button-plain p-button-rounded" @click="$refs.menu.toggle($event)"></Button>
                 <Menu ref="menu" popup :model="items" class="!min-w-40"></Menu>
             </div>
         </div>
-        <ul class="list-none p-0 m-0">
-            <li class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <div v-if="loading" class="flex justify-center items-center py-8">
+            <ProgressSpinner />
+        </div>
+        <ul v-else class="list-none p-0 m-0">
+            <li v-for="(producto, index) in productosFrecuentes" :key="index" class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
                 <div>
-                    <span class="text-surface-900 dark:text-surface-0 font-medium mr-2 mb-1 md:mb-0">Space T-Shirt</span>
-                    <div class="mt-1 text-muted-color">Clothing</div>
+                    <span class="text-surface-900 dark:text-surface-0 font-medium mr-2 mb-1 md:mb-0">{{ producto.producto }}</span>
                 </div>
                 <div class="mt-2 md:mt-0 flex items-center">
                     <div class="bg-surface-300 dark:bg-surface-500 rounded-border overflow-hidden w-40 lg:w-24" style="height: 8px">
-                        <div class="bg-orange-500 h-full" style="width: 50%"></div>
+                        <div :class="`bg-${colores[index % colores.length]} h-full`" :style="`width: ${producto.porcentaje}%`"></div>
                     </div>
-                    <span class="text-orange-500 ml-4 font-medium">%50</span>
-                </div>
-            </li>
-            <li class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                <div>
-                    <span class="text-surface-900 dark:text-surface-0 font-medium mr-2 mb-1 md:mb-0">Portal Sticker</span>
-                    <div class="mt-1 text-muted-color">Accessories</div>
-                </div>
-                <div class="mt-2 md:mt-0 ml-0 md:ml-20 flex items-center">
-                    <div class="bg-surface-300 dark:bg-surface-500 rounded-border overflow-hidden w-40 lg:w-24" style="height: 8px">
-                        <div class="bg-cyan-500 h-full" style="width: 16%"></div>
-                    </div>
-                    <span class="text-cyan-500 ml-4 font-medium">%16</span>
-                </div>
-            </li>
-            <li class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                <div>
-                    <span class="text-surface-900 dark:text-surface-0 font-medium mr-2 mb-1 md:mb-0">Supernova Sticker</span>
-                    <div class="mt-1 text-muted-color">Accessories</div>
-                </div>
-                <div class="mt-2 md:mt-0 ml-0 md:ml-20 flex items-center">
-                    <div class="bg-surface-300 dark:bg-surface-500 rounded-border overflow-hidden w-40 lg:w-24" style="height: 8px">
-                        <div class="bg-pink-500 h-full" style="width: 67%"></div>
-                    </div>
-                    <span class="text-pink-500 ml-4 font-medium">%67</span>
-                </div>
-            </li>
-            <li class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                <div>
-                    <span class="text-surface-900 dark:text-surface-0 font-medium mr-2 mb-1 md:mb-0">Wonders Notebook</span>
-                    <div class="mt-1 text-muted-color">Office</div>
-                </div>
-                <div class="mt-2 md:mt-0 ml-0 md:ml-20 flex items-center">
-                    <div class="bg-surface-300 dark:bg-surface-500 rounded-border overflow-hidden w-40 lg:w-24" style="height: 8px">
-                        <div class="bg-green-500 h-full" style="width: 35%"></div>
-                    </div>
-                    <span class="text-primary ml-4 font-medium">%35</span>
-                </div>
-            </li>
-            <li class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                <div>
-                    <span class="text-surface-900 dark:text-surface-0 font-medium mr-2 mb-1 md:mb-0">Mat Black Case</span>
-                    <div class="mt-1 text-muted-color">Accessories</div>
-                </div>
-                <div class="mt-2 md:mt-0 ml-0 md:ml-20 flex items-center">
-                    <div class="bg-surface-300 dark:bg-surface-500 rounded-border overflow-hidden w-40 lg:w-24" style="height: 8px">
-                        <div class="bg-purple-500 h-full" style="width: 75%"></div>
-                    </div>
-                    <span class="text-purple-500 ml-4 font-medium">%75</span>
-                </div>
-            </li>
-            <li class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                <div>
-                    <span class="text-surface-900 dark:text-surface-0 font-medium mr-2 mb-1 md:mb-0">Robots T-Shirt</span>
-                    <div class="mt-1 text-muted-color">Clothing</div>
-                </div>
-                <div class="mt-2 md:mt-0 ml-0 md:ml-20 flex items-center">
-                    <div class="bg-surface-300 dark:bg-surface-500 rounded-border overflow-hidden w-40 lg:w-24" style="height: 8px">
-                        <div class="bg-teal-500 h-full" style="width: 40%"></div>
-                    </div>
-                    <span class="text-teal-500 ml-4 font-medium">%40</span>
+                    <span :class="`text-${colores[index % colores.length]} ml-4 font-medium`">%{{ producto.porcentaje }}</span>
                 </div>
             </li>
         </ul>
