@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "8083:80"
     environment:
       - NODE_ENV=production
       - VITE_API_URL=https://tu-backend-url/api  # Ajusta esta URL a tu backend
