@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=https://tu-backend-url/api  # Ajusta esta URL a tu backend
+    networks:
+      - app-network-prod
+    restart: always
+
+networks:
+  app-network-prod:
+    driver: bridge
