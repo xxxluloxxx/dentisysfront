@@ -20,9 +20,9 @@ echo -e "${GREEN}Deteniendo contenedor de producción...${NC}"
 docker compose -f docker-compose.prod.yml down
 
 # Actualizar el código
-echo -e "${GREEN}Actualizando código desde main...${NC}"
-git checkout main
-git pull origin main
+echo -e "${GREEN}Actualizando código desde prod...${NC}"
+git checkout prod
+git pull origin prod
 
 # Reconstruir y levantar el contenedor de producción
 echo -e "${GREEN}Reconstruyendo y levantando contenedor de producción...${NC}"
