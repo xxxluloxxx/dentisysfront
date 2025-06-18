@@ -13,8 +13,10 @@ services:
     environment:
       - NODE_ENV=development
       - VITE_API_URL=http://tu-backend-url:8080/api  # Ajusta esta URL a tu backend
+      - VITE_HOST=0.0.0.0
     networks:
       - app-network-dev
+    command: npm run dev -- --host 0.0.0.0
 
 networks:
   app-network-dev:

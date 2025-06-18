@@ -14,5 +14,8 @@ COPY . .
 # Exponer el puerto de desarrollo de Vite
 EXPOSE 5173
 
+# Configurar Vite para escuchar en todas las interfaces
+ENV VITE_HOST=0.0.0.0
+
 # Comando para iniciar el servidor de desarrollo
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
