@@ -10,6 +10,7 @@ echo -e "${YELLOW}Iniciando actualización del frontend de desarrollo...${NC}"
 
 # Navegar al directorio del proyecto
 cd "$(dirname "$0")"
+echo -e "${GREEN}Directorio actual: $(pwd)${NC}"
 
 # Detener el contenedor de desarrollo
 echo -e "${GREEN}Deteniendo contenedor de desarrollo...${NC}"
