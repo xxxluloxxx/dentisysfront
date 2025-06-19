@@ -26,12 +26,13 @@ docker compose -f docker-compose.dev.yml up -d --build
 
 # Verificar que el contenedor esté corriendo
 echo -e "${GREEN}Verificando estado del contenedor...${NC}"
-docker ps | grep dentisys-dev
+docker ps | grep dentisysfront-frontend
 
 # Verificar logs del contenedor
 echo -e "${GREEN}Mostrando logs del contenedor...${NC}"
-docker logs dentisys-dev
+docker logs dentisysfront-frontend-1
 
 echo -e "${GREEN}¡Actualización completada!${NC}"
 echo -e "La aplicación está disponible en:"
-echo -e "Desarrollo: http://93.127.217.21:8082"
+echo -e "Desarrollo Frontend: http://93.127.217.21:5173"
+echo -e "Desarrollo Backend: http://93.127.217.21:8082"

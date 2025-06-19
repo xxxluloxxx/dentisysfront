@@ -30,16 +30,16 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 # Verificar que el contenedor esté corriendo
 echo -e "${GREEN}Verificando estado del contenedor...${NC}"
-docker ps | grep dentisys-prod
+docker ps | grep dentisysfront-frontend
 
 # Verificar logs del contenedor
 echo -e "${GREEN}Mostrando logs del contenedor...${NC}"
-docker logs dentisys-prod
+docker logs dentisysfront-frontend-1
 
 # Verificar que la aplicación responda
 echo -e "${GREEN}Verificando que la aplicación responda...${NC}"
 sleep 10
-if curl -s http://93.127.217.21:8081/api/health > /dev/null; then
+if curl -s http://93.127.217.21:8083 > /dev/null; then
     echo -e "${GREEN}La aplicación está respondiendo correctamente${NC}"
 else
     echo -e "${RED}¡Advertencia! La aplicación no está respondiendo${NC}"
@@ -47,4 +47,5 @@ fi
 
 echo -e "${GREEN}¡Actualización completada!${NC}"
 echo -e "La aplicación está disponible en:"
-echo -e "Producción: http://93.127.217.21:8081"
+echo -e "Producción Frontend: http://93.127.217.21:8083"
+echo -e "Producción Backend: http://93.127.217.21:8080"
