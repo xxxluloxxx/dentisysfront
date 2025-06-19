@@ -6,14 +6,10 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-echo -e "${YELLOW}Iniciando actualización del entorno de producción...${NC}"
+echo -e "${YELLOW}Iniciando actualización del frontend de producción...${NC}"
 
 # Navegar al directorio del proyecto
 cd "$(dirname "$0")"
-
-# Hacer backup de la base de datos antes de actualizar
-echo -e "${GREEN}Realizando backup de la base de datos...${NC}"
-docker exec dentisys-prod pg_dump -U postgres dentisys > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # Detener el contenedor de producción
 echo -e "${GREEN}Deteniendo contenedor de producción...${NC}"
@@ -40,12 +36,11 @@ docker logs dentisysfront-frontend-1
 echo -e "${GREEN}Verificando que la aplicación responda...${NC}"
 sleep 10
 if curl -s http://93.127.217.21:8083 > /dev/null; then
-    echo -e "${GREEN}La aplicación está respondiendo correctamente${NC}"
+    echo -e "${GREEN}El frontend está respondiendo correctamente${NC}"
 else
-    echo -e "${RED}¡Advertencia! La aplicación no está respondiendo${NC}"
+    echo -e "${RED}¡Advertencia! El frontend no está respondiendo${NC}"
 fi
 
-echo -e "${GREEN}¡Actualización completada!${NC}"
-echo -e "La aplicación está disponible en:"
+echo -e "${GREEN}¡Actualización del frontend completada!${NC}"
+echo -e "El frontend está disponible en:"
 echo -e "Producción Frontend: http://93.127.217.21:8083"
-echo -e "Producción Backend: http://93.127.217.21:8080"

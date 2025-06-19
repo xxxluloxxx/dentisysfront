@@ -6,7 +6,7 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-echo -e "${YELLOW}Iniciando actualización del entorno de desarrollo...${NC}"
+echo -e "${YELLOW}Iniciando actualización del frontend de desarrollo...${NC}"
 
 # Navegar al directorio del proyecto
 cd "$(dirname "$0")"
@@ -32,7 +32,15 @@ docker ps | grep dentisysfront-frontend
 echo -e "${GREEN}Mostrando logs del contenedor...${NC}"
 docker logs dentisysfront-frontend-1
 
-echo -e "${GREEN}¡Actualización completada!${NC}"
-echo -e "La aplicación está disponible en:"
+# Verificar que la aplicación responda
+echo -e "${GREEN}Verificando que la aplicación responda...${NC}"
+sleep 10
+if curl -s http://93.127.217.21:5173 > /dev/null; then
+    echo -e "${GREEN}El frontend está respondiendo correctamente${NC}"
+else
+    echo -e "${RED}¡Advertencia! El frontend no está respondiendo${NC}"
+fi
+
+echo -e "${GREEN}¡Actualización del frontend completada!${NC}"
+echo -e "El frontend está disponible en:"
 echo -e "Desarrollo Frontend: http://93.127.217.21:5173"
-echo -e "Desarrollo Backend: http://93.127.217.21:8082"
