@@ -14,7 +14,7 @@ echo -e "${GREEN}Directorio actual: $(pwd)${NC}"
 
 # Detener el contenedor de desarrollo
 echo -e "${GREEN}Deteniendo contenedor de desarrollo...${NC}"
-docker compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.dev.yml --project-name dentisysfront-dev down
 
 # Actualizar el código
 echo -e "${GREEN}Actualizando código desde main...${NC}"
@@ -23,7 +23,7 @@ git pull origin main
 
 # Reconstruir y levantar el contenedor de desarrollo
 echo -e "${GREEN}Reconstruyendo y levantando contenedor de desarrollo...${NC}"
-docker compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml --project-name dentisysfront-dev up -d --build
 
 # Verificar que el contenedor esté corriendo
 echo -e "${GREEN}Verificando estado del contenedor...${NC}"

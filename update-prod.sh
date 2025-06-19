@@ -14,7 +14,7 @@ echo -e "${GREEN}Directorio actual: $(pwd)${NC}"
 
 # Detener el contenedor de producción
 echo -e "${GREEN}Deteniendo contenedor de producción...${NC}"
-docker compose -f docker-compose.prod.yml down
+docker compose -f docker-compose.prod.yml --project-name dentisysfront-prod down
 
 # Actualizar el código
 echo -e "${GREEN}Actualizando código desde prod...${NC}"
@@ -23,7 +23,7 @@ git pull origin prod
 
 # Reconstruir y levantar el contenedor de producción
 echo -e "${GREEN}Reconstruyendo y levantando contenedor de producción...${NC}"
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml --project-name dentisysfront-prod up -d --build
 
 # Verificar que el contenedor esté corriendo
 echo -e "${GREEN}Verificando estado del contenedor...${NC}"
