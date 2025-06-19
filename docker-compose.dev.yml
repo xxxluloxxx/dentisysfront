@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
+    image: dentisysfront-frontend-dev:latest
+    container_name: dentisysfront-frontend-dev
     ports:
       - "5173:5173"
     volumes:

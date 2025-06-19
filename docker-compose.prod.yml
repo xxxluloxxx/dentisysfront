@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: dentisysfront-frontend-prod:latest
+    container_name: dentisysfront-frontend-prod
     ports:
       - "8083:80"
     environment:

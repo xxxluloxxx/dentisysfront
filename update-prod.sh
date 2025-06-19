@@ -26,11 +26,11 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 # Verificar que el contenedor esté corriendo
 echo -e "${GREEN}Verificando estado del contenedor...${NC}"
-docker ps | grep dentisysfront-frontend
+docker ps | grep dentisysfront-frontend-prod
 
 # Verificar logs del contenedor
 echo -e "${GREEN}Mostrando logs del contenedor...${NC}"
-docker logs dentisysfront-frontend-1
+docker logs dentisysfront-frontend-prod
 
 # Verificar que la aplicación responda
 echo -e "${GREEN}Verificando que la aplicación responda...${NC}"
