@@ -7,16 +7,12 @@ services:
     container_name: dentisysfront-frontend-dev
     ports:
       - "5173:5173"
-    volumes:
-      - .:/app
-      - /app/node_modules
     environment:
       - NODE_ENV=development
-      - VITE_API_URL=http://tu-backend-url:8080/api  # Ajusta esta URL a tu backend
-      - VITE_HOST=0.0.0.0
+      - VITE_API_URL=http://tu-backend-url:8080/api
     networks:
       - app-network-dev
-    command: npm run dev -- --host 0.0.0.0
+    restart: always
 
 networks:
   app-network-dev:

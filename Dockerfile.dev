@@ -1,4 +1,5 @@
-FROM node:20-alpine
+# Etapa de construcción para desarrollo
+FROM node:20-alpine as build-stage
 
 WORKDIR /app
 
@@ -11,11 +12,27 @@ RUN npm install
 # Copiar el resto del código
 COPY . .
 
+# Etapa de desarrollo
+FROM node:20-alpine as development-stage
+
+WORKDIR /app
+
+# Copiar node_modules y código desde la etapa de construcción
+COPY --from=build-stage /app/node_modules ./node_modules
+COPY --from=build-stage /app/package*.json ./
+COPY --from=build-stage /app/src ./src
+COPY --from=build-stage /app/public ./public
+COPY --from=build-stage /app/vite.config.mjs ./
+COPY --from=build-stage /app/tailwind.config.js ./
+COPY --from=build-stage /app/postcss.config.js ./
+COPY --from=build-stage /app/index.html ./
+
 # Exponer el puerto de desarrollo de Vite
 EXPOSE 5173
 
 # Configurar Vite para escuchar en todas las interfaces
 ENV VITE_HOST=0.0.0.0
+ENV NODE_ENV=development
 
 # Comando para iniciar el servidor de desarrollo
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
