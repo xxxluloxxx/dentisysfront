@@ -16,6 +16,10 @@ echo -e "${GREEN}Directorio actual: $(pwd)${NC}"
 echo -e "${GREEN}Deteniendo contenedor de desarrollo...${NC}"
 docker compose -f docker-compose.dev.yml --project-name dentisysfront-dev down
 
+# Eliminar contenedor existente si existe
+echo -e "${GREEN}Eliminando contenedor existente si existe...${NC}"
+docker rm -f dentisysfront-frontend-dev 2>/dev/null || true
+
 # Actualizar el código
 echo -e "${GREEN}Actualizando código desde main...${NC}"
 git checkout main
