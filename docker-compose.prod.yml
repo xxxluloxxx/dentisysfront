@@ -6,7 +6,7 @@ services:
     image: dentisysfront-frontend-prod:latest
     container_name: dentisysfront-frontend-prod
     ports:
-      - "8083:80"
+      - "8093:80"
     environment:
       - NODE_ENV=production
       - VITE_API_URL=https://tu-backend-url/api  # Ajusta esta URL a tu backend

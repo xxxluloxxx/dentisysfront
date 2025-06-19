@@ -6,7 +6,7 @@ services:
     image: dentisysfront-frontend-dev:latest
     container_name: dentisysfront-frontend-dev
     ports:
-      - "5173:5173"
+      - "8092:5173"
     environment:
       - NODE_ENV=development
       - VITE_API_URL=http://tu-backend-url:8080/api
