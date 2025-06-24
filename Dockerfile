@@ -15,6 +15,9 @@ COPY . .
 # Construir la aplicación
 RUN npm run build
 
+# Paso de depuración: mostrar el contenido de dist y el tamaño de index.html
+RUN echo "\n--- CONTENIDO DE /app/dist ---" && ls -lh /app/dist && echo "\n--- CONTENIDO DE /app/dist/index.html ---" && cat /app/dist/index.html
+
 # Etapa de producción
 FROM nginx:stable-alpine as production-stage
 
