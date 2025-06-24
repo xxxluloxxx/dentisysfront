@@ -27,6 +27,9 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copiar los archivos construidos
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 
+# Cambiar propietario y permisos para Nginx
+RUN chown -R nginx:nginx /usr/share/nginx/html && chmod -R 755 /usr/share/nginx/html
+
 # Exponer el puerto 80
 EXPOSE 80
 
