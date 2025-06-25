@@ -35,7 +35,7 @@ const handleAgenda = () => {
             <button class="layout-menu-button layout-topbar-action" @click="toggleMenu">
                 <i class="pi pi-bars"></i>
             </button>
-            <router-link to="/" class="layout-topbar-logo">
+            <router-link to="/dashboard" class="layout-topbar-logo">
                 <img :src="LogoDentiSys" alt="DentiSys Logo" class="logo-image" />
                 <span>DentiSys</span>
             </router-link>
