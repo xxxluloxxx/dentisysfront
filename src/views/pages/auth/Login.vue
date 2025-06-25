@@ -55,10 +55,10 @@ const handleLogin = async () => {
 
                     <div>
                         <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Correo electrónico</label>
-                        <InputText id="email1" type="text" placeholder="Dirección de correo electrónico" class="w-full md:w-[30rem] mb-8" v-model="email" />
+                        <InputText id="email1" type="text" placeholder="Dirección de correo electrónico" class="w-full md:w-[30rem] mb-8" v-model="email" @keyup.enter="handleLogin" />
 
                         <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Contraseña</label>
-                        <Password id="password1" v-model="password" placeholder="Contraseña" :toggleMask="true" class="mb-4" fluid :feedback="false"></Password>
+                        <Password id="password1" v-model="password" placeholder="Contraseña" :toggleMask="true" class="mb-4" fluid :feedback="false" @keyup.enter="handleLogin"></Password>
 
                         <div v-if="errorMessage" class="mb-4">
                             <Message severity="error" :closable="false">{{ errorMessage }}</Message>
