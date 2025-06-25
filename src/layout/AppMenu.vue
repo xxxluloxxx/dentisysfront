@@ -1,6 +1,6 @@
 <script setup>
 import { MenuService } from '@/service/MenuService';
-import { ref, onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import AppMenuItem from './AppMenuItem.vue';
 
@@ -15,25 +15,14 @@ onMounted(() => {
     const userData = JSON.parse(localStorage.getItem('userData'));
     const rolId = userData.rolId;
 
-    if (rolId === 1) {
-        MenuService.getAll1()
-            .then((data) => {
-                menu.value = convertMenuFormat(data);
-                console.log('🚀 Menú cargado2:', menu.value);
-            })
-            .catch((error) => {
-                console.error('Error al cargar el menú 1:', error);
-            });
-    } else if (rolId === 2) {
-        MenuService.getAll2()
-            .then((data) => {
-                menu.value = convertMenuFormat(data);
-            })
-            .catch((error) => {
-                console.error('Error al cargar el menú 2:', error);
-            });
-    }
-    console.log('🚀 Menú cargado:', menu.value);
+    MenuService.getMenu(rolId)
+        .then((data) => {
+            menu.value = convertMenuFormat(data);
+            console.log('🚀 Menú cargado:', menu.value);
+        })
+        .catch((error) => {
+            console.error('Error al cargar el menú:', error);
+        });
 });
 
 const model1 = ref([]);
