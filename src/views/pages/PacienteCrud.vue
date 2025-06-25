@@ -312,8 +312,7 @@ function exportCSV() {
                     </div>
                     <div class="field">
                         <label for="email" class="block font-bold mb-2">Email</label>
-                        <InputText id="email" v-model.trim="paciente.email" required="true" :invalid="submitted && !paciente.email" class="w-full" />
-                        <small v-if="submitted && !paciente.email" class="text-red-500">El email es requerido.</small>
+                        <InputText id="email" v-model.trim="paciente.email" required="true" class="w-full" />
                     </div>
                 </div>
 
@@ -326,20 +325,18 @@ function exportCSV() {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="field">
                         <label for="telefono" class="block font-bold mb-2">Teléfono</label>
-                        <InputText id="telefono" v-model.trim="paciente.telefono" required="true" :invalid="submitted && !paciente.telefono" class="w-full" />
-                        <small v-if="submitted && !paciente.telefono" class="text-red-500">El teléfono es requerido.</small>
+                        <InputText id="telefono" v-model.trim="paciente.telefono" class="w-full" />
                     </div>
                     <div class="field">
                         <label for="genero" class="block font-bold mb-2">Género</label>
-                        <Select id="genero" v-model="paciente.genero" :options="['M', 'F']" placeholder="Seleccione un tipo" class="w-full" />
+                        <Select id="genero" v-model="paciente.genero" :options="['M', 'F']" placeholder="Seleccione un tipo" required="true" :invalid="submitted && !paciente.genero" class="w-full" />
                         <small v-if="submitted && !paciente.genero" class="text-red-500">El género es requerido.</small>
                     </div>
                 </div>
 
                 <div class="field">
                     <label for="fechaNacimiento" class="block font-bold mb-2">Fecha de Nacimiento</label>
-                    <DatePicker id="fechaNacimiento" v-model="paciente.fechaNacimiento" dateFormat="dd/mm/yy" :showIcon="true" required="true" :invalid="submitted && !paciente.fechaNacimiento" class="w-full" />
-                    <small v-if="submitted && !paciente.fechaNacimiento" class="text-red-500">La fecha de nacimiento es requerida.</small>
+                    <DatePicker id="fechaNacimiento" v-model="paciente.fechaNacimiento" dateFormat="dd/mm/yy" :showIcon="true" class="w-full" />
                 </div>
             </div>
 
