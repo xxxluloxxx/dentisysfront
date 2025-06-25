@@ -34,6 +34,9 @@ export const MedicoService = {
             // Mantener la contraseña original
             medicoData.password = medicoExistente.password;
 
+            console.log('🔄 Medico ID:', id);
+            console.log('🔄 Medico a actualizar:', medicoData);
+
             const response = await axios.put(API_CONFIG.getUrl('MEDICOS') + '/' + id, medicoData);
             return response.data;
         } catch (error) {
@@ -56,7 +59,7 @@ export const MedicoService = {
         console.log(`🚀 Obteniendo medico con ID: ${id}`);
         try {
             const response = await axios.get(`${API_CONFIG.getUrl('MEDICOS')}/${id}`);
-            console.log('✅ Cliente obtenido exitosamente:', response.data);
+            console.log('✅ Medico obtenido exitosamente:', response.data);
             return response.data;
         } catch (error) {
             console.error('❌ Error al obtener el medico:', error.message);

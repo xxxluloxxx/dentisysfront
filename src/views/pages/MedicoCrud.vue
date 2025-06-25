@@ -1,5 +1,6 @@
 <script setup>
 import { MedicoService } from '@/service/MedicoService';
+import { UsuarioService } from '@/service/UsuarioService';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
@@ -78,8 +79,7 @@ function savePaciente() {
     submitted.value = true;
 
     if (medico?.value.nombre?.trim()) {
-        const pacienteData = {
-            tipoDocumento: medico.value.tipoDocumento,
+        const medicoDataActualizar = {
             numeroDocumento: medico.value.numeroDocumento,
             nombre: medico.value.nombre,
             apellido: medico.value.apellido,
@@ -90,14 +90,14 @@ function savePaciente() {
         };
 
         if (medico.value.id) {
-            updatePaciente(pacienteData);
+            updateMedico(medicoDataActualizar);
         } else {
-            createpaciente(pacienteData);
+            createMedico(medicoDataActualizar);
         }
     }
 }
 
-function createpaciente(pacienteData) {
+function createMedico(pacienteData) {
     MedicoService.create(pacienteData)
         .then((response) => {
             medicos.value.push(response);
@@ -111,21 +111,56 @@ function createpaciente(pacienteData) {
         });
 }
 
-function updatePaciente(pacienteData) {
-    MedicoService.update(medico.value.id, pacienteData)
-        .then((response) => {
-            const index = findIndexById(medico.value.id);
-            if (index !== -1) {
-                medicos.value[index] = response;
-            }
-            medicoDialog.value = false;
-            medico.value = {};
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Medico Actualizado', life: 3000 });
-        })
-        .catch((error) => {
-            console.error('Error al actualizar el medico:', error);
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al actualizar el medico', life: 3000 });
-        });
+function updateMedico(medicoData) {
+    // Verificar si la especialidad ha sido actualizada
+    if (medico.value.especialidad !== medicoData.especialidad) {
+        console.log('🔄 Actualizando médico con nueva especialidad:', medicoData.especialidad);
+        MedicoService.update(medico.value.id, medicoData)
+            .then((response) => {
+                const index = findIndexById(medico.value.id);
+                if (index !== -1) {
+                    medicos.value[index] = response;
+                }
+                medicoDialog.value = false;
+                medico.value = {};
+                toast.add({ severity: 'success', summary: 'Éxito', detail: 'Medico Actualizado', life: 3000 });
+            })
+            .catch((error) => {
+                console.error('Error al actualizar el medico:', error);
+                toast.add({ severity: 'error', summary: 'Error', detail: 'Error al actualizar el medico', life: 3000 });
+            });
+    } else {
+        console.log('🔄 Actualizando médico sin cambios en especialidad');
+        // Primero obtener el médico por ID para extraer el usuario ID
+        MedicoService.getById(medico.value.id)
+            .then((medicoCompleto) => {
+                console.log('✅ Médico obtenido:', medicoCompleto);
+                const usuarioId = medicoCompleto.usuarioId;
+                console.log('🔄 Usuario ID:', usuarioId);
+
+                if (usuarioId) {
+                    console.log('🔄 Actualizando usuario con ID:', usuarioId);
+                    return UsuarioService.update(usuarioId, medicoData);
+                } else {
+                    throw new Error('No se encontró el ID del usuario asociado al médico');
+                }
+            })
+            .then((response) => {
+                console.log('✅ Usuario actualizado exitosamente:', response);
+                // Actualizar la lista local
+                const index = findIndexById(medico.value.id);
+                if (index !== -1) {
+                    medicos.value[index] = { ...medicos.value[index], ...medicoData };
+                }
+                medicoDialog.value = false;
+                medico.value = {};
+                toast.add({ severity: 'success', summary: 'Éxito', detail: 'Médico Actualizado', life: 3000 });
+            })
+            .catch((error) => {
+                console.error('Error al actualizar el médico/usuario:', error);
+                toast.add({ severity: 'error', summary: 'Error', detail: 'Error al actualizar el médico', life: 3000 });
+            });
+    }
 }
 
 function editMedico(cli) {
@@ -287,14 +322,14 @@ function exportCSV() {
             <div class="flex flex-col gap-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="field">
-                        <label for="tipoDocumento" class="block font-bold mb-2">Tipo documento</label>
-                        <Select id="tipoDocumento" v-model="medico.tipoDocumento" :options="['CI', 'Pasaporte', 'Extranjero']" placeholder="Seleccione un tipo" class="w-full" />
-                        <small v-if="submitted && !medico.tipoDocumento" class="text-red-500">El tipo de documento es requerido.</small>
-                    </div>
-                    <div class="field">
                         <label for="numeroDocumento" class="block font-bold mb-2">Número de documento</label>
                         <InputText id="numeroDocumento" v-model.trim="medico.numeroDocumento" required="true" autofocus :invalid="submitted && !medico.numeroDocumento" class="w-full" />
                         <small v-if="submitted && !medico.numeroDocumento" class="text-red-500">El número de documento es requerido.</small>
+                    </div>
+                    <div class="field">
+                        <label for="telefono" class="block font-bold mb-2">Teléfono</label>
+                        <InputText id="telefono" v-model.trim="medico.telefono" required="true" :invalid="submitted && !medico.telefono" class="w-full" />
+                        <small v-if="submitted && !medico.telefono" class="text-red-500">El teléfono es requerido.</small>
                     </div>
                 </div>
 
@@ -317,17 +352,10 @@ function exportCSV() {
                     <small v-if="submitted && !medico.especialidad" class="text-red-500">La especialidad es requerida.</small>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="field">
-                        <label for="email" class="block font-bold mb-2">Email</label>
-                        <InputText id="email" v-model.trim="medico.email" required="true" :invalid="submitted && !medico.email" class="w-full" />
-                        <small v-if="submitted && !medico.email" class="text-red-500">El email es requerido.</small>
-                    </div>
-                    <div class="field">
-                        <label for="telefono" class="block font-bold mb-2">Teléfono</label>
-                        <InputText id="telefono" v-model.trim="medico.telefono" required="true" :invalid="submitted && !medico.telefono" class="w-full" />
-                        <small v-if="submitted && !medico.telefono" class="text-red-500">El teléfono es requerido.</small>
-                    </div>
+                <div class="field">
+                    <label for="email" class="block font-bold mb-2">Email</label>
+                    <InputText id="email" v-model.trim="medico.email" required="true" :invalid="submitted && !medico.email" class="w-full" />
+                    <small v-if="submitted && !medico.email" class="text-red-500">El email es requerido.</small>
                 </div>
             </div>
 
