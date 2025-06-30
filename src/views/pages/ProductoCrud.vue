@@ -208,11 +208,18 @@ const toggleSort = () => {
                         {{ formatCurrency(slotProps.data.precio) }}
                     </template>
                 </Column>
-                <Column field="categoria" header="Categoria" sortable style="min-width: 10rem"> </Column>
-                <Column field="descripcion" header="Descripcion" sortable style="min-width: 10rem"></Column>
-                <Column :exportable="false" style="min-width: 12rem">
+                <Column field="categoria" header="Categoria" sortable style="min-width: 10rem">
                     <template #header>
-                        <span class="text-primary-600 dark:text-primary-400 font-bold">Acciones</span>
+                        <span class="text-purple-600 font-bold"></span>
+                    </template>
+                    <template #body="slotProps">
+                        <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-sm font-medium">{{ slotProps.data.categoria }}</span>
+                    </template>
+                </Column>
+                <Column field="descripcion" header="Descripcion" sortable style="min-width: 10rem"></Column>
+                <Column header="Acciones" :exportable="false" style="min-width: 12rem">
+                    <template #header>
+                        <span class="text-primary-600 dark:text-primary-400 font-bold"></span>
                     </template>
                     <template #body="slotProps">
                         <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editProduct(slotProps.data)" />
