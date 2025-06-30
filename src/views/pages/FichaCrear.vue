@@ -212,10 +212,10 @@ const guardarFicha = async () => {
     // Crear objeto con los datos formateados
     const fichaData = {
         paciente: {
-            id: JSON.parse(localStorage.getItem('userData'))?.id
+            id: idPaciente.value
         },
         medico: {
-            id: 1
+            id: JSON.parse(localStorage.getItem('userData'))?.id
         },
         datos: {
             datosFicha: {
