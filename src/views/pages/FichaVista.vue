@@ -2,6 +2,7 @@
 import { FichaService } from '@/service/FichaMedica';
 import { ImagenFichaService } from '@/service/ImagenFicha';
 import { ProcedimientoService } from '@/service/ProcedimientoService';
+import Calendar from 'primevue/calendar';
 import Column from 'primevue/column';
 import DataTable from 'primevue/datatable';
 import Dialog from 'primevue/dialog';
@@ -24,7 +25,8 @@ const imagenAEliminar = ref(null);
 const fileupload = ref(null);
 const nuevoProcedimiento = ref({
     procedimiento: '',
-    observaciones: ''
+    observaciones: '',
+    fecha: null
 });
 const imagenesFicha = ref([]);
 const visible = ref(false);
@@ -70,11 +72,9 @@ onMounted(async () => {
                     ...imagen,
                     imagenBase64: imagen.imagen || imagen.imagenBase64
                 }));
-                toast.add({ severity: 'success', summary: 'Éxito', detail: 'Imágenes cargadas correctamente', life: 3000 });
             })
             .catch((error) => {
                 console.error('Error al cargar las imágenes:', error);
-                toast.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar las imágenes', life: 3000 });
             });
 
         console.log('🔄 Imágenes cargadas:');
@@ -407,12 +407,29 @@ const agregarProcedimiento = async () => {
             return;
         }
 
+        if (!nuevoProcedimiento.value.fecha) {
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'La fecha es requerida',
+                life: 3000
+            });
+            return;
+        }
+
+        // Combinar la fecha seleccionada con la hora actual
+        const fechaSeleccionada = new Date(nuevoProcedimiento.value.fecha);
+        const ahora = new Date();
+        fechaSeleccionada.setHours(ahora.getHours(), ahora.getMinutes(), ahora.getSeconds(), ahora.getMilliseconds());
+        const fechaCompleta = fechaSeleccionada.toISOString();
+
         const procedimientoData = {
             ficha: {
                 id: route.params.id
             },
             procedimiento: nuevoProcedimiento.value.procedimiento,
-            observaciones: nuevoProcedimiento.value.observaciones
+            observaciones: nuevoProcedimiento.value.observaciones,
+            fecha: fechaCompleta
         };
 
         await ProcedimientoService.create(procedimientoData);
@@ -423,7 +440,8 @@ const agregarProcedimiento = async () => {
         // Limpiar el formulario
         nuevoProcedimiento.value = {
             procedimiento: '',
-            observaciones: ''
+            observaciones: '',
+            fecha: null
         };
 
         mostrarDialogoProcedimiento.value = false;
@@ -845,8 +863,13 @@ const upload = async () => {
                                         :rowsPerPageOptions="[5, 10, 20]"
                                         responsiveLayout="scroll"
                                     >
-                                        <Column field="procedimiento" header="Procedimiento" style="width: 10%"></Column>
-                                        <Column field="observaciones" header="Observaciones" style="width: 85%"></Column>
+                                        <Column field="procedimiento" header="Procedimiento" style="width: 30%"></Column>
+                                        <Column field="observaciones" header="Observaciones" style="width: 50%"></Column>
+                                        <Column field="fecha" header="Fecha" style="width: 15%">
+                                            <template #body="slotProps">
+                                                {{ slotProps.data.fecha ? slotProps.data.fecha.split('T')[0] : '' }}
+                                            </template>
+                                        </Column>
                                         <Column :exportable="false" style="width: 5%">
                                             <template #body="slotProps">
                                                 <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2 !w-8 !h-8" @click="deleteServicio(slotProps.data)" />
@@ -863,6 +886,10 @@ const upload = async () => {
                                         <div class="field mb-4">
                                             <label for="procedimiento" class="font-bold block mb-2">Procedimiento</label>
                                             <InputText id="procedimiento" v-model="nuevoProcedimiento.procedimiento" class="w-full" />
+                                        </div>
+                                        <div class="field mb-4">
+                                            <label for="fechaProcedimiento" class="font-bold block mb-2">Fecha de procedimiento</label>
+                                            <Calendar id="fechaProcedimiento" v-model="nuevoProcedimiento.fecha" dateFormat="dd/mm/yy" class="w-full" />
                                         </div>
                                         <div class="field mb-4">
                                             <label for="observaciones" class="font-bold block mb-2">Observaciones</label>
@@ -893,7 +920,7 @@ const upload = async () => {
                                 <div class="card">
                                     <div class="flex align-items-center gap-3 mb-4">
                                         <Button icon="pi pi-plus" class="!w-2rem !h-2rem" rounded @click="mostrarDialogoImagen = true" />
-                                        <div class="font-semibold text-xl">Carousel de Imágenes de Ficha</div>
+                                        <div class="font-semibold text-xl">Galeria de imágenes</div>
                                     </div>
                                     <div class="relative">
                                         <Carousel :value="imagenesFicha" :numVisible="3" :numScroll="3" :responsiveOptions="carouselResponsiveOptions">

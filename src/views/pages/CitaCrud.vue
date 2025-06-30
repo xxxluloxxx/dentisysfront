@@ -33,6 +33,20 @@ const options = [
     { label: 'Todos', value: '2' }
 ];
 
+// Opciones de estado para nuevas citas (sin CANCELADA)
+const estadoOptionsNuevas = ['PENDIENTE', 'CONFIRMADA'];
+
+// Opciones de estado para edición (incluye CANCELADA)
+const estadoOptionsEdicion = ['PENDIENTE', 'CONFIRMADA', 'CANCELADA'];
+
+// Computed property para determinar si es una nueva cita
+const isNewCita = computed(() => !cita.value.id);
+
+// Computed property para las opciones de estado según el contexto
+const estadoOptions = computed(() => {
+    return isNewCita.value ? estadoOptionsNuevas : estadoOptionsEdicion;
+});
+
 const filteredCitas = computed(() => {
     let filtered = citas.value;
 
@@ -138,7 +152,9 @@ onMounted(() => {
 });
 
 function openNew() {
-    cita.value = {};
+    cita.value = {
+        estado: 'PENDIENTE' // Estado por defecto para nuevas citas
+    };
     submitted.value = false;
     citaDialog.value = true;
 }
@@ -264,10 +280,6 @@ function deleteCita() {
 
 function exportCSV() {
     dt.value.exportCSV();
-}
-
-function confirmDeleteSelected() {
-    deleteCitasDialog.value = true;
 }
 
 function deleteSelectedCitas() {
@@ -485,7 +497,7 @@ function getEstadoSeverity(estado) {
                     </div>
                     <div class="field">
                         <label for="estado" class="block font-bold mb-2">Estado</label>
-                        <Select id="estado" v-model="cita.estado" :options="['PENDIENTE', 'CONFIRMADA', 'CANCELADA']" placeholder="Seleccione un estado" class="w-full" />
+                        <Select id="estado" v-model="cita.estado" :options="estadoOptions" placeholder="Seleccione un estado" class="w-full" />
                         <small v-if="submitted && !cita.estado" class="text-red-500">El estado es requerido.</small>
                     </div>
                 </div>

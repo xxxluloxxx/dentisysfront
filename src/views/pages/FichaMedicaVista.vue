@@ -230,11 +230,9 @@ onMounted(() => {
     ImagenFichaService.getAll()
         .then((data) => {
             imagenesFicha.value = data;
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Imágenes cargadas correctamente', life: 3000 });
         })
         .catch((error) => {
             console.error('Error al cargar las imágenes:', error);
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar las imágenes', life: 3000 });
         });
 });
 
