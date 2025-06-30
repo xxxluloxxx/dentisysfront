@@ -286,7 +286,7 @@ const toggleSort = () => {
                     </div>
                     <div class="field">
                         <label for="categoria" class="block font-bold mb-2">Categoría</label>
-                        <Dropdown id="categoria" v-model="producto.categoria" :options="['SERVICIO', 'PRODUCTO']" placeholder="Seleccione una categoría" required="true" :invalid="submitted && !producto.categoria" class="w-full" />
+                        <InputText id="categoria" v-model.trim="producto.categoria" placeholder="Ingrese la categoría" required="true" :invalid="submitted && !producto.categoria" class="w-full" />
                         <small v-if="submitted && !producto.categoria" class="text-red-500">La categoría es requerida.</small>
                     </div>
                 </div>
