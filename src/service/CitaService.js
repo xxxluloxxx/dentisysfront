@@ -13,14 +13,7 @@ export const CitaService = {
                 title: cita.pacienteNombre,
                 subtitle: cita.medicoNombre,
                 start: `${cita.fechaCita}T${cita.horaCita}`,
-                end: `${cita.fechaCita}T${(() => {
-                    const [hours, minutes] = cita.horaCita.split(':');
-                    const date = new Date();
-                    date.setHours(parseInt(hours));
-                    date.setMinutes(parseInt(minutes));
-                    date.setHours(date.getHours() + 1);
-                    return `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}:00`;
-                })()}`,
+                end: `${cita.fechaCita}T${cita.horaCitaFin}`,
                 backgroundColor: this.getColorByEstado(cita.estado),
                 description: cita.observaciones,
                 estado: cita.estado
@@ -104,6 +97,5 @@ export const CitaService = {
             default:
                 return '#95A5A6'; // Gris más vibrante por defecto
         }
-    },
+    }
 };
-

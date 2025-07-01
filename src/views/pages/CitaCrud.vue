@@ -168,7 +168,7 @@ function saveCita() {
     submitted.value = true;
     console.log('Datos de la cita:', cita.value);
 
-    if (!cita.value.pacienteId || !cita.value.medicoId || !cita.value.fechaCita || !cita.value.horaCita || !cita.value.estado) {
+    if (!cita.value.pacienteId || !cita.value.medicoId || !cita.value.fechaCita || !cita.value.horaCita || !cita.value.horaCitaFin || !cita.value.estado) {
         toast.add({
             severity: 'error',
             summary: 'Error',
@@ -190,6 +190,13 @@ function saveCita() {
         },
         fechaCita: new Date(cita.value.fechaCita).toISOString().split('T')[0],
         horaCita: new Date(cita.value.horaCita).toLocaleTimeString('es-EC', {
+            hour12: false,
+            timeZone: 'America/Guayaquil',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        }),
+        horaCitaFin: new Date(cita.value.horaCitaFin).toLocaleTimeString('es-EC', {
             hour12: false,
             timeZone: 'America/Guayaquil',
             hour: '2-digit',
@@ -384,9 +391,14 @@ function getEstadoSeverity(estado) {
                 </template>
 
                 <Column field="fechaCita" header="Fecha Cita" sortable style="min-width: 5rem"></Column>
-                <Column field="horaCita" header="Hora Cita" sortable style="min-width: 5rem">
+                <Column field="horaCita" header="Hora Cita " sortable style="min-width: 5rem">
                     <template #body="slotProps">
                         {{ slotProps.data.horaCita.substring(0, 5) }}
+                    </template>
+                </Column>
+                <Column field="horaCitaFin" header="Hora Cita Fin" sortable style="min-width: 5rem">
+                    <template #body="slotProps">
+                        {{ slotProps.data.horaCitaFin.substring(0, 5) }}
                     </template>
                 </Column>
                 <Column field="pacienteNombre" header="Paciente" sortable style="min-width: 5rem"></Column>
@@ -503,9 +515,19 @@ function getEstadoSeverity(estado) {
                 </div>
 
                 <div class="field">
-                    <label for="horaCita" class="block font-bold mb-2">Hora</label>
-                    <Calendar id="horaCita" v-model="cita.horaCita" timeOnly hourFormat="24" :showIcon="true" :stepMinute="15" required="true" :invalid="submitted && !cita.horaCita" class="w-full" />
-                    <small v-if="submitted && !cita.horaCita" class="text-red-500">La hora es requerida.</small>
+                    <label class="block font-bold mb-2">Horario de la Cita</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="horaCita" class="block text-sm font-medium mb-1">Hora de Inicio</label>
+                            <Calendar id="horaCita" v-model="cita.horaCita" timeOnly hourFormat="24" :showIcon="true" :stepMinute="15" required="true" :invalid="submitted && !cita.horaCita" class="w-full" />
+                            <small v-if="submitted && !cita.horaCita" class="text-red-500">La hora de inicio es requerida.</small>
+                        </div>
+                        <div>
+                            <label for="horaCitaFin" class="block text-sm font-medium mb-1">Hora de Fin</label>
+                            <Calendar id="horaCitaFin" v-model="cita.horaCitaFin" timeOnly hourFormat="24" :showIcon="true" :stepMinute="15" required="true" :invalid="submitted && !cita.horaCitaFin" class="w-full" />
+                            <small v-if="submitted && !cita.horaCitaFin" class="text-red-500">La hora de fin es requerida.</small>
+                        </div>
+                    </div>
                 </div>
             </div>
 
