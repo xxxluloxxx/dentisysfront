@@ -215,7 +215,13 @@ function exportCSV() {
                 <Column field="identificacion" header="Identificación" sortable style="min-width: 5rem"></Column>
                 <Column field="apellido" header="Apellido" sortable style="min-width: 5rem"></Column>
                 <Column field="nombre" header="Nombre" sortable style="min-width: 5rem"></Column>
-                <Column field="genero" header="Genero" sortable style="min-width: 5rem"></Column>
+                <Column field="genero" header="Género" sortable style="min-width: 8rem">
+                    <template #body="slotProps">
+                        <span :class="slotProps.data.genero === 'M' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'" class="px-2 py-1 rounded-full text-sm font-medium">
+                            {{ slotProps.data.genero }}
+                        </span>
+                    </template>
+                </Column>
                 <Column field="email" header="Email" sortable style="min-width: 16rem"></Column>
                 <Column field="telefono" header="Teléfono" sortable style="min-width: 12rem"></Column>
                 <Column field="direccion" header="Dirección" sortable style="min-width: 12rem"></Column>
@@ -277,7 +283,11 @@ function exportCSV() {
                                 </div>
                                 <div>
                                     <span class="font-semibold dark:text-white">Género:</span>
-                                    <p class="text-gray-600 dark:text-gray-400">{{ paciente.genero }}</p>
+                                    <p class="text-gray-600 dark:text-gray-400">
+                                        <span :class="paciente.genero === 'M' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'" class="px-2 py-1 rounded-full text-xs font-medium">
+                                            {{ paciente.genero }}
+                                        </span>
+                                    </p>
                                 </div>
                                 <div>
                                     <span class="font-semibold dark:text-white">Dirección:</span>
