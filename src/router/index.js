@@ -122,7 +122,7 @@ const router = createRouter({
                 {
                     path: '/pages/pacientes',
                     name: 'pacientes',
-                    component: () => import('@/views/pages/PacienteCrud.vue')
+                    component: () => import('@/views/pages/Paciente.vue')
                 },
                 {
                     path: '/pages/empleados',
@@ -132,7 +132,7 @@ const router = createRouter({
                 {
                     path: '/pages/medicos',
                     name: 'medicos',
-                    component: () => import('@/views/pages/MedicoCrud.vue')
+                    component: () => import('@/views/pages/Medico.vue')
                 },
                 {
                     path: '/pages/fichasMedicas',
