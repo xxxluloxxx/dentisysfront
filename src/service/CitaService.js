@@ -6,7 +6,6 @@ export const CitaService = {
         try {
             const response = await axios.get(API_CONFIG.getUrl('CITAS'));
             console.log('✅ Respuesta recibida de la API:', response.data);
-            
             console.log('🔄 Citas:', response.data);
             console.log(`📊 Total de citas procesados: ${response.data.length}`);
             return response.data.map((cita) => ({
