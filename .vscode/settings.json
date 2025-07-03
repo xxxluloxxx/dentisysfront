@@ -39,5 +39,8 @@
         "titleBar.inactiveBackground": "#ff3d0099",
         "titleBar.inactiveForeground": "#e7e7e799"
     },
-    "peacock.color": "#ff3d00"
+    "peacock.color": "#ff3d00",
+    "files.eol": "\n",
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true
 }
