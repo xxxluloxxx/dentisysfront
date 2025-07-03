@@ -1,5 +1,5 @@
 <script setup>
-import DeleteConfirmationDialog from '@/components/medicos/DeleteConfirmationDialog.vue';
+import DeleteConfirmationDialog from '@/components/medicos/MedicoDeleteConfirmationDialog.vue';
 import MedicoForm from '@/components/medicos/MedicoForm.vue';
 import MedicosHeader from '@/components/medicos/MedicosHeader.vue';
 import MedicosTable from '@/components/medicos/MedicosTable.vue';

@@ -1,5 +1,5 @@
 <script setup>
-import DeleteConfirmationDialog from '@/components/pacientes/DeleteConfirmationDialog.vue';
+import DeleteConfirmationDialog from '@/components/pacientes/PacienteDeleteConfirmationDialog.vue';
 import PacienteForm from '@/components/pacientes/PacienteForm.vue';
 import PacientesTable from '@/components/pacientes/PacientesTable.vue';
 import { usePaciente } from '@/composables/usePaciente';

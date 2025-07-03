@@ -36,24 +36,13 @@ function handleHide() {
             <i class="pi pi-exclamation-triangle !text-3xl" />
             <span v-if="paciente">
                 ¿Estás seguro de querer eliminar este paciente
-                <b>{{ paciente.nombre }} {{ paciente.apellido }}</b>?
+                <b>{{ paciente.nombre }} {{ paciente.apellido }}</b
+                >?
             </span>
         </div>
         <template #footer>
-            <Button
-                label="No"
-                icon="pi pi-times"
-                text
-                @click="handleCancel"
-                aria-label="Cancelar eliminación"
-            />
-            <Button
-                label="Sí"
-                icon="pi pi-check"
-                @click="handleConfirm"
-                :loading="isSaving"
-                aria-label="Confirmar eliminación"
-            />
+            <Button label="No" icon="pi pi-times" text @click="handleCancel" aria-label="Cancelar eliminación" />
+            <Button label="Sí" icon="pi pi-check" @click="handleConfirm" :loading="isSaving" aria-label="Confirmar eliminación" />
         </template>
     </Dialog>
 </template>
