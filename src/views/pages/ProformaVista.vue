@@ -97,40 +97,43 @@ const calcularTotalPagado = () => {
     return proforma.value.cobranzas.reduce((total, cobranza) => total + cobranza.monto, 0);
 };
 
-const agregarCobranza = async () => {
-    try {
-        if (!nuevaCobranza.value.monto || !nuevaCobranza.value.metodoPago) {
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Por favor complete todos los campos requeridos', life: 3000 });
-            return;
-        }
-
-        const cobranzaData = {
-            proforma: {
-                id: proforma.value.id
-            },
-            fechaPago: nuevaCobranza.value.fechaPago,
-            monto: nuevaCobranza.value.monto,
-            metodoPago: nuevaCobranza.value.metodoPago,
-            estado: nuevaCobranza.value.estado,
-            observaciones: nuevaCobranza.value.observaciones
-        };
-
-        await CobranzaService.create(cobranzaData);
-        const data = await ProformaService.getById(proforma.value.id);
-        proforma.value = data;
-        showDialogCobranza.value = false;
-        nuevaCobranza.value = {
-            monto: null,
-            metodoPago: null,
-            observaciones: '',
-            fechaPago: new Date().toLocaleString('en-CA', { timeZone: 'America/Guayaquil' }).split(',')[0],
-            estado: 'PARCIAL'
-        };
-        toast.add({ severity: 'success', summary: 'Éxito', detail: 'Cobranza agregada correctamente', life: 3000 });
-    } catch (error) {
-        console.error('Error al agregar la cobranza:', error);
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Error al agregar la cobranza', life: 3000 });
+const agregarCobranza = () => {
+    if (!nuevaCobranza.value.monto || !nuevaCobranza.value.metodoPago) {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Por favor complete todos los campos requeridos', life: 3000 });
+        return;
     }
+
+    const cobranzaData = {
+        proforma: {
+            id: proforma.value.id
+        },
+        fechaPago: nuevaCobranza.value.fechaPago,
+        monto: nuevaCobranza.value.monto,
+        metodoPago: nuevaCobranza.value.metodoPago,
+        estado: nuevaCobranza.value.estado,
+        observaciones: nuevaCobranza.value.observaciones
+    };
+
+    CobranzaService.create(cobranzaData)
+        .then(() => {
+            return ProformaService.getById(proforma.value.id);
+        })
+        .then((data) => {
+            proforma.value = data;
+            showDialogCobranza.value = false;
+            nuevaCobranza.value = {
+                monto: null,
+                metodoPago: null,
+                observaciones: '',
+                fechaPago: new Date().toLocaleString('en-CA', { timeZone: 'America/Guayaquil' }).split(',')[0],
+                estado: 'PARCIAL'
+            };
+            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Cobranza agregada correctamente', life: 3000 });
+        })
+        .catch((error) => {
+            console.error('Error al agregar la cobranza:', error);
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al agregar la cobranza', life: 3000 });
+        });
 };
 
 const limpiarCamposCobranza = () => {

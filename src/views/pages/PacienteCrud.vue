@@ -213,7 +213,8 @@ function exportCSV() {
                 </template>
 
                 <Column field="identificacion" header="Identificación" sortable style="min-width: 5rem"></Column>
-                <Column field="nombreCompleto" header="Nombre Completo" sortable style="min-width: 5rem"></Column>
+                <Column field="apellido" header="Apellido" sortable style="min-width: 5rem"></Column>
+                <Column field="nombre" header="Nombre" sortable style="min-width: 5rem"></Column>
                 <Column field="genero" header="Genero" sortable style="min-width: 5rem"></Column>
                 <Column field="email" header="Email" sortable style="min-width: 16rem"></Column>
                 <Column field="telefono" header="Teléfono" sortable style="min-width: 12rem"></Column>

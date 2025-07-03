@@ -15,9 +15,9 @@ export const CobranzaService = {
         }
     },
 
-    async create(clienteData) {
+    async create(cobranzaData) {
         try {
-            const response = await axios.post(API_CONFIG.getUrl('COBRANZAS'), clienteData);
+            const response = await axios.post(API_CONFIG.getUrl('COBRANZAS'), cobranzaData);
             return response.data;
         } catch (error) {
             console.error('Error al crear el cobranzas:', error);
