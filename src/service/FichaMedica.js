@@ -87,5 +87,16 @@ export const FichaService = {
             console.error('Error al eliminar la ficha:', error);
             throw error;
         }
+    },
+
+    async getProformasCobranzas(fichaId) {
+        try {
+            const response = await axios.get(`${API_CONFIG.getUrl('FICHAS_MEDICAS')}/${fichaId}/proformas-cobranzas`);
+            console.log(`✅ Proformas y cobranzas de la ficha ${fichaId} obtenidas exitosamente:`, response.data);
+            return response.data;
+        } catch (error) {
+            console.error(`❌ Error al obtener las proformas y cobranzas de la ficha ${fichaId}:`, error);
+            throw error;
+        }
     }
 };

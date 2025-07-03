@@ -39,6 +39,10 @@ const nuevaImagen = ref({
     imagenBase64: ''
 });
 
+// Variables para el historial de pagos
+const historialPagos = ref([]);
+const loadingPagos = ref(false);
+
 const carouselResponsiveOptions = ref([
     {
         breakpoint: '1024px',
@@ -156,6 +160,9 @@ onMounted(async () => {
     console.log('Iniciando la ficha, con el procedimiento id: ', 1);
     procedimiento.value = ProcedimientoService.getById(1);
     console.log(procedimiento.value);
+
+    // Cargar historial de pagos del paciente
+    await cargarHistorialPagos();
 });
 
 // Estado del formulario
@@ -390,7 +397,8 @@ const cancelar = () => {
 const options = [
     { label: 'Ficha', value: '0' },
     { label: 'Procedimientos', value: '1' },
-    { label: 'Imagenes', value: '2' }
+    { label: 'Imagenes', value: '2' },
+    { label: 'Historial de pagos', value: '3' }
 ];
 
 const activeTab = ref('0');
@@ -602,6 +610,86 @@ const upload = async () => {
             life: 3000
         });
     }
+};
+
+// Funciones para el historial de pagos
+const cargarHistorialPagos = async () => {
+    const fichaId = route.params.id;
+    if (!fichaId) return;
+
+    loadingPagos.value = true;
+    try {
+        const data = await FichaService.getProformasCobranzas(fichaId);
+        historialPagos.value = data || [];
+        console.log('🔄 Historial de pagos cargado:', historialPagos.value);
+    } catch (error) {
+        console.error('Error al cargar el historial de pagos:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Error al cargar el historial de pagos',
+            life: 3000
+        });
+    } finally {
+        loadingPagos.value = false;
+    }
+};
+
+const formatCurrency = (value) => {
+    if (value) return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    return '$0.00';
+};
+
+const obtenerFecha = (value) => {
+    if (value) {
+        const fecha = new Date(value);
+        return fecha.toISOString().split('T')[0];
+    }
+    return '';
+};
+
+const getEstadoSeverityProforma = (estado) => {
+    switch (estado) {
+        case 'PAGADA':
+            return 'success';
+        case 'PENDIENTE':
+            return 'warn';
+        case 'CANCELADA':
+            return 'danger';
+        default:
+            return null;
+    }
+};
+
+const getEstadoSeverity = (estado) => {
+    switch (estado) {
+        case 'PAGADA':
+            return 'success';
+        case 'PARCIAL':
+            return 'warn';
+        case 'CANCELADA':
+            return 'danger';
+        default:
+            return null;
+    }
+};
+
+const getEstadoSeverityMetodoPago = (estado) => {
+    switch (estado) {
+        case 'EFECTIVO':
+            return 'success';
+        case 'TRANSFERENCIA':
+            return 'warn';
+        case 'TARJETA':
+            return 'danger';
+        default:
+            return null;
+    }
+};
+
+const calcularTotalPagado = (cobranzas) => {
+    if (!cobranzas || cobranzas.length === 0) return 0;
+    return cobranzas.reduce((total, cobranza) => total + cobranza.monto, 0);
 };
 </script>
 <template>
@@ -935,6 +1023,121 @@ const upload = async () => {
                                                 </div>
                                             </template>
                                         </Carousel>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contenido de Historial de Pagos -->
+                            <div v-if="activeTab === '3'" class="col-12">
+                                <div class="card">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h2 class="text-lg md:text-xl font-semibold">Historial de Pagos</h2>
+                                        <Button icon="pi pi-refresh" class="!w-8 !h-8 !p-0" rounded @click="cargarHistorialPagos" />
+                                    </div>
+
+                                    <div v-if="loadingPagos" class="flex justify-content-center">
+                                        <ProgressSpinner />
+                                    </div>
+
+                                    <div v-else-if="historialPagos.length === 0" class="text-center p-4">
+                                        <i class="pi pi-info-circle text-4xl text-gray-400 mb-2"></i>
+                                        <p class="text-gray-600">No se encontraron registros de pagos para este paciente.</p>
+                                    </div>
+
+                                    <div v-else class="space-y-4">
+                                        <div v-for="proforma in historialPagos" :key="proforma.id" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                                            <!-- Información de la proforma -->
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                                <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                                    <h3 class="text-lg font-semibold mb-3">Información de la Proforma</h3>
+                                                    <div class="grid grid-cols-2 gap-3">
+                                                        <div>
+                                                            <p class="font-semibold text-sm">Médico:</p>
+                                                            <p class="text-sm">{{ proforma.medicoNombre }}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p class="font-semibold text-sm">Fecha:</p>
+                                                            <p class="text-sm">{{ obtenerFecha(proforma.createdAt) }}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p class="font-semibold text-sm">Estado:</p>
+                                                            <Tag :value="proforma.estado" :severity="getEstadoSeverityProforma(proforma.estado)" />
+                                                        </div>
+                                                        <div>
+                                                            <p class="font-semibold text-sm">Observaciones:</p>
+                                                            <p class="text-sm">{{ proforma.observaciones || 'Sin observaciones' }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                                    <h3 class="text-lg font-semibold mb-3">Resumen Financiero</h3>
+                                                    <div class="space-y-2">
+                                                        <div class="flex justify-between">
+                                                            <span class="font-semibold">Subtotal:</span>
+                                                            <span>{{ formatCurrency(proforma.subtotal) }}</span>
+                                                        </div>
+                                                        <div class="flex justify-between">
+                                                            <span class="font-semibold">IVA:</span>
+                                                            <span>{{ formatCurrency(proforma.iva) }}</span>
+                                                        </div>
+                                                        <div class="flex justify-between">
+                                                            <span class="font-semibold">Descuento:</span>
+                                                            <span>{{ formatCurrency(proforma.descuento) }}</span>
+                                                        </div>
+                                                        <div class="flex justify-between text-lg font-bold border-t pt-2">
+                                                            <span>Total:</span>
+                                                            <span class="text-primary">{{ formatCurrency(proforma.total) }}</span>
+                                                        </div>
+                                                        <div class="flex justify-between text-sm">
+                                                            <span class="font-semibold">Total Pagado:</span>
+                                                            <span class="text-success">{{ formatCurrency(calcularTotalPagado(proforma.cobranzas)) }}</span>
+                                                        </div>
+                                                        <div class="flex justify-between text-sm">
+                                                            <span class="font-semibold">Pendiente:</span>
+                                                            <span class="text-warning">{{ formatCurrency(proforma.total - calcularTotalPagado(proforma.cobranzas)) }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Tabla de cobranzas -->
+                                            <div v-if="proforma.cobranzas && proforma.cobranzas.length > 0">
+                                                <h4 class="text-md font-semibold mb-3">Detalle de Pagos</h4>
+                                                <DataTable :value="proforma.cobranzas" class="p-datatable-sm" stripedRows rowHover>
+                                                    <Column field="fechaPago" header="Fecha de Pago" style="width: 15%">
+                                                        <template #body="slotProps">
+                                                            {{ obtenerFecha(slotProps.data.fechaPago) }}
+                                                        </template>
+                                                    </Column>
+                                                    <Column field="monto" header="Monto" style="width: 15%">
+                                                        <template #body="slotProps">
+                                                            {{ formatCurrency(slotProps.data.monto) }}
+                                                        </template>
+                                                    </Column>
+                                                    <Column field="metodoPago" header="Método de Pago" style="width: 15%">
+                                                        <template #body="slotProps">
+                                                            <Tag :value="slotProps.data.metodoPago" :severity="getEstadoSeverityMetodoPago(slotProps.data.metodoPago)" />
+                                                        </template>
+                                                    </Column>
+                                                    <Column field="estado" header="Estado" style="width: 15%">
+                                                        <template #body="slotProps">
+                                                            <Tag :value="slotProps.data.estado" :severity="getEstadoSeverity(slotProps.data.estado)" />
+                                                        </template>
+                                                    </Column>
+                                                    <Column field="observaciones" header="Observaciones" style="width: 40%">
+                                                        <template #body="slotProps">
+                                                            {{ slotProps.data.observaciones || 'Sin observaciones' }}
+                                                        </template>
+                                                    </Column>
+                                                </DataTable>
+                                            </div>
+
+                                            <div v-else class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                                <i class="pi pi-exclamation-triangle text-2xl text-gray-400 mb-2"></i>
+                                                <p class="text-gray-600">No se han registrado pagos para esta proforma.</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
