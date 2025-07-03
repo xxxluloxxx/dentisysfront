@@ -6,8 +6,8 @@ import { computed, onMounted, ref } from 'vue';
 
 const toast = useToast();
 const dt = ref();
-const productos = ref();
-const loading = ref(false);
+const productos = ref([]);
+const loading = ref(true);
 const productoDialog = ref(false);
 const deleteProductoDialog = ref(false);
 const producto = ref({});
@@ -15,24 +15,49 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 const submitted = ref(false);
-const sortAsc = ref(true);
+const sortOrder = ref('asc');
+const isSaving = ref(false);
 
 onMounted(() => {
+    cargarProductos();
+});
+
+function cargarProductos() {
     loading.value = true;
     ProductoService.getAllProducts()
         .then((data) => (productos.value = data))
         .catch((error) => {
             console.error('Error al cargar los productos:', error);
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al conectarse al servidor', life: 3000 });
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al conectarse al servidor', life: 4000 });
         })
         .finally(() => {
             loading.value = false;
         });
-});
+}
 
 function formatCurrency(value) {
     if (value) return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
     return;
+}
+
+// Filtrado y ordenamiento unificado
+const filteredProductos = computed(() => {
+    if (!productos.value) return [];
+    let result = [...productos.value];
+    if (filters.value.global.value) {
+        const searchTerm = filters.value.global.value.toLowerCase();
+        result = result.filter((p) => p.nombre?.toLowerCase().includes(searchTerm) || p.categoria?.toLowerCase().includes(searchTerm) || p.descripcion?.toLowerCase().includes(searchTerm) || p.codigo?.toLowerCase().includes(searchTerm));
+    }
+    result.sort((a, b) => {
+        const nombreA = a.nombre.toLowerCase();
+        const nombreB = b.nombre.toLowerCase();
+        return sortOrder.value === 'asc' ? nombreA.localeCompare(nombreB) : nombreB.localeCompare(nombreA);
+    });
+    return result;
+});
+
+function toggleSort() {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
 }
 
 function openNew() {
@@ -48,21 +73,22 @@ function hideDialog() {
 
 function saveProduct() {
     submitted.value = true;
-
-    if (producto?.value.nombre?.trim()) {
-        const productoData = {
-            codigo: producto.value.codigo,
-            nombre: producto.value.nombre,
-            descripcion: producto.value.descripcion,
-            precio: producto.value.precio,
-            categoria: producto.value.categoria
-        };
-
-        if (producto.value.id) {
-            updateProduct(productoData);
-        } else {
-            createProduct(productoData);
-        }
+    if (!producto.value.nombre?.trim() || !producto.value.categoria?.trim() || !producto.value.descripcion?.trim()) {
+        toast.add({ severity: 'warn', summary: 'Campos requeridos', detail: 'Por favor, complete todos los campos obligatorios.', life: 3500 });
+        return;
+    }
+    isSaving.value = true;
+    const productoData = {
+        codigo: producto.value.codigo,
+        nombre: producto.value.nombre,
+        descripcion: producto.value.descripcion,
+        precio: producto.value.precio,
+        categoria: producto.value.categoria
+    };
+    if (producto.value.id) {
+        updateProduct(productoData);
+    } else {
+        createProduct(productoData);
     }
 }
 
@@ -72,11 +98,14 @@ function createProduct(productoData) {
             productos.value.push(response);
             productoDialog.value = false;
             producto.value = {};
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Producto Creado', life: 3000 });
+            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Producto creado correctamente', life: 3000 });
         })
         .catch((error) => {
             console.error('Error al crear el producto:', error);
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al crear el producto', life: 3000 });
+            toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo crear el producto', life: 4000 });
+        })
+        .finally(() => {
+            isSaving.value = false;
         });
 }
 
@@ -89,11 +118,14 @@ function updateProduct(productoData) {
             }
             productoDialog.value = false;
             producto.value = {};
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Producto Actualizado', life: 3000 });
+            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Producto actualizado correctamente', life: 3000 });
         })
         .catch((error) => {
             console.error('Error al actualizar el producto:', error);
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al actualizar el producto', life: 3000 });
+            toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo actualizar el producto', life: 4000 });
+        })
+        .finally(() => {
+            isSaving.value = false;
         });
 }
 
@@ -113,59 +145,62 @@ function deleteProduct() {
             productos.value = productos.value.filter((val) => val.id !== producto.value.id);
             deleteProductoDialog.value = false;
             producto.value = {};
-            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Producto Eliminado', life: 3000 });
+            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Producto eliminado correctamente', life: 3000 });
         })
         .catch((error) => {
             console.error('Error al eliminar el producto:', error);
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al eliminar el producto', life: 3000 });
+            toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el producto', life: 4000 });
         });
 }
 
 function findIndexById(id) {
-    let index = -1;
-    for (let i = 0; i < productos.value.length; i++) {
-        if (productos.value[i].id === id) {
-            index = i;
-            break;
-        }
-    }
-    return index;
+    return productos.value.findIndex((p) => p.id === id);
 }
 
 function exportCSV() {
     dt.value.exportCSV();
 }
-
-const filteredProductos = computed(() => {
-    if (!productos.value) return [];
-
-    let result = [...productos.value];
-
-    // Aplicar filtro de búsqueda
-    if (filters.value.global.value) {
-        const searchTerm = filters.value.global.value.toLowerCase();
-        result = result.filter((producto) => producto.nombre.toLowerCase().includes(searchTerm) || producto.categoria.toLowerCase().includes(searchTerm) || producto.descripcion.toLowerCase().includes(searchTerm));
-    }
-
-    // Aplicar ordenamiento
-    return result.sort((a, b) => {
-        const comparison = a.nombre.localeCompare(b.nombre);
-        return sortAsc.value ? comparison : -comparison;
-    });
-});
-
-const toggleSort = () => {
-    sortAsc.value = !sortAsc.value;
-};
 </script>
 
 <template>
     <div>
-        <div class="card">
+        <!-- Spinner de carga global -->
+        <div v-if="loading || isSaving" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+            <ProgressSpinner style="width: 60px; height: 60px" strokeWidth="4" animationDuration="1.5s" aria-label="Cargando..." />
+        </div>
+        <div class="card" :aria-busy="loading || isSaving">
+            <!-- Header mejorado -->
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4 mb-4 rounded-t-lg">
+                <div class="flex items-center gap-3">
+                    <i class="pi pi-box text-2xl text-blue-600 dark:text-blue-400" aria-hidden="true"></i>
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white m-0">Productos y servicios</h2>
+                </div>
+                <div class="flex flex-col md:flex-row md:items-center gap-2 w-full md:w-auto">
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <Tooltip target=".btn-nuevo" />
+                        <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="btn-nuevo font-semibold px-4 py-2" @click="openNew" aria-label="Agregar nuevo producto" v-tooltip.top="'Agregar nuevo producto'" />
+                        <Tooltip target=".btn-exportar" />
+                        <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="btn-exportar font-semibold px-4 py-2" @click="exportCSV($event)" aria-label="Exportar productos" v-tooltip.top="'Exportar productos a CSV'" />
+                    </div>
+                    <div class="relative flex-1 md:w-64">
+                        <IconField class="w-full">
+                            <InputIcon>
+                                <i class="pi pi-search text-blue-500" />
+                            </InputIcon>
+                            <InputText
+                                v-model="filters['global'].value"
+                                placeholder="Buscar productos..."
+                                aria-label="Buscar productos"
+                                class="w-full pl-10 py-2 rounded-lg border border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+                            />
+                        </IconField>
+                    </div>
+                </div>
+            </div>
             <!-- Vista de escritorio -->
             <DataTable
                 ref="dt"
-                :value="productos"
+                :value="filteredProductos"
                 dataKey="id"
                 :paginator="true"
                 :rows="10"
@@ -183,25 +218,6 @@ const toggleSort = () => {
                 :rowsPerPageOptions="[5, 10, 25]"
                 currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} productos"
             >
-                <template #header>
-                    <div class="flex flex-col gap-y-4">
-                        <div class="flex flex-wrap gap-2 items-center justify-start">
-                            <h4 class="m-0">Productos y servicios</h4>
-                        </div>
-                        <div class="flex flex-wrap gap-2 items-center justify-between">
-                            <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
-                            <Button label="Exportar" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
-                        </div>
-                        <div class="flex flex-wrap gap-2 items-center justify-end">
-                            <IconField>
-                                <InputIcon>
-                                    <i class="pi pi-search" />
-                                </InputIcon>
-                                <InputText v-model="filters['global'].value" placeholder="Buscar..." />
-                            </IconField>
-                        </div>
-                    </div>
-                </template>
                 <Column field="nombre" header="Nombre" sortable style="min-width: 10rem"></Column>
                 <Column field="precio" header="Precio" sortable style="min-width: 8rem">
                     <template #body="slotProps">
@@ -222,8 +238,10 @@ const toggleSort = () => {
                         <span class="text-primary-600 dark:text-primary-400 font-bold"></span>
                     </template>
                     <template #body="slotProps">
-                        <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editProduct(slotProps.data)" />
-                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
+                        <Tooltip target=".btn-editar" />
+                        <Button icon="pi pi-pencil" outlined rounded class="mr-2 btn-editar" @click="editProduct(slotProps.data)" aria-label="Editar producto" v-tooltip.top="'Editar producto'" />
+                        <Tooltip target=".btn-eliminar" />
+                        <Button icon="pi pi-trash" outlined rounded severity="danger" class="btn-eliminar" @click="confirmDeleteProduct(slotProps.data)" aria-label="Eliminar producto" v-tooltip.top="'Eliminar producto'" />
                     </template>
                 </Column>
             </DataTable>
@@ -238,14 +256,23 @@ const toggleSort = () => {
                         </div>
                         <div class="flex flex-col gap-2">
                             <div class="flex gap-2">
-                                <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="flex-1" @click="openNew" />
-                                <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1" @click="exportCSV($event)" />
+                                <Tooltip target=".btn-nuevo-m" />
+                                <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="flex-1 btn-nuevo-m" @click="openNew" aria-label="Agregar nuevo producto" v-tooltip.top="'Agregar nuevo producto'" />
+                                <Tooltip target=".btn-exportar-m" />
+                                <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1 btn-exportar-m" @click="exportCSV($event)" aria-label="Exportar productos" v-tooltip.top="'Exportar productos a CSV'" />
                             </div>
                             <div class="flex gap-2">
                                 <div class="relative flex-1">
-                                    <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                                    <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" aria-label="Buscar productos" />
                                 </div>
-                                <Button :icon="sortAsc ? 'pi pi-sort-alpha-down' : 'pi pi-sort-alpha-up'" severity="secondary" @click="toggleSort" class="p-2" />
+                                <Button
+                                    :icon="sortOrder === 'asc' ? 'pi pi-sort-alpha-down' : 'pi pi-sort-alpha-up'"
+                                    severity="secondary"
+                                    @click="toggleSort"
+                                    class="p-2"
+                                    aria-label="Ordenar alfabéticamente"
+                                    v-tooltip.top="'Ordenar alfabéticamente'"
+                                />
                             </div>
                         </div>
                     </div>
@@ -257,6 +284,8 @@ const toggleSort = () => {
                             :key="producto.id"
                             class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 w-full cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                             @click="editProduct(producto)"
+                            tabindex="0"
+                            aria-label="Editar producto {{ producto.nombre }}"
                         >
                             <div class="flex justify-between items-start mb-2">
                                 <div>
@@ -264,7 +293,8 @@ const toggleSort = () => {
                                     <p class="text-sm text-gray-600 dark:text-gray-400">Categoría: {{ producto.categoria }}</p>
                                 </div>
                                 <div class="flex gap-2">
-                                    <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2" @click.stop="confirmDeleteProduct(producto)" />
+                                    <Tooltip target=".btn-eliminar-m" />
+                                    <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2 btn-eliminar-m" @click.stop="confirmDeleteProduct(producto)" aria-label="Eliminar producto" v-tooltip.top="'Eliminar producto'" />
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2 text-sm">
@@ -283,36 +313,38 @@ const toggleSort = () => {
             </div>
         </div>
 
+        <!-- Diálogo de formulario -->
         <Dialog v-model:visible="productoDialog" :style="{ width: '90vw', maxWidth: '450px' }" header="Detalles del Producto" :modal="true" class="p-fluid">
             <div class="flex flex-col gap-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="field">
                         <label for="nombre" class="block font-bold mb-2">Nombre</label>
-                        <InputText id="nombre" v-model.trim="producto.nombre" required="true" autofocus :invalid="submitted && !producto.nombre" class="w-full" />
+                        <InputText id="nombre" v-model.trim="producto.nombre" required="true" autofocus :invalid="submitted && !producto.nombre" class="w-full" aria-required="true" aria-label="Nombre" />
                         <small v-if="submitted && !producto.nombre" class="text-red-500">El nombre es requerido.</small>
                     </div>
                     <div class="field">
                         <label for="categoria" class="block font-bold mb-2">Categoría</label>
-                        <InputText id="categoria" v-model.trim="producto.categoria" placeholder="Ingrese la categoría" required="true" :invalid="submitted && !producto.categoria" class="w-full" />
+                        <InputText id="categoria" v-model.trim="producto.categoria" placeholder="Ingrese la categoría" required="true" :invalid="submitted && !producto.categoria" class="w-full" aria-required="true" aria-label="Categoría" />
                         <small v-if="submitted && !producto.categoria" class="text-red-500">La categoría es requerida.</small>
                     </div>
                 </div>
 
                 <div class="field">
                     <label for="description" class="block font-bold mb-2">Descripción</label>
-                    <Textarea id="description" v-model="producto.descripcion" required="true" rows="3" cols="20" class="w-full" />
+                    <Textarea id="description" v-model="producto.descripcion" required="true" rows="3" cols="20" class="w-full" aria-required="true" aria-label="Descripción" />
+                    <small v-if="submitted && !producto.descripcion" class="text-red-500">La descripción es requerida.</small>
                 </div>
 
                 <div class="field">
                     <label for="price" class="block font-bold mb-2">Precio</label>
-                    <InputNumber id="price" v-model="producto.precio" mode="currency" currency="USD" locale="en-US" class="w-full" />
+                    <InputNumber id="price" v-model="producto.precio" mode="currency" currency="USD" locale="en-US" class="w-full" aria-label="Precio" />
                 </div>
             </div>
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <Button label="Cancelar" icon="pi pi-times" text @click="hideDialog" />
-                    <Button label="Guardar" icon="pi pi-check" @click="saveProduct" />
+                    <Button label="Cancelar" icon="pi pi-times" text @click="hideDialog" aria-label="Cancelar" />
+                    <Button label="Guardar" icon="pi pi-check" @click="saveProduct" :loading="isSaving" aria-label="Guardar producto" />
                 </div>
             </template>
         </Dialog>
@@ -326,8 +358,8 @@ const toggleSort = () => {
                 >
             </div>
             <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductoDialog = false" />
-                <Button label="Sí" icon="pi pi-check" @click="deleteProduct" />
+                <Button label="No" icon="pi pi-times" text @click="deleteProductoDialog = false" aria-label="Cancelar eliminación" />
+                <Button label="Sí" icon="pi pi-check" @click="deleteProduct" :loading="isSaving" aria-label="Confirmar eliminación" />
             </template>
         </Dialog>
     </div>
@@ -336,17 +368,21 @@ const toggleSort = () => {
 <style scoped>
 /* Estilos personalizados para las filas alternadas de las tablas */
 :deep(.p-datatable-tbody > tr:nth-child(even)) {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(0, 0, 0, 0.04);
 }
 
 :deep(.p-datatable-tbody > tr:nth-child(odd)) {
-    background-color: rgba(0, 0, 0, 0.02);
+    background-color: rgba(0, 0, 0, 0.01);
 }
 
 /* Estilo para resaltar la fila al pasar el cursor */
 :deep(.p-datatable-tbody > tr:hover) {
-    background-color: rgba(0, 0, 0, 0.1) !important;
+    background-color: rgba(0, 132, 255, 0.1) !important;
     cursor: pointer;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
+    transition:
+        background 0.2s,
+        box-shadow 0.2s;
 }
 
 /* Estilo para los encabezados de las tablas */
@@ -358,6 +394,105 @@ const toggleSort = () => {
 
 /* Estilo para las celdas de las tablas */
 :deep(.p-datatable .p-datatable-tbody > tr > td) {
-    padding: 0.5rem;
+    padding: 0.7rem 0.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Botones de acción */
+.btn-editar,
+.btn-eliminar,
+.btn-nuevo,
+.btn-exportar,
+.btn-nuevo-m,
+.btn-exportar-m {
+    transition:
+        box-shadow 0.2s,
+        transform 0.2s;
+    box-shadow: 0 1px 4px 0 rgba(59, 130, 246, 0.08);
+    border-radius: 50px;
+}
+.btn-editar:hover,
+.btn-nuevo:hover,
+.btn-nuevo-m:hover {
+    background: #e0f2fe !important;
+    color: #2563eb !important;
+    transform: translateY(-2px) scale(1.05);
+}
+.btn-eliminar:hover,
+.btn-eliminar-m:hover {
+    background: #fee2e2 !important;
+    color: #b91c1c !important;
+    transform: translateY(-2px) scale(1.05);
+}
+.btn-exportar:hover,
+.btn-exportar-m:hover {
+    background: #fef9c3 !important;
+    color: #ca8a04 !important;
+    transform: translateY(-2px) scale(1.05);
+}
+
+/* Tarjetas móviles */
+.bg-white {
+    background: linear-gradient(135deg, #f8fafc 80%, #e0e7ef 100%);
+}
+.dark .bg-white,
+.dark\:bg-gray-800 {
+    background: linear-gradient(135deg, #1e293b 80%, #334155 100%);
+}
+.shadow {
+    box-shadow: 0 2px 12px 0 rgba(59, 130, 246, 0.1);
+}
+
+/* Mejorar tooltips */
+:deep(.p-tooltip) {
+    font-size: 1rem;
+    border-radius: 6px;
+    background: #2563eb;
+    color: #fff;
+    padding: 0.5em 1em;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Spinner de carga */
+:deep(.p-progress-spinner-circle) {
+    stroke: #2563eb;
+}
+
+/* Mejorar inputs y selects */
+:deep(.p-inputtext),
+:deep(.p-dropdown),
+:deep(.p-calendar),
+:deep(.p-inputnumber) {
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    transition: border 0.2s;
+}
+:deep(.p-inputtext:focus),
+:deep(.p-dropdown:focus),
+:deep(.p-calendar:focus),
+:deep(.p-inputnumber:focus) {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px #93c5fd44;
+}
+
+/* Mejorar los diálogos */
+:deep(.p-dialog) {
+    border-radius: 16px;
+    box-shadow: 0 4px 32px 0 rgba(59, 130, 246, 0.12);
+}
+:deep(.p-dialog .p-dialog-header) {
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+}
+:deep(.p-dialog .p-dialog-footer) {
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
+/* Mejorar los mensajes de error */
+.text-red-500 {
+    font-size: 0.95em;
+    font-weight: 500;
+    margin-top: 2px;
 }
 </style>
