@@ -116,7 +116,7 @@ const router = createRouter({
                 {
                     path: '/pages/productos',
                     name: 'productos',
-                    component: () => import('@/views/pages/ProductoCrud.vue')
+                    component: () => import('@/views/pages/Producto.vue')
                 },
 
                 {
