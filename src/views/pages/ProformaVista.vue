@@ -280,30 +280,41 @@ const limpiarCamposCobranza = () => {
         </div>
     </div>
 
-    <Dialog v-model:visible="showDialogCobranza" header="Nueva Cobranza" :modal="true" class="p-fluid" @hide="limpiarCamposCobranza">
-        <div class="field mb-4">
-            <label for="monto">Monto</label>
-            <InputNumber id="monto" v-model="nuevaCobranza.monto" mode="currency" currency="USD" locale="en-US" />
+    <Dialog v-model:visible="showDialogCobranza" header="Nueva Cobranza" :modal="true" class="p-fluid" :style="{ width: '500px' }" @hide="limpiarCamposCobranza">
+        <div class="grid grid-cols-1 gap-4">
+            <div class="field">
+                <label for="monto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto *</label>
+                <InputNumber id="monto" v-model="nuevaCobranza.monto" mode="currency" currency="USD" locale="en-US" class="w-full" placeholder="0.00" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="field">
+                    <label for="metodoPago" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Método de Pago *</label>
+                    <Dropdown id="metodoPago" v-model="nuevaCobranza.metodoPago" :options="['EFECTIVO', 'TRANSFERENCIA', 'TARJETA']" placeholder="Seleccione método" class="w-full" />
+                </div>
+
+                <div class="field">
+                    <label for="estado" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Estado</label>
+                    <Dropdown id="estado" v-model="nuevaCobranza.estado" :options="['COMPLETADO', 'PARCIAL']" placeholder="Seleccione estado" class="w-full" />
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="fechaPago" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fecha de Pago</label>
+                <Calendar id="fechaPago" v-model="nuevaCobranza.fechaPago" dateFormat="yy-mm-dd" class="w-full" placeholder="Seleccione fecha" />
+            </div>
+
+            <div class="field">
+                <label for="observaciones" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Observaciones</label>
+                <Textarea id="observaciones" v-model="nuevaCobranza.observaciones" rows="3" class="w-full" placeholder="Ingrese observaciones adicionales..." />
+            </div>
         </div>
-        <div class="field mb-4">
-            <label for="metodoPago">Método de Pago</label>
-            <Dropdown id="metodoPago" v-model="nuevaCobranza.metodoPago" :options="['EFECTIVO', 'TRANSFERENCIA', 'TARJETA']" placeholder="Seleccione un método de pago" />
-        </div>
-        <div class="field mb-4">
-            <label for="fechaPago">Fecha de Pago</label>
-            <Calendar id="fechaPago" v-model="nuevaCobranza.fechaPago" dateFormat="yy-mm-dd" />
-        </div>
-        <div class="field mb-4">
-            <label for="estado">Estado</label>
-            <Dropdown id="estado" v-model="nuevaCobranza.estado" :options="['COMPLETADO', 'PARCIAL']" placeholder="Seleccione un estado" />
-        </div>
-        <div class="field mb-4">
-            <label for="observaciones">Observaciones</label>
-            <Textarea id="observaciones" v-model="nuevaCobranza.observaciones" rows="3" />
-        </div>
+
         <template #footer>
-            <Button label="Cancelar" icon="pi pi-times" @click="showDialogCobranza = false" class="p-button-text" />
-            <Button label="Guardar" icon="pi pi-check" @click="agregarCobranza" />
+            <div class="flex justify-end gap-2">
+                <Button label="Cancelar" icon="pi pi-times" @click="showDialogCobranza = false" class="p-button-text" />
+                <Button label="Guardar Cobranza" icon="pi pi-check" @click="agregarCobranza" class="p-button-success" />
+            </div>
         </template>
     </Dialog>
 </template>
