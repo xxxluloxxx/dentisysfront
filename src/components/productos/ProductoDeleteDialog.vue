@@ -1,4 +1,7 @@
 <script setup>
+import Button from 'primevue/button';
+import Dialog from 'primevue/dialog';
+
 const props = defineProps({
     visible: {
         type: Boolean,

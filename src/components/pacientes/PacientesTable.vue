@@ -1,5 +1,11 @@
 <script setup>
 import { FilterMatchMode } from '@primevue/core/api';
+import Button from 'primevue/button';
+import Column from 'primevue/column';
+import DataTable from 'primevue/datatable';
+import IconField from 'primevue/iconfield';
+import InputIcon from 'primevue/inputicon';
+import InputText from 'primevue/inputtext';
 import { computed, ref } from 'vue';
 
 // Props que recibe del componente padre
@@ -82,10 +88,8 @@ function handleExport() {
             </div>
             <div class="flex flex-col md:flex-row md:items-center gap-2 w-full md:w-auto">
                 <div class="flex gap-2 w-full md:w-auto">
-                    <Tooltip target=".btn-nuevo" />
-                    <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="btn-nuevo font-semibold px-4 py-2" @click="$emit('new')" aria-label="Agregar nuevo paciente" v-tooltip.top="'Agregar nuevo paciente'" />
-                    <Tooltip target=".btn-exportar" />
-                    <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="btn-exportar font-semibold px-4 py-2" @click="handleExport" aria-label="Exportar pacientes" v-tooltip.top="'Exportar pacientes a CSV'" />
+                    <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="btn-nuevo font-semibold px-4 py-2" @click="$emit('new')" aria-label="Agregar nuevo paciente" v-tooltip="'Agregar nuevo paciente'" />
+                    <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="btn-exportar font-semibold px-4 py-2" @click="handleExport" aria-label="Exportar pacientes" v-tooltip="'Exportar pacientes a CSV'" />
                 </div>
                 <div class="relative flex-1 md:w-64">
                     <IconField class="w-full">
@@ -135,10 +139,8 @@ function handleExport() {
             <Column field="direccion" header="Dirección" sortable style="min-width: 12rem"></Column>
             <Column :exportable="false" style="min-width: 12rem" class="text-primary-600 dark:text-primary-400 font-bold">
                 <template #body="slotProps">
-                    <Tooltip target=".btn-editar" />
-                    <Button icon="pi pi-pencil" outlined rounded class="mr-2 btn-editar" @click="handleEdit(slotProps.data)" aria-label="Editar paciente" v-tooltip.top="'Editar paciente'" />
-                    <Tooltip target=".btn-eliminar" />
-                    <Button icon="pi pi-trash" outlined rounded severity="danger" class="btn-eliminar" @click="handleDelete(slotProps.data)" aria-label="Eliminar paciente" v-tooltip.top="'Eliminar paciente'" />
+                    <Button icon="pi pi-pencil" outlined rounded class="mr-2 btn-editar" @click="handleEdit(slotProps.data)" aria-label="Editar paciente" v-tooltip="'Editar paciente'" />
+                    <Button icon="pi pi-trash" outlined rounded severity="danger" class="btn-eliminar" @click="handleDelete(slotProps.data)" aria-label="Eliminar paciente" v-tooltip="'Eliminar paciente'" />
                 </template>
             </Column>
         </DataTable>
@@ -153,16 +155,14 @@ function handleExport() {
                     </div>
                     <div class="flex flex-col gap-2">
                         <div class="flex gap-2">
-                            <Tooltip target=".btn-nuevo-m" />
-                            <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="flex-1 btn-nuevo-m" @click="$emit('new')" aria-label="Agregar nuevo paciente" v-tooltip.top="'Agregar nuevo paciente'" />
-                            <Tooltip target=".btn-exportar-m" />
-                            <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1 btn-exportar-m" @click="handleExport" aria-label="Exportar pacientes" v-tooltip.top="'Exportar pacientes a CSV'" />
+                            <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="flex-1 btn-nuevo-m" @click="$emit('new')" aria-label="Agregar nuevo paciente" v-tooltip="'Agregar nuevo paciente'" />
+                            <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1 btn-exportar-m" @click="handleExport" aria-label="Exportar pacientes" v-tooltip="'Exportar pacientes a CSV'" />
                         </div>
                         <div class="flex gap-2">
                             <div class="relative flex-1">
                                 <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" aria-label="Buscar pacientes" />
                             </div>
-                            <Button :icon="sortOrder === 'asc' ? 'pi pi-sort-alpha-down' : 'pi pi-sort-alpha-up'" severity="secondary" @click="toggleSort" class="p-2" aria-label="Ordenar alfabéticamente" v-tooltip.top="'Ordenar alfabéticamente'" />
+                            <Button :icon="sortOrder === 'asc' ? 'pi pi-sort-alpha-down' : 'pi pi-sort-alpha-up'" severity="secondary" @click="toggleSort" class="p-2" aria-label="Ordenar alfabéticamente" v-tooltip="'Ordenar alfabéticamente'" />
                         </div>
                     </div>
                 </div>
@@ -183,8 +183,7 @@ function handleExport() {
                                 <p class="text-sm text-gray-600 dark:text-gray-400">ID: {{ paciente.identificacion }}</p>
                             </div>
                             <div class="flex gap-2">
-                                <Tooltip target=".btn-eliminar-m" />
-                                <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2 btn-eliminar-m" @click.stop="handleDelete(paciente)" aria-label="Eliminar paciente" v-tooltip.top="'Eliminar paciente'" />
+                                <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2 btn-eliminar-m" @click.stop="handleDelete(paciente)" aria-label="Eliminar paciente" v-tooltip="'Eliminar paciente'" />
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2 text-sm">

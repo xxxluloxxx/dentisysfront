@@ -1,4 +1,9 @@
 <script setup>
+import Button from 'primevue/button';
+import Dialog from 'primevue/dialog';
+import InputNumber from 'primevue/inputnumber';
+import InputText from 'primevue/inputtext';
+import Textarea from 'primevue/textarea';
 import { ref } from 'vue';
 
 const props = defineProps({

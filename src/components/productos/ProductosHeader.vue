@@ -1,4 +1,9 @@
 <script setup>
+import Button from 'primevue/button';
+import IconField from 'primevue/iconfield';
+import InputIcon from 'primevue/inputicon';
+import InputText from 'primevue/inputtext';
+
 const props = defineProps({
     filters: {
         type: Object,
@@ -17,7 +22,6 @@ const emit = defineEmits(['new', 'export']);
         </div>
         <div class="flex flex-col md:flex-row md:items-center gap-2 w-full md:w-auto">
             <div class="flex gap-2 w-full md:w-auto">
-                <Tooltip target=".btn-nuevo" />
                 <Button
                     label="Nuevo"
                     icon="pi pi-plus"
@@ -27,7 +31,6 @@ const emit = defineEmits(['new', 'export']);
                     aria-label="Agregar nuevo producto"
                     v-tooltip.top="'Agregar nuevo producto'"
                 />
-                <Tooltip target=".btn-exportar" />
                 <Button
                     label="Exportar"
                     icon="pi pi-upload"

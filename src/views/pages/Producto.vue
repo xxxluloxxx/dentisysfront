@@ -1,8 +1,10 @@
 <script setup>
 import ProductoDeleteDialog from '@/components/productos/ProductoDeleteDialog.vue';
 import ProductoForm from '@/components/productos/ProductoForm.vue';
+import ProductosHeader from '@/components/productos/ProductosHeader.vue';
 import ProductosTable from '@/components/productos/ProductosTable.vue';
 import { useProductos } from '@/composables/useProductos';
+import ProgressSpinner from 'primevue/progressspinner';
 
 // Usar el composable de productos
 const { productos, loading, productoDialog, deleteProductoDialog, producto, filters, isSaving, openNew, hideDialog, saveProduct, editProduct, confirmDeleteProduct, deleteProduct } = useProductos();

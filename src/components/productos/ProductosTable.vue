@@ -1,4 +1,8 @@
 <script setup>
+import Button from 'primevue/button';
+import Column from 'primevue/column';
+import DataTable from 'primevue/datatable';
+import InputText from 'primevue/inputtext';
 import { computed, ref } from 'vue';
 
 const props = defineProps({
@@ -103,10 +107,8 @@ function exportCSV() {
                     <span class="text-primary-600 dark:text-primary-400 font-bold"></span>
                 </template>
                 <template #body="slotProps">
-                    <Tooltip target=".btn-editar" />
-                    <Button icon="pi pi-pencil" outlined rounded class="mr-2 btn-editar" @click="editProduct(slotProps.data)" aria-label="Editar producto" v-tooltip.top="'Editar producto'" />
-                    <Tooltip target=".btn-eliminar" />
-                    <Button icon="pi pi-trash" outlined rounded severity="danger" class="btn-eliminar" @click="confirmDeleteProduct(slotProps.data)" aria-label="Eliminar producto" v-tooltip.top="'Eliminar producto'" />
+                    <Button icon="pi pi-pencil" outlined rounded class="mr-2 btn-editar" @click="editProduct(slotProps.data)" aria-label="Editar producto" v-tooltip="'Editar producto'" />
+                    <Button icon="pi pi-trash" outlined rounded severity="danger" class="btn-eliminar" @click="confirmDeleteProduct(slotProps.data)" aria-label="Eliminar producto" v-tooltip="'Eliminar producto'" />
                 </template>
             </Column>
         </DataTable>
@@ -121,10 +123,8 @@ function exportCSV() {
                     </div>
                     <div class="flex flex-col gap-2">
                         <div class="flex gap-2">
-                            <Tooltip target=".btn-nuevo-m" />
-                            <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="flex-1 btn-nuevo-m" @click="$emit('new')" aria-label="Agregar nuevo producto" v-tooltip.top="'Agregar nuevo producto'" />
-                            <Tooltip target=".btn-exportar-m" />
-                            <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1 btn-exportar-m" @click="exportCSV($event)" aria-label="Exportar productos" v-tooltip.top="'Exportar productos a CSV'" />
+                            <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="flex-1 btn-nuevo-m" @click="$emit('new')" aria-label="Agregar nuevo producto" v-tooltip="'Agregar nuevo producto'" />
+                            <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1 btn-exportar-m" @click="exportCSV($event)" aria-label="Exportar productos" v-tooltip="'Exportar productos a CSV'" />
                         </div>
                         <div class="flex gap-2">
                             <div class="relative flex-1">
@@ -136,7 +136,7 @@ function exportCSV() {
                                 @click="toggleSort"
                                 class="p-2"
                                 aria-label="Ordenar alfabéticamente"
-                                v-tooltip.top="'Ordenar alfabéticamente'"
+                                v-tooltip="'Ordenar alfabéticamente'"
                             />
                         </div>
                     </div>
@@ -158,8 +158,7 @@ function exportCSV() {
                                 <p class="text-sm text-gray-600 dark:text-gray-400">Categoría: {{ producto.categoria }}</p>
                             </div>
                             <div class="flex gap-2">
-                                <Tooltip target=".btn-eliminar-m" />
-                                <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2 btn-eliminar-m" @click.stop="confirmDeleteProduct(producto)" aria-label="Eliminar producto" v-tooltip.top="'Eliminar producto'" />
+                                <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2 btn-eliminar-m" @click.stop="confirmDeleteProduct(producto)" aria-label="Eliminar producto" v-tooltip="'Eliminar producto'" />
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2 text-sm">

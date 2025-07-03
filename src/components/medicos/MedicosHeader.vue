@@ -1,4 +1,8 @@
 <script setup>
+import Button from 'primevue/button';
+import IconField from 'primevue/iconfield';
+import InputIcon from 'primevue/inputicon';
+import InputText from 'primevue/inputtext';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -26,17 +30,36 @@ const searchValue = computed({
         </div>
         <div class="flex flex-col md:flex-row md:items-center gap-2 w-full md:w-auto">
             <div class="flex gap-2 w-full md:w-auto">
-                <Tooltip target=".btn-nuevo" />
-                <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="btn-nuevo font-semibold px-4 py-2" @click="emit('new')" aria-label="Agregar nuevo médico" v-tooltip.top="'Agregar nuevo médico'" />
-                <Tooltip target=".btn-exportar" />
-                <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="btn-exportar font-semibold px-4 py-2" @click="emit('export')" aria-label="Exportar médicos" v-tooltip.top="'Exportar médicos a CSV'" />
+                <Button
+                    label="Nuevo"
+                    icon="pi pi-plus"
+                    severity="secondary"
+                    class="btn-nuevo font-semibold px-4 py-2"
+                    @click="emit('new')"
+                    aria-label="Agregar nuevo médico"
+                    v-tooltip.top="'Agregar nuevo médico'"
+                />
+                <Button
+                    label="Exportar"
+                    icon="pi pi-upload"
+                    severity="secondary"
+                    class="btn-exportar font-semibold px-4 py-2"
+                    @click="emit('export')"
+                    aria-label="Exportar médicos"
+                    v-tooltip.top="'Exportar médicos a CSV'"
+                />
             </div>
             <div class="relative flex-1 md:w-64">
                 <IconField class="w-full">
                     <InputIcon>
                         <i class="pi pi-search text-blue-500" />
                     </InputIcon>
-                    <InputText v-model="searchValue" placeholder="Buscar médicos..." aria-label="Buscar médicos" class="w-full pl-10 py-2 rounded-lg border border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition" />
+                    <InputText
+                        v-model="searchValue"
+                        placeholder="Buscar médicos..."
+                        aria-label="Buscar médicos"
+                        class="w-full pl-10 py-2 rounded-lg border border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+                    />
                 </IconField>
             </div>
         </div>

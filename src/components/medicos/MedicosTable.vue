@@ -1,4 +1,8 @@
 <script setup>
+import Button from 'primevue/button';
+import Column from 'primevue/column';
+import DataTable from 'primevue/datatable';
+import InputText from 'primevue/inputtext';
 import { ref } from 'vue';
 
 const props = defineProps({
@@ -66,10 +70,8 @@ function exportCSV() {
             <Column field="email" header="Email" sortable style="min-width: 16rem"></Column>
             <Column :exportable="false" header="Acciones" style="min-width: 12rem">
                 <template #body="slotProps">
-                    <Tooltip target=".btn-editar" />
-                    <Button icon="pi pi-pencil" outlined rounded class="mr-2 btn-editar" @click="handleEdit(slotProps.data)" aria-label="Editar médico" v-tooltip.top="'Editar médico'" />
-                    <Tooltip target=".btn-eliminar" />
-                    <Button icon="pi pi-trash" outlined rounded severity="danger" class="btn-eliminar" @click="handleDelete(slotProps.data)" aria-label="Eliminar médico" v-tooltip.top="'Eliminar médico'" />
+                    <Button icon="pi pi-pencil" outlined rounded class="mr-2 btn-editar" @click="handleEdit(slotProps.data)" aria-label="Editar médico" v-tooltip="'Editar médico'" />
+                    <Button icon="pi pi-trash" outlined rounded severity="danger" class="btn-eliminar" @click="handleDelete(slotProps.data)" aria-label="Eliminar médico" v-tooltip="'Eliminar médico'" />
                 </template>
             </Column>
         </DataTable>
@@ -84,10 +86,8 @@ function exportCSV() {
                     </div>
                     <div class="flex flex-col gap-2">
                         <div class="flex gap-2">
-                            <Tooltip target=".btn-nuevo-m" />
-                            <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="flex-1 btn-nuevo-m" @click="$emit('new')" aria-label="Agregar nuevo médico" v-tooltip.top="'Agregar nuevo médico'" />
-                            <Tooltip target=".btn-exportar-m" />
-                            <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1 btn-exportar-m" @click="exportCSV" aria-label="Exportar médicos" v-tooltip.top="'Exportar médicos a CSV'" />
+                            <Button label="Nuevo" icon="pi pi-plus" severity="secondary" class="flex-1 btn-nuevo-m" @click="$emit('new')" aria-label="Agregar nuevo médico" v-tooltip="'Agregar nuevo médico'" />
+                            <Button label="Exportar" icon="pi pi-upload" severity="secondary" class="flex-1 btn-exportar-m" @click="exportCSV" aria-label="Exportar médicos" v-tooltip="'Exportar médicos a CSV'" />
                         </div>
                                                     <div class="flex gap-2">
                                 <div class="relative flex-1">
@@ -113,8 +113,7 @@ function exportCSV() {
                                 <p class="text-sm text-gray-600 dark:text-gray-400">{{ medico.especialidad }}</p>
                             </div>
                             <div class="flex gap-2">
-                                <Tooltip target=".btn-eliminar-m" />
-                                <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2 btn-eliminar-m" @click.stop="handleDelete(medico)" aria-label="Eliminar médico" v-tooltip.top="'Eliminar médico'" />
+                                <Button icon="pi pi-trash" outlined rounded severity="danger" class="p-2 btn-eliminar-m" @click.stop="handleDelete(medico)" aria-label="Eliminar médico" v-tooltip="'Eliminar médico'" />
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2 text-sm">
