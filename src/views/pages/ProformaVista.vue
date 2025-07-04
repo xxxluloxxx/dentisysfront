@@ -1,8 +1,9 @@
 <script setup>
+import { BancoService } from '@/service/BancoService';
 import { CobranzaService } from '@/service/CobranzaService';
 import { ProformaService } from '@/service/ProformaService';
 import { useToast } from 'primevue/usetoast';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
@@ -12,9 +13,11 @@ const proforma = ref(null);
 const loading = ref(true);
 const showDialogCobranza = ref(false);
 const multiple = ref('multiple');
+const bancos = ref([]);
 const nuevaCobranza = ref({
     monto: null,
     metodoPago: null,
+    banco: null,
     observaciones: '',
     fechaPago: new Date().toLocaleString('en-CA', { timeZone: 'America/Guayaquil' }).split(',')[0],
     estado: 'PARCIAL'
@@ -31,6 +34,9 @@ onMounted(async () => {
 
         const data = await ProformaService.getById(proformaId);
         proforma.value = data;
+
+        // Cargar bancos
+        await cargarBancos();
     } catch (error) {
         console.error('Error al cargar la proforma:', error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar la proforma', life: 3000 });
@@ -39,6 +45,16 @@ onMounted(async () => {
         loading.value = false;
     }
 });
+
+async function cargarBancos() {
+    try {
+        const data = await BancoService.getAll();
+        bancos.value = data;
+    } catch (error) {
+        console.error('Error al cargar bancos:', error);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Error al cargar los bancos', life: 3000 });
+    }
+}
 
 function formatCurrency(value) {
     if (value) return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
@@ -103,6 +119,12 @@ const agregarCobranza = () => {
         return;
     }
 
+    // Validar que se seleccione un banco si el método de pago es TRANSFERENCIA
+    if (nuevaCobranza.value.metodoPago === 'TRANSFERENCIA' && !nuevaCobranza.value.banco) {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Por favor seleccione un banco para la transferencia', life: 3000 });
+        return;
+    }
+
     const cobranzaData = {
         proforma: {
             id: proforma.value.id
@@ -110,6 +132,7 @@ const agregarCobranza = () => {
         fechaPago: nuevaCobranza.value.fechaPago,
         monto: nuevaCobranza.value.monto,
         metodoPago: nuevaCobranza.value.metodoPago,
+        banco: nuevaCobranza.value.banco ? { id: nuevaCobranza.value.banco } : null,
         estado: nuevaCobranza.value.estado,
         observaciones: nuevaCobranza.value.observaciones
     };
@@ -124,6 +147,7 @@ const agregarCobranza = () => {
             nuevaCobranza.value = {
                 monto: null,
                 metodoPago: null,
+                banco: null,
                 observaciones: '',
                 fechaPago: new Date().toLocaleString('en-CA', { timeZone: 'America/Guayaquil' }).split(',')[0],
                 estado: 'PARCIAL'
@@ -140,11 +164,23 @@ const limpiarCamposCobranza = () => {
     nuevaCobranza.value = {
         monto: null,
         metodoPago: null,
+        banco: null,
         observaciones: '',
         fechaPago: new Date().toLocaleString('en-CA', { timeZone: 'America/Guayaquil' }).split(',')[0],
         estado: 'PARCIAL'
     };
 };
+
+// Watcher para el método de pago
+watch(
+    () => nuevaCobranza.value.metodoPago,
+    (newValue) => {
+        console.log('Método de pago cambiado a:', newValue);
+        if (newValue !== 'TRANSFERENCIA') {
+            nuevaCobranza.value.banco = null;
+        }
+    }
+);
 </script>
 
 <template>
@@ -297,6 +333,26 @@ const limpiarCamposCobranza = () => {
                     <label for="estado" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Estado</label>
                     <Dropdown id="estado" v-model="nuevaCobranza.estado" :options="['COMPLETADO', 'PARCIAL']" placeholder="Seleccione estado" class="w-full" />
                 </div>
+            </div>
+
+            <!-- Campo de banco que aparece solo cuando se selecciona TRANSFERENCIA -->
+            <div v-if="nuevaCobranza.metodoPago === 'TRANSFERENCIA'" class="field">
+                <label for="banco" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Banco *</label>
+                <Dropdown id="banco" v-model="nuevaCobranza.banco" :options="bancos" optionLabel="nombreCuenta" optionValue="id" placeholder="Seleccione un banco" class="w-full">
+                    <template #option="slotProps">
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded-full border border-gray-300" :style="{ backgroundColor: slotProps.option.color || '#007bff' }"></div>
+                            <span>{{ slotProps.option.nombreCuenta }}</span>
+                        </div>
+                    </template>
+                    <template #value="slotProps">
+                        <div v-if="slotProps.value" class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded-full border border-gray-300" :style="{ backgroundColor: bancos.find((b) => b.id === slotProps.value)?.color || '#007bff' }"></div>
+                            <span>{{ bancos.find((b) => b.id === slotProps.value)?.nombreCuenta }}</span>
+                        </div>
+                        <span v-else>{{ slotProps.placeholder }}</span>
+                    </template>
+                </Dropdown>
             </div>
 
             <div class="field">
