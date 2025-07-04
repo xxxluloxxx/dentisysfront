@@ -15,6 +15,19 @@ export const CuentasService = {
         }
     },
 
+    async getByMedicoId(medicoId) {
+        try {
+            const response = await axios.get(`${API_CONFIG.getUrl('CUENTAS')}/medico/${medicoId}`);
+            console.log(`✅ Respuesta recibida de la API para médico ${medicoId}:`, response.data);
+            console.log(`🔄 Cuentas del médico ${medicoId}:`, response.data);
+            console.log(`📊 Total de cuentas del médico ${medicoId}: ${response.data.length}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error al obtener cuentas del médico ${medicoId}:`, error);
+            throw error;
+        }
+    },
+
     async create(cuentaData) {
         try {
             const response = await axios.post(API_CONFIG.getUrl('CUENTAS'), cuentaData);
