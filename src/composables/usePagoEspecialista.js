@@ -24,7 +24,7 @@ export function usePagoEspecialista() {
     const selectedCobranza = ref(null);
     const searchTerm = ref('');
     const currentStep = ref(1);
-    const montoPago = ref(0);
+    const montoPago = ref(null);
     const descripcionPago = ref('Pago a especialista');
 
     // Computed properties
@@ -230,7 +230,7 @@ export function usePagoEspecialista() {
         selectedProforma.value = null;
         selectedCobranza.value = null;
         searchTerm.value = '';
-        montoPago.value = 0;
+        montoPago.value = null;
         descripcionPago.value = 'Pago a especialista';
         proformas.value = [];
         cobranzas.value = [];

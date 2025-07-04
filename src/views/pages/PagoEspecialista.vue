@@ -353,9 +353,20 @@ onMounted(() => {
                             <div class="amount-input-container">
                                 <label for="amount" class="block text-sm font-medium mb-2" style="color: var(--text-color)">Cantidad (USD)</label>
                                 <div class="input-wrapper">
-                                    <InputNumber id="amount" v-model="montoPago" :min="0" :max="999999.99" :minFractionDigits="2" :maxFractionDigits="2" placeholder="0.00" class="w-full" :class="{ 'p-invalid': montoPago <= 0 }" />
+                                                                        <InputNumber
+                                        id="amount"
+                                        v-model="montoPago"
+                                        :min="0"
+                                        :max="999999.99"
+                                        :minFractionDigits="2"
+                                        :maxFractionDigits="2"
+                                        placeholder="Ingrese el monto"
+                                        class="w-full"
+                                        :class="{ 'p-invalid': montoPago && montoPago <= 0 }"
+                                        :useGrouping="false"
+                                    />
                                 </div>
-                                <small v-if="montoPago <= 0" class="text-red-500 text-sm mt-1"> El monto debe ser mayor a $0.00 </small>
+                                <small v-if="montoPago && montoPago <= 0" class="text-red-500 text-sm mt-1"> El monto debe ser mayor a $0.00 </small>
                                 <small v-else class="text-gray-500 text-sm mt-1"> Monto total cobrado: ${{ cobranzas.reduce((total, cobranza) => total + (cobranza.monto || 0), 0).toFixed(2) }} </small>
                             </div>
                         </div>
@@ -384,7 +395,13 @@ onMounted(() => {
                 <!-- Botones de navegación -->
                 <div class="flex justify-between mt-6 p-6 border-t" style="border-color: var(--surface-border)">
                     <Button label="Paso Anterior" icon="pi pi-arrow-left" severity="secondary" @click="previousStep" />
-                    <Button label="Confirmar y Procesar Pago" icon="pi pi-check" severity="success" :loading="loadingPago" :disabled="loadingPago || !montoPago || montoPago <= 0" @click="procesarPago" />
+                    <Button
+                        label="Confirmar y Procesar Pago"
+                        icon="pi pi-check"
+                        :disabled="loadingPago || !montoPago || montoPago <= 0"
+                        :loading="loadingPago"
+                        @click="procesarPago"
+                    />
                 </div>
             </div>
         </div>
