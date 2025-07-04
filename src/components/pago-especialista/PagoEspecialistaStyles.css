@@ -1,0 +1,243 @@
+/* Estilos específicos para el módulo de Pago a Especialistas */
+
+/* Variables CSS para modo dark */
+:root[class*='app-dark'] .pago-especialista-container {
+    --module-bg: var(--surface-card);
+    --module-border: var(--surface-border);
+    --module-text: var(--text-color);
+    --module-text-secondary: var(--text-color-secondary);
+    --module-primary: var(--primary-color);
+    --module-primary-contrast: var(--primary-contrast-color);
+    --module-hover: var(--surface-hover);
+}
+
+/* Variables CSS para modo light */
+:root:not([class*='app-dark']) .pago-especialista-container {
+    --module-bg: #ffffff;
+    --module-border: #e5e7eb;
+    --module-text: #1f2937;
+    --module-text-secondary: #6b7280;
+    --module-primary: #3b82f6;
+    --module-primary-contrast: #ffffff;
+    --module-hover: #f9fafb;
+}
+
+/* Estilos base del contenedor */
+.pago-especialista-container {
+    background-color: var(--surface-ground);
+    color: var(--text-color);
+}
+
+/* Estilos para el header */
+.pago-especialista-container .header-section h1 {
+    color: var(--text-color);
+}
+
+.pago-especialista-container .header-section p {
+    color: var(--text-color-secondary);
+}
+
+/* Estilos para los pasos */
+.pago-especialista-container .steps-container {
+    background-color: var(--surface-card);
+    border: 1px solid var(--surface-border);
+}
+
+.pago-especialista-container .step-title {
+    color: var(--text-color);
+}
+
+.pago-especialista-container .step-description {
+    color: var(--text-color-secondary);
+}
+
+.pago-especialista-container .step-divider {
+    background-color: var(--surface-border);
+}
+
+/* Estilos para las tarjetas de pacientes */
+.pago-especialista-container .paciente-card {
+    background-color: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    transition: all 0.2s ease;
+}
+
+.pago-especialista-container .paciente-card:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--primary-color);
+}
+
+.pago-especialista-container .paciente-card.selected {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--primary-contrast-color);
+}
+
+.pago-especialista-container .paciente-card.selected .paciente-nombre,
+.pago-especialista-container .paciente-card.selected .paciente-identificacion,
+.pago-especialista-container .paciente-card.selected .detail-item {
+    color: var(--primary-contrast-color);
+}
+
+/* Estilos para las tarjetas de médicos */
+.pago-especialista-container .medico-card {
+    background-color: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    transition: all 0.2s ease;
+}
+
+.pago-especialista-container .medico-card:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--primary-color);
+}
+
+.pago-especialista-container .medico-card.selected {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--primary-contrast-color);
+}
+
+.pago-especialista-container .medico-card.selected .medico-nombre,
+.pago-especialista-container .medico-card.selected .medico-especialidad,
+.pago-especialista-container .medico-card.selected .detail-item {
+    color: var(--primary-contrast-color);
+}
+
+/* Estilos para las tarjetas de proformas */
+.pago-especialista-container .proforma-card {
+    background-color: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    transition: all 0.2s ease;
+}
+
+.pago-especialista-container .proforma-card:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--primary-color);
+}
+
+.pago-especialista-container .proforma-card.selected {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--primary-contrast-color);
+}
+
+.pago-especialista-container .proforma-card.selected .proforma-numero,
+.pago-especialista-container .proforma-card.selected .proforma-estado,
+.pago-especialista-container .proforma-card.selected .detail-item {
+    color: var(--primary-contrast-color);
+}
+
+/* Estilos para la información del paciente */
+.pago-especialista-container .patient-info-card {
+    background-color: var(--surface-hover);
+    border: 1px solid var(--surface-border);
+}
+
+.pago-especialista-container .patient-avatar {
+    background-color: var(--primary-color);
+    color: var(--primary-contrast-color);
+}
+
+/* Estilos para el avatar del paciente */
+.pago-especialista-container .paciente-avatar {
+    background-color: var(--primary-color);
+    color: var(--primary-contrast-color);
+}
+
+/* Estilos para el avatar del médico */
+.pago-especialista-container .medico-avatar {
+    background-color: var(--primary-color);
+    color: var(--primary-contrast-color);
+}
+
+/* Estilos para el avatar de la proforma */
+.pago-especialista-container .proforma-avatar {
+    background-color: var(--primary-color);
+    color: var(--primary-contrast-color);
+}
+
+/* Estilos para el texto */
+.pago-especialista-container .paciente-nombre,
+.pago-especialista-container .medico-nombre,
+.pago-especialista-container .proforma-numero {
+    color: var(--text-color);
+}
+
+.pago-especialista-container .paciente-identificacion,
+.pago-especialista-container .medico-especialidad,
+.pago-especialista-container .proforma-estado {
+    color: var(--text-color-secondary);
+}
+
+.pago-especialista-container .detail-item {
+    color: var(--text-color-secondary);
+}
+
+/* Estilos para el estado de carga */
+.pago-especialista-container .loading-container p {
+    color: var(--text-color-secondary);
+}
+
+/* Estilos para el estado vacío */
+.pago-especialista-container .empty-state i {
+    color: var(--text-color-secondary);
+}
+
+.pago-especialista-container .empty-state h3 {
+    color: var(--text-color);
+}
+
+.pago-especialista-container .empty-state p {
+    color: var(--text-color-secondary);
+}
+
+/* Estilos para el resumen de selección */
+.pago-especialista-container .selection-summary {
+    background-color: var(--surface-card);
+    border: 1px solid var(--surface-border);
+}
+
+.pago-especialista-container .summary-card {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--primary-contrast-color);
+}
+
+.pago-especialista-container .summary-card h3,
+.pago-especialista-container .summary-card h4,
+.pago-especialista-container .summary-card p {
+    color: var(--primary-contrast-color);
+}
+
+/* Estilos para el icono del header */
+.pago-especialista-container .header-icon {
+    background-color: var(--primary-color);
+    color: var(--primary-contrast-color);
+}
+
+/* Estilos para los números de paso */
+.pago-especialista-container .step-item.active .step-number {
+    background-color: var(--primary-color);
+    color: var(--primary-contrast-color);
+}
+
+.pago-especialista-container .step-item:not(.active) .step-number {
+    background-color: var(--surface-border);
+    color: var(--text-color-secondary);
+}
+
+/* Estilos para iconos específicos */
+.pago-especialista-container .pi-check-circle {
+    color: var(--primary-contrast-color);
+}
+
+/* Estilos para botones de navegación */
+.pago-especialista-container .step-content {
+    background-color: var(--surface-card);
+    border: 1px solid var(--surface-border);
+}
+
+/* Transiciones suaves */
+.pago-especialista-container * {
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}

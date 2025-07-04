@@ -190,6 +190,11 @@ const router = createRouter({
                     component: () => import('@/views/pages/CategoriaFinanciera.vue')
                 },
                 {
+                    path: '/pages/pagos-especialistas',
+                    name: 'pago-especialista',
+                    component: () => import('@/views/pages/PagoEspecialista.vue')
+                },
+                {
                     path: '/documentation',
                     name: 'documentation',
                     component: () => import('@/views/pages/Documentation.vue')

@@ -61,5 +61,23 @@ export const CobranzaService = {
             }
             throw error;
         }
+    },
+
+    async getByProformaId(proformaId) {
+        console.log(`🚀 Obteniendo cobranzas para proforma con ID: ${proformaId}`);
+        try {
+            const response = await axios.get(`${API_CONFIG.getUrl('COBRANZAS')}/proforma/${proformaId}`);
+            console.log('✅ Cobranzas por proforma obtenidas exitosamente:', response.data);
+            return response.data;
+        } catch (error) {
+            console.error('❌ Error al obtener cobranzas por proforma:', error.message);
+            if (error.response) {
+                console.error('📝 Detalles del error:', {
+                    status: error.response.status,
+                    data: error.response.data
+                });
+            }
+            throw error;
+        }
     }
 };
