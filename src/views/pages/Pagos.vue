@@ -22,6 +22,8 @@ const selectedMedico = ref(null);
 const loading = ref(false);
 const loadingPagos = ref(false);
 const searchTerm = ref('');
+const fechaInicio = ref(null);
+const fechaFin = ref(null);
 
 // Computed properties
 const filteredMedicos = computed(() => {
@@ -33,7 +35,32 @@ const filteredMedicos = computed(() => {
 });
 
 const totalPagos = computed(() => {
-    return pagos.value.reduce((total, pago) => total + pago.monto, 0);
+    return pagosFiltrados.value.reduce((total, pago) => total + pago.monto, 0);
+});
+
+const pagosFiltrados = computed(() => {
+    let pagosFiltrados = pagos.value;
+
+    // Filtrar por fecha de inicio
+    if (fechaInicio.value) {
+        const inicio = new Date(fechaInicio.value);
+        pagosFiltrados = pagosFiltrados.filter((pago) => {
+            const fechaPago = new Date(pago.fechaMovimiento);
+            return fechaPago >= inicio;
+        });
+    }
+
+    // Filtrar por fecha de fin
+    if (fechaFin.value) {
+        const fin = new Date(fechaFin.value);
+        fin.setHours(23, 59, 59, 999); // Incluir todo el día
+        pagosFiltrados = pagosFiltrados.filter((pago) => {
+            const fechaPago = new Date(pago.fechaMovimiento);
+            return fechaPago <= fin;
+        });
+    }
+
+    return pagosFiltrados;
 });
 
 // Funciones
@@ -82,6 +109,13 @@ function seleccionarMedico(medico) {
 function limpiarSeleccion() {
     selectedMedico.value = null;
     pagos.value = [];
+    fechaInicio.value = null;
+    fechaFin.value = null;
+}
+
+function limpiarFiltrosFecha() {
+    fechaInicio.value = null;
+    fechaFin.value = null;
 }
 
 function getSeverity(categoria) {
@@ -206,24 +240,50 @@ onMounted(() => {
                             <h2 class="text-xl font-semibold" style="color: var(--text-color)">Pagos de Dr. {{ selectedMedico.nombre }} {{ selectedMedico.apellido }}</h2>
                             <p class="text-lg font-medium" style="color: var(--primary-color)">{{ selectedMedico.especialidad }}</p>
                         </div>
+                        <div class="text-right">
+                            <p class="text-sm" style="color: var(--text-color-secondary)">Total pagos</p>
+                            <p class="text-2xl font-bold" style="color: var(--primary-color)">{{ formatCurrency(totalPagos) }}</p>
+                        </div>
                     </div>
                 </template>
 
                 <template #content>
+                    <!-- Filtro por fecha -->
+                    <div class="filtro-fecha mb-6">
+                        <div class="flex items-center gap-4 mb-4">
+                            <h3 class="text-lg font-semibold" style="color: var(--text-color)">Filtrar por fecha</h3>
+                            <Button v-if="fechaInicio || fechaFin" label="Limpiar filtros" icon="pi pi-times" @click="limpiarFiltrosFecha" severity="secondary" text size="small" />
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="flex flex-col gap-2">
+                                <label class="text-sm font-medium" style="color: var(--text-color)">Fecha de inicio</label>
+                                <Calendar v-model="fechaInicio" placeholder="Seleccionar fecha inicio" dateFormat="dd/mm/yy" class="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <label class="text-sm font-medium" style="color: var(--text-color)">Fecha de fin</label>
+                                <Calendar v-model="fechaFin" placeholder="Seleccionar fecha fin" dateFormat="dd/mm/yy" class="w-full" />
+                            </div>
+                        </div>
+                    </div>
+
                     <div v-if="loadingPagos" class="loading-pagos">
                         <ProgressSpinner style="width: 40px; height: 40px" strokeWidth="3" />
                         <p class="mt-2 text-gray-600">Cargando pagos...</p>
                     </div>
 
-                    <div v-else-if="pagos.length === 0" class="empty-pagos">
+                    <div v-else-if="pagosFiltrados.length === 0" class="empty-pagos">
                         <i class="pi pi-credit-card text-4xl mb-3" style="color: var(--surface-border)"></i>
-                        <h3 class="text-lg font-semibold mb-1" style="color: var(--text-color)">No hay pagos registrados</h3>
-                        <p style="color: var(--text-color-secondary)">Este médico aún no tiene pagos registrados en el sistema</p>
+                        <h3 class="text-lg font-semibold mb-1" style="color: var(--text-color)">
+                            {{ fechaInicio || fechaFin ? 'No hay pagos en el rango seleccionado' : 'No hay pagos registrados' }}
+                        </h3>
+                        <p style="color: var(--text-color-secondary)">
+                            {{ fechaInicio || fechaFin ? 'Intenta con otro rango de fechas' : 'Este médico aún no tiene pagos registrados en el sistema' }}
+                        </p>
                     </div>
 
                     <DataTable
                         v-else
-                        :value="pagos"
+                        :value="pagosFiltrados"
                         :paginator="true"
                         :rows="10"
                         striped
@@ -402,6 +462,16 @@ onMounted(() => {
     background-color: var(--surface-card);
     border: 1px solid var(--surface-border);
     @apply rounded-lg shadow-sm;
+}
+
+.filtro-fecha {
+    background-color: var(--surface-ground);
+    border: 1px solid var(--surface-border);
+    @apply rounded-lg p-4;
+}
+
+.filtro-fecha label {
+    color: var(--text-color);
 }
 
 .loading-pagos {
