@@ -137,6 +137,7 @@ function handleExport() {
             <Column field="email" header="Email" sortable style="min-width: 16rem"></Column>
             <Column field="telefono" header="Teléfono" sortable style="min-width: 12rem"></Column>
             <Column field="direccion" header="Dirección" sortable style="min-width: 12rem"></Column>
+            <Column field="fechaNacimiento" header="Fecha nacimiento" sortable style="min-width: 12rem"></Column>
             <Column :exportable="false" style="min-width: 12rem" class="text-primary-600 dark:text-primary-400 font-bold">
                 <template #body="slotProps">
                     <Button icon="pi pi-pencil" outlined rounded class="mr-2 btn-editar" @click="handleEdit(slotProps.data)" aria-label="Editar paciente" v-tooltip="'Editar paciente'" />
