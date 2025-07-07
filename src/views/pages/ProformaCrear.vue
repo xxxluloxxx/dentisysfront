@@ -296,7 +296,7 @@ function deleteServicio(servicio) {
                             <div class="flex flex-col gap-2 md:gap-4">
                                 <div class="flex items-center gap-2">
                                     <span class="font-semibold text-sm md:text-base">Paciente:</span>
-                                    <span class="text-sm md:text-base">{{ nombrePaciente }} {{ apellidoPaciente }}</span>
+                                    <span class="text-sm md:text-base">{{ nombrePaciente }}</span>
                                 </div>
                                 <Button type="button" label="Seleccionar Paciente" class="text-sm" @click="toggleDataTablePacientes" />
                             </div>
