@@ -1,5 +1,6 @@
 import axios from 'axios';
 import API_CONFIG from '../config/api.config';
+import { UsuarioService } from './UsuarioService';
 
 export const MedicoService = {
     async getAll() {
@@ -17,11 +18,31 @@ export const MedicoService = {
 
     async create(medicoData) {
         try {
-            medicoData.password = '123';
-            const response = await axios.post(API_CONFIG.getUrl('MEDICOS'), medicoData);
+            // 1. Primero crear el usuario
+            const usuarioData = {
+                numeroDocumento: medicoData.numeroDocumento,
+                nombre: medicoData.nombre,
+                apellido: medicoData.apellido,
+                email: medicoData.email,
+                password: '123',
+                telefono: medicoData.telefono,
+                estado: true,
+                rolId: medicoData.rolId
+            };
+
+            const usuarioCreado = await UsuarioService.create(usuarioData);
+
+            // 2. Luego crear el médico con el ID del usuario
+            const medicoConUsuario = {
+                ...medicoData,
+                usuarioId: usuarioCreado.id
+            };
+
+            const response = await axios.post(API_CONFIG.getUrl('MEDICOS'), medicoConUsuario);
+
             return response.data;
         } catch (error) {
-            console.error('Error al crear el medicos:', error);
+            console.error('Error al crear el médico:', error);
             throw error;
         }
     },

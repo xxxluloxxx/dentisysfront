@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     visible: {
@@ -13,6 +13,10 @@ const props = defineProps({
     isSaving: {
         type: Boolean,
         default: false
+    },
+    roles: {
+        type: Array,
+        default: () => []
     }
 });
 
@@ -22,26 +26,72 @@ const submitted = ref(false);
 const hasChanges = ref(false);
 const originalMedico = ref({});
 
+// Computed property para validar el formulario
+const isFormValid = computed(() => {
+    return props.medico.numeroDocumento?.trim() &&
+           props.medico.nombre?.trim() &&
+           props.medico.apellido?.trim() &&
+           props.medico.email?.trim() &&
+           props.medico.telefono?.trim() &&
+           props.medico.especialidad?.trim() &&
+           props.medico.rolId &&
+           isValidEmail(props.medico.email?.trim());
+});
+
+// Función para validar email
+function isValidEmail(email) {
+    if (!email) return false;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
 // Observar cambios en el médico para detectar modificaciones
 watch(() => props.medico, (newMedico) => {
-    if (newMedico && Object.keys(newMedico).length > 0) {
-        originalMedico.value = { ...newMedico };
+    if (newMedico) {
+        // Si es un nuevo médico (sin ID), inicializar con valores vacíos
+        if (!newMedico.id) {
+            originalMedico.value = {
+                numeroDocumento: '',
+                nombre: '',
+                apellido: '',
+                email: '',
+                telefono: '',
+                direccion: '',
+                especialidad: '',
+                rolId: null
+            };
+        } else {
+            // Si es un médico existente, copiar los valores actuales
+            originalMedico.value = { ...newMedico };
+        }
         hasChanges.value = false;
     }
 }, { immediate: true, deep: true });
 
+// Watcher para detectar cambios en las propiedades del médico
+watch(() => props.medico, () => {
+    checkForChanges();
+}, { deep: true });
+
 function checkForChanges() {
-    if (!props.medico || !originalMedico.value) {
+    if (!props.medico) {
         hasChanges.value = false;
         return;
     }
 
-    const fields = ['numeroDocumento', 'nombre', 'apellido', 'email', 'telefono', 'direccion', 'especialidad'];
-    hasChanges.value = fields.some((field) => {
-        const currentValue = props.medico[field] || '';
-        const originalValue = originalMedico.value[field] || '';
-        return currentValue !== originalValue;
-    });
+    const requiredFields = ['numeroDocumento', 'nombre', 'apellido', 'email', 'telefono', 'especialidad', 'rolId'];
+
+    // Para nuevos médicos, no necesitamos detectar cambios
+    if (!props.medico.id) {
+        hasChanges.value = true; // Siempre permitir guardar si el formulario es válido
+    } else {
+        // Para médicos existentes, comparar con valores originales
+        hasChanges.value = requiredFields.some((field) => {
+            const currentValue = props.medico[field] || '';
+            const originalValue = originalMedico.value[field] || '';
+            return currentValue !== originalValue;
+        });
+    }
 }
 
 function handleSave() {
@@ -51,7 +101,8 @@ function handleSave() {
         !props.medico.apellido?.trim() ||
         !props.medico.email?.trim() ||
         !props.medico.telefono?.trim() ||
-        !props.medico.especialidad?.trim()) {
+        !props.medico.especialidad?.trim() ||
+        !props.medico.rolId) {
         return false;
     }
 
@@ -161,26 +212,54 @@ function hideDialog() {
             </div>
 
             <div class="field">
+                <label for="rolId" class="block font-bold mb-2">Rol</label>
+                <Dropdown
+                    id="rolId"
+                    v-model="medico.rolId"
+                    :options="roles"
+                    optionLabel="nombre"
+                    optionValue="id"
+                    placeholder="Seleccione un rol"
+                    required="true"
+                    :invalid="submitted && !medico.rolId"
+                    class="w-full"
+                    @change="checkForChanges"
+                    aria-required="true"
+                    aria-label="Rol"
+                />
+                <small v-if="submitted && !medico.rolId" class="text-red-500">El rol es requerido.</small>
+            </div>
+
+            <div class="field">
                 <label for="email" class="block font-bold mb-2">Email</label>
                 <InputText
                     id="email"
                     v-model.trim="medico.email"
                     required="true"
-                    :invalid="submitted && !medico.email"
+                    :invalid="submitted && (!medico.email || !isValidEmail(medico.email))"
                     class="w-full"
                     @input="checkForChanges"
                     aria-required="true"
                     aria-label="Email"
                 />
                 <small v-if="submitted && !medico.email" class="text-red-500">El email es requerido.</small>
+                <small v-else-if="submitted && medico.email && !isValidEmail(medico.email)" class="text-red-500">El email debe tener un formato válido (ejemplo: usuario@dominio.com)</small>
             </div>
         </div>
 
         <template #footer>
             <div class="flex justify-end gap-2">
                 <Button label="Cancelar" icon="pi pi-times" text @click="handleCancel" aria-label="Cancelar" />
-                <Button label="Guardar" icon="pi pi-check" :disabled="!hasChanges" @click="handleSave" :loading="isSaving" aria-label="Guardar médico" />
+                <Button
+                    label="Guardar"
+                    icon="pi pi-check"
+                    :disabled="!isFormValid"
+                    @click="handleSave"
+                    :loading="isSaving"
+                    aria-label="Guardar médico"
+                />
             </div>
+
         </template>
     </Dialog>
 </template>

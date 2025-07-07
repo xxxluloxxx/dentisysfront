@@ -25,7 +25,8 @@ const API_CONFIG = {
         CATEGORIA_FINANCIERA: '/api/categorias',
         USUARIOS: '/api/usuarios',
         MENU: '/api/menu/rol',
-        BANCOS: '/api/bancos'
+        BANCOS: '/api/bancos',
+        ROLES: '/api/roles'
     },
 
     // Función helper para obtener la URL base según el ambiente

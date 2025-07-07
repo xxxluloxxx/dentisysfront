@@ -20,7 +20,7 @@ export const UsuarioService = {
             usuarioData.password = '123';
             const response = await axios.post(API_CONFIG.getUrl('USUARIOS'), usuarioData);
             return response.data;
-        } catch (error) {
+                } catch (error) {
             console.error('Error al crear el usuario:', error);
             throw error;
         }

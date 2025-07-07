@@ -1,4 +1,5 @@
 import { MedicoService } from '@/service/MedicoService';
+import { RolesService } from '@/service/Roles';
 import { UsuarioService } from '@/service/UsuarioService';
 import { useToast } from 'primevue/usetoast';
 import { computed, readonly, ref } from 'vue';
@@ -8,6 +9,7 @@ export function useMedicos() {
 
     // Estados reactivos
     const medicos = ref([]);
+    const roles = ref([]);
     const loading = ref(true);
     const isSaving = ref(false);
     const medicoDialog = ref(false);
@@ -37,9 +39,34 @@ export function useMedicos() {
         }
     }
 
+    // Función para cargar roles
+    async function cargarRoles() {
+        try {
+            const data = await RolesService.getAll();
+            roles.value = data;
+        } catch (error) {
+            console.error('Error al cargar los roles:', error);
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Error al cargar los roles',
+                life: 4000
+            });
+        }
+    }
+
     // Funciones de gestión de médicos
     function openNewMedico() {
-        currentMedico.value = {};
+        currentMedico.value = {
+            numeroDocumento: '',
+            nombre: '',
+            apellido: '',
+            email: '',
+            telefono: '',
+            direccion: '',
+            especialidad: '',
+            rolId: null
+        };
         medicoDialog.value = true;
     }
 
@@ -70,6 +97,7 @@ export function useMedicos() {
         try {
             isSaving.value = true;
             const response = await MedicoService.create(medicoData);
+
             medicos.value.push(response);
             closeMedicoDialog();
             toast.add({
@@ -211,6 +239,10 @@ export function useMedicos() {
             errors.push('La especialidad es requerida');
         }
 
+        if (!medico.rolId) {
+            errors.push('El rol es requerido');
+        }
+
         return errors;
     }
 
@@ -224,10 +256,11 @@ export function useMedicos() {
         // Estados
         medicos: readonly(medicos),
         loading: readonly(loading),
-        isSaving: readonly(isSaving),
+        isSaving: isSaving, // No readonly para permitir modificaciones internas
         medicoDialog: readonly(medicoDialog),
         deleteDialog: readonly(deleteDialog),
-        currentMedico: readonly(currentMedico),
+        currentMedico: currentMedico, // No readonly para permitir modificaciones en el formulario
+        roles: readonly(roles), // Retornar roles como readonly
 
         // Computed
         hasMedicos,
@@ -240,6 +273,7 @@ export function useMedicos() {
         closeMedicoDialog,
         confirmDeleteMedico,
         closeDeleteDialog,
+        cargarRoles, // Agregar la nueva función
 
         // Funciones CRUD
         createMedico,
