@@ -12,6 +12,10 @@ const toast = useToast();
 const proforma = ref(null);
 const loading = ref(true);
 const showDialogCobranza = ref(false);
+const showDialogEditarCobranza = ref(false);
+const showDialogEliminarCobranza = ref(false);
+const cobranzaSeleccionada = ref(null);
+const modoEdicion = ref(false);
 const multiple = ref('multiple');
 const bancos = ref([]);
 const nuevaCobranza = ref({
@@ -160,6 +164,75 @@ const agregarCobranza = () => {
         });
 };
 
+const editarCobranza = (cobranza) => {
+    cobranzaSeleccionada.value = { ...cobranza };
+    modoEdicion.value = true;
+    showDialogEditarCobranza.value = true;
+};
+
+const guardarEdicionCobranza = () => {
+    if (!cobranzaSeleccionada.value.monto || !cobranzaSeleccionada.value.metodoPago) {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Por favor complete todos los campos requeridos', life: 3000 });
+        return;
+    }
+
+    // Validar que se seleccione un banco si el método de pago es TRANSFERENCIA
+    if (cobranzaSeleccionada.value.metodoPago === 'TRANSFERENCIA' && !cobranzaSeleccionada.value.banco) {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Por favor seleccione un banco para la transferencia', life: 3000 });
+        return;
+    }
+
+    const cobranzaData = {
+        proforma: {
+            id: proforma.value.id
+        },
+        fechaPago: cobranzaSeleccionada.value.fechaPago,
+        monto: cobranzaSeleccionada.value.monto,
+        metodoPago: cobranzaSeleccionada.value.metodoPago,
+        banco: cobranzaSeleccionada.value.banco ? { id: cobranzaSeleccionada.value.banco } : null,
+        estado: cobranzaSeleccionada.value.estado,
+        observaciones: cobranzaSeleccionada.value.observaciones
+    };
+
+    CobranzaService.update(cobranzaSeleccionada.value.id, cobranzaData)
+        .then(() => {
+            return ProformaService.getById(proforma.value.id);
+        })
+        .then((data) => {
+            proforma.value = data;
+            showDialogEditarCobranza.value = false;
+            cobranzaSeleccionada.value = null;
+            modoEdicion.value = false;
+            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Cobranza actualizada correctamente', life: 3000 });
+        })
+        .catch((error) => {
+            console.error('Error al actualizar la cobranza:', error);
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al actualizar la cobranza', life: 3000 });
+        });
+};
+
+const confirmarEliminarCobranza = (cobranza) => {
+    cobranzaSeleccionada.value = cobranza;
+    showDialogEliminarCobranza.value = true;
+};
+
+const eliminarCobranza = () => {
+    CobranzaService.delete(cobranzaSeleccionada.value.id)
+        .then(() => {
+            return ProformaService.getById(proforma.value.id);
+        })
+        .then((data) => {
+            proforma.value = data;
+            showDialogEliminarCobranza.value = false;
+            cobranzaSeleccionada.value = null;
+            toast.add({ severity: 'success', summary: 'Éxito', detail: 'Cobranza eliminada correctamente', life: 3000 });
+        })
+        .catch((error) => {
+            console.error('Error al eliminar la cobranza:', error);
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al eliminar la cobranza', life: 3000 });
+        });
+};
+
 const limpiarCamposCobranza = () => {
     nuevaCobranza.value = {
         monto: null,
@@ -178,6 +251,17 @@ watch(
         console.log('Método de pago cambiado a:', newValue);
         if (newValue !== 'TRANSFERENCIA') {
             nuevaCobranza.value.banco = null;
+        }
+    }
+);
+
+// Watcher para el método de pago en edición
+watch(
+    () => cobranzaSeleccionada.value?.metodoPago,
+    (newValue) => {
+        console.log('Método de pago en edición cambiado a:', newValue);
+        if (newValue && newValue !== 'TRANSFERENCIA') {
+            cobranzaSeleccionada.value.banco = null;
         }
     }
 );
@@ -289,6 +373,14 @@ watch(
                         </template>
                     </Column>
                     <Column field="observaciones" header="Observaciones"></Column>
+                    <Column header="Acciones" style="width: 120px">
+                        <template #body="slotProps">
+                            <div class="flex gap-2">
+                                <Button icon="pi pi-pencil" class="p-button-sm p-button-outlined p-button-primary" @click="editarCobranza(slotProps.data)" v-tooltip.top="'Editar'" />
+                                <Button icon="pi pi-trash" class="p-button-sm p-button-outlined p-button-danger" @click="confirmarEliminarCobranza(slotProps.data)" v-tooltip.top="'Eliminar'" />
+                            </div>
+                        </template>
+                    </Column>
                 </DataTable>
             </div>
 
@@ -370,6 +462,83 @@ watch(
             <div class="flex justify-end gap-2">
                 <Button label="Cancelar" icon="pi pi-times" @click="showDialogCobranza = false" class="p-button-text" />
                 <Button label="Guardar Cobranza" icon="pi pi-check" @click="agregarCobranza" class="p-button-success" />
+            </div>
+        </template>
+    </Dialog>
+
+    <!-- Dialog para editar cobranza -->
+    <Dialog v-model:visible="showDialogEditarCobranza" header="Editar Cobranza" :modal="true" class="p-fluid" :style="{ width: '500px' }">
+        <div v-if="cobranzaSeleccionada" class="grid grid-cols-1 gap-4">
+            <div class="field">
+                <label for="montoEdit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto *</label>
+                <InputNumber id="montoEdit" v-model="cobranzaSeleccionada.monto" mode="currency" currency="USD" locale="en-US" class="w-full" placeholder="0.00" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="field">
+                    <label for="metodoPagoEdit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Método de Pago *</label>
+                    <Dropdown id="metodoPagoEdit" v-model="cobranzaSeleccionada.metodoPago" :options="['EFECTIVO', 'TRANSFERENCIA', 'TARJETA']" placeholder="Seleccione método" class="w-full" />
+                </div>
+
+                <div class="field">
+                    <label for="estadoEdit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Estado</label>
+                    <Dropdown id="estadoEdit" v-model="cobranzaSeleccionada.estado" :options="['COMPLETADO', 'PARCIAL']" placeholder="Seleccione estado" class="w-full" />
+                </div>
+            </div>
+
+            <!-- Campo de banco que aparece solo cuando se selecciona TRANSFERENCIA -->
+            <div v-if="cobranzaSeleccionada.metodoPago === 'TRANSFERENCIA'" class="field">
+                <label for="bancoEdit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Banco *</label>
+                <Dropdown id="bancoEdit" v-model="cobranzaSeleccionada.banco" :options="bancos" optionLabel="nombreCuenta" optionValue="id" placeholder="Seleccione un banco" class="w-full">
+                    <template #option="slotProps">
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded-full border border-gray-300" :style="{ backgroundColor: slotProps.option.color || '#007bff' }"></div>
+                            <span>{{ slotProps.option.nombreCuenta }}</span>
+                        </div>
+                    </template>
+                    <template #value="slotProps">
+                        <div v-if="slotProps.value" class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded-full border border-gray-300" :style="{ backgroundColor: bancos.find((b) => b.id === slotProps.value)?.color || '#007bff' }"></div>
+                            <span>{{ bancos.find((b) => b.id === slotProps.value)?.nombreCuenta }}</span>
+                        </div>
+                        <span v-else>{{ slotProps.placeholder }}</span>
+                    </template>
+                </Dropdown>
+            </div>
+
+            <div class="field">
+                <label for="fechaPagoEdit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fecha de Pago</label>
+                <Calendar id="fechaPagoEdit" v-model="cobranzaSeleccionada.fechaPago" dateFormat="yy-mm-dd" class="w-full" placeholder="Seleccione fecha" />
+            </div>
+
+            <div class="field">
+                <label for="observacionesEdit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Observaciones</label>
+                <Textarea id="observacionesEdit" v-model="cobranzaSeleccionada.observaciones" rows="3" class="w-full" placeholder="Ingrese observaciones adicionales..." />
+            </div>
+        </div>
+
+        <template #footer>
+            <div class="flex justify-end gap-2">
+                <Button label="Cancelar" icon="pi pi-times" @click="showDialogEditarCobranza = false" class="p-button-text" />
+                <Button label="Guardar Cambios" icon="pi pi-check" @click="guardarEdicionCobranza" class="p-button-success" />
+            </div>
+        </template>
+    </Dialog>
+
+    <!-- Dialog de confirmación para eliminar cobranza -->
+    <Dialog v-model:visible="showDialogEliminarCobranza" header="Confirmar Eliminación" :modal="true" class="p-fluid" :style="{ width: '400px' }">
+        <div class="flex items-center gap-3">
+            <i class="pi pi-exclamation-triangle text-red-500 text-2xl"></i>
+            <div>
+                <p class="font-semibold">¿Está seguro que desea eliminar esta cobranza?</p>
+                <p class="text-sm text-gray-600 mt-1">Esta acción no se puede deshacer.</p>
+            </div>
+        </div>
+
+        <template #footer>
+            <div class="flex justify-end gap-2">
+                <Button label="Cancelar" icon="pi pi-times" @click="showDialogEliminarCobranza = false" class="p-button-text" />
+                <Button label="Eliminar" icon="pi pi-trash" @click="eliminarCobranza" class="p-button-danger" />
             </div>
         </template>
     </Dialog>
