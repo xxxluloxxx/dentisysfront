@@ -125,11 +125,6 @@ const router = createRouter({
                     component: () => import('@/views/pages/Paciente.vue')
                 },
                 {
-                    path: '/pages/empleados',
-                    name: 'empleados',
-                    component: () => import('@/views/pages/EmpleadoCrud.vue')
-                },
-                {
                     path: '/pages/medicos',
                     name: 'medicos',
                     component: () => import('@/views/pages/Medico.vue')
