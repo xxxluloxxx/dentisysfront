@@ -168,7 +168,7 @@ function saveCita() {
     submitted.value = true;
     console.log('Datos de la cita:', cita.value);
 
-    if (!cita.value.pacienteId || !cita.value.medicoId || !cita.value.fechaCita || !cita.value.horaCita || !cita.value.horaCitaFin || !cita.value.estado) {
+    if (!cita.value.medicoId || !cita.value.fechaCita || !cita.value.horaCita || !cita.value.horaCitaFin || !cita.value.estado) {
         toast.add({
             severity: 'error',
             summary: 'Error',
@@ -179,9 +179,6 @@ function saveCita() {
     }
 
     const citaData = {
-        paciente: {
-            id: cita.value.pacienteId
-        },
         medico: {
             id: cita.value.medicoId
         },
@@ -206,6 +203,13 @@ function saveCita() {
         estado: cita.value.estado,
         observaciones: cita.value.observaciones
     };
+
+    // Solo agregar paciente si se ha seleccionado uno
+    if (cita.value.pacienteId) {
+        citaData.paciente = {
+            id: cita.value.pacienteId
+        };
+    }
 
     console.log('Datos a enviar:', citaData);
 
@@ -479,12 +483,11 @@ function getEstadoSeverity(estado) {
             <div class="flex flex-col gap-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="field">
-                        <label for="pacienteNombre" class="block font-bold mb-2">Paciente</label>
+                        <label for="pacienteNombre" class="block font-bold mb-2">Paciente (Opcional)</label>
                         <div class="flex items-center gap-2">
-                            <InputText id="pacienteNombre" v-model.trim="cita.pacienteNombre" required="true" autofocus :invalid="submitted && !cita.pacienteNombre" class="w-full" disabled />
+                            <InputText id="pacienteNombre" v-model.trim="cita.pacienteNombre" autofocus class="w-full" disabled />
                             <Button icon="pi pi-search" @click="toggleDataTablePacientes" />
                         </div>
-                        <small v-if="submitted && !cita.pacienteNombre" class="text-red-500">El paciente es requerido.</small>
                     </div>
                     <div class="field">
                         <label for="medicoNombre" class="block font-bold mb-2">Médico</label>
