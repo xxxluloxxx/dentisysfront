@@ -10,6 +10,8 @@ const dialogoCuenta = ref(false);
 const dialogoEliminar = ref(false);
 const selectedCuentas = ref(null);
 const loading = ref(false);
+const guardando = ref(false);
+const formSubmitted = ref(false);
 const fechaInicio = ref(null);
 const fechaFin = ref(null);
 const filtroSeleccionado = ref(null);
@@ -257,9 +259,19 @@ const editarCuenta = (cuentaItem) => {
 const cerrarDialogo = () => {
     dialogoCuenta.value = false;
     cuenta.value = {};
+    formSubmitted.value = false;
+    guardando.value = false;
 };
 
 const guardarCuenta = async () => {
+    formSubmitted.value = true;
+
+    // Validar campos requeridos
+    if (!cuenta.value.categoriaId || !cuenta.value.fechaMovimiento || !cuenta.value.monto || cuenta.value.monto <= 0 || !cuenta.value.descripcion) {
+        return;
+    }
+
+    guardando.value = true;
     try {
         const cuentaData = {
             descripcion: cuenta.value.descripcion,
@@ -269,12 +281,36 @@ const guardarCuenta = async () => {
             cobranzaId: null // Valor fijo por ahora
         };
 
-        await CuentasService.create(cuentaData);
+        if (cuenta.value.id) {
+            // Actualizar cuenta existente
+            await CuentasService.update(cuenta.value.id, cuentaData);
+        } else {
+            // Crear nueva cuenta
+            await CuentasService.create(cuentaData);
+        }
+
         await fetchCuentas(); // Recargar la lista de cuentas
-        dialogoCuenta.value = false;
+        cerrarDialogo();
+
+        // Mostrar mensaje de éxito
+        // Aquí podrías usar un toast o notificación
+        console.log('Registro guardado exitosamente');
     } catch (error) {
         console.error('Error al guardar la cuenta:', error);
+        // Aquí podrías mostrar un mensaje de error
+    } finally {
+        guardando.value = false;
     }
+};
+
+const limpiarFormulario = () => {
+    cuenta.value = {
+        categoriaId: null,
+        fechaMovimiento: new Date(),
+        monto: 0,
+        descripcion: ''
+    };
+    formSubmitted.value = false;
 };
 
 const confirmarEliminar = (cuentaItem) => {
@@ -430,26 +466,99 @@ onMounted(() => {
         </div>
 
         <!-- Diálogo para crear/editar cuenta -->
-        <Dialog v-model:visible="dialogoCuenta" :style="{ width: '450px' }" header="Detalles de Cuenta" :modal="true" class="p-fluid">
-            <div class="field">
-                <label for="categoria">Categoría</label>
-                <Dropdown id="categoria" v-model="cuenta.categoriaId" :options="categorias" optionLabel="nombre" optionValue="id" placeholder="Seleccionar categoría" />
+        <Dialog v-model:visible="dialogoCuenta" :style="{ width: '600px' }" :header="cuenta.id ? 'Editar Registro' : 'Nuevo Registro'" :modal="true" class="p-fluid cuenta-dialog" :closable="false">
+            <div class="dialog-content">
+                <!-- Header con icono -->
+                <div class="dialog-header mb-4">
+                    <div class="flex items-center justify-center mb-3">
+                        <div class="icon-container">
+                            <i class="pi pi-wallet text-2xl"></i>
+                        </div>
+                    </div>
+                    <h2 class="text-xl font-bold text-center text-gray-800 dark:text-gray-100">
+                        {{ cuenta.id ? 'Editar Registro de Cuenta' : 'Nuevo Registro de Cuenta' }}
+                    </h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Complete los campos para {{ cuenta.id ? 'actualizar' : 'crear' }} el registro</p>
+                </div>
+
+                <!-- Formulario -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Categoría -->
+                    <div class="field">
+                        <label for="categoria" class="field-label">
+                            <i class="pi pi-tag mr-2"></i>
+                            Categoría *
+                        </label>
+                        <Dropdown
+                            id="categoria"
+                            v-model="cuenta.categoriaId"
+                            :options="categorias"
+                            optionLabel="nombre"
+                            optionValue="id"
+                            placeholder="Seleccionar categoría"
+                            class="w-full"
+                            :class="{ 'p-invalid': !cuenta.categoriaId && formSubmitted }"
+                        />
+                        <small v-if="!cuenta.categoriaId && formSubmitted" class="p-error">La categoría es requerida</small>
+                    </div>
+
+                    <!-- Fecha -->
+                    <div class="field">
+                        <label for="fecha" class="field-label">
+                            <i class="pi pi-calendar mr-2"></i>
+                            Fecha de Movimiento *
+                        </label>
+                        <Calendar id="fecha" v-model="cuenta.fechaMovimiento" dateFormat="dd/mm/yy" class="w-full" :class="{ 'p-invalid': !cuenta.fechaMovimiento && formSubmitted }" :maxDate="new Date()" />
+                        <small v-if="!cuenta.fechaMovimiento && formSubmitted" class="p-error">La fecha es requerida</small>
+                    </div>
+                </div>
+
+                <!-- Monto -->
+                <div class="field mt-4">
+                    <label for="monto" class="field-label">
+                        <i class="pi pi-dollar mr-2"></i>
+                        Monto *
+                    </label>
+                    <div class="relative">
+                        <InputNumber id="monto" v-model="cuenta.monto" mode="currency" currency="USD" locale="en-US" class="w-full" :class="{ 'p-invalid': (!cuenta.monto || cuenta.monto <= 0) && formSubmitted }" placeholder="0.00" />
+                        <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                            <i class="pi pi-dollar"></i>
+                        </div>
+                    </div>
+                    <small v-if="(!cuenta.monto || cuenta.monto <= 0) && formSubmitted" class="p-error">El monto debe ser mayor a 0</small>
+                </div>
+
+                <!-- Descripción -->
+                <div class="field mt-4">
+                    <label for="descripcion" class="field-label">
+                        <i class="pi pi-file-edit mr-2"></i>
+                        Descripción *
+                    </label>
+                    <Textarea id="descripcion" v-model="cuenta.descripcion" rows="3" placeholder="Ingrese una descripción detallada del movimiento..." class="w-full" :class="{ 'p-invalid': !cuenta.descripcion && formSubmitted }" autoResize />
+                    <small v-if="!cuenta.descripcion && formSubmitted" class="p-error">La descripción es requerida</small>
+                    <small class="text-gray-500">{{ cuenta.descripcion ? cuenta.descripcion.length : 0 }}/500 caracteres</small>
+                </div>
+
+                <!-- Información adicional -->
+                <div class="info-section mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div class="flex items-start">
+                        <i class="pi pi-info-circle text-blue-500 mt-1 mr-2"></i>
+                        <div>
+                            <h4 class="text-sm font-semibold text-blue-800 dark:text-blue-200">Información</h4>
+                            <p class="text-xs text-blue-600 dark:text-blue-300 mt-1">Los campos marcados con * son obligatorios. El registro se guardará automáticamente en la categoría seleccionada.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="field">
-                <label for="fecha">Fecha de Movimiento</label>
-                <Calendar id="fecha" v-model="cuenta.fechaMovimiento" dateFormat="dd/mm/yy" />
-            </div>
-            <div class="field">
-                <label for="monto">Monto</label>
-                <InputNumber id="monto" v-model="cuenta.monto" mode="currency" currency="USD" locale="en-US" />
-            </div>
-            <div class="field">
-                <label for="descripcion">Descripción</label>
-                <InputText id="descripcion" v-model="cuenta.descripcion" required autofocus />
-            </div>
+
             <template #footer>
-                <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="cerrarDialogo" />
-                <Button label="Guardar" icon="pi pi-check" class="p-button-text" @click="guardarCuenta" />
+                <div class="flex justify-between items-center w-full">
+                    <Button label="Cancelar" icon="pi pi-times" class="p-button-outlined p-button-secondary" @click="cerrarDialogo" />
+                    <div class="flex gap-2">
+                        <Button label="Limpiar" icon="pi pi-refresh" class="p-button-outlined p-button-info" @click="limpiarFormulario" />
+                        <Button :label="cuenta.id ? 'Actualizar' : 'Guardar'" icon="pi pi-check" class="p-button-success" @click="guardarCuenta" :loading="guardando" />
+                    </div>
+                </div>
             </template>
         </Dialog>
 
@@ -529,5 +638,111 @@ onMounted(() => {
 :deep(.p-dialog .p-dialog-footer) {
     background-color: var(--surface-section);
     border-top: 1px solid var(--surface-border);
+}
+
+/* Estilos para el diálogo mejorado */
+.cuenta-dialog {
+    border-radius: 12px;
+    box-shadow:
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.dialog-content {
+    padding: 0;
+}
+
+.dialog-header {
+    text-align: center;
+}
+
+.icon-container {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin: 0 auto;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.field-label {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.field-label i {
+    color: #667eea;
+}
+
+.info-section {
+    border-left: 4px solid #3b82f6;
+}
+
+/* Estilos para campos con error */
+:deep(.p-invalid) {
+    border-color: #ef4444 !important;
+}
+
+:deep(.p-error) {
+    color: #ef4444;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+/* Estilos para el textarea */
+:deep(.p-textarea) {
+    font-family: inherit;
+}
+
+/* Estilos para el dropdown */
+:deep(.p-dropdown) {
+    width: 100%;
+}
+
+/* Estilos para el calendar */
+:deep(.p-calendar) {
+    width: 100%;
+}
+
+/* Estilos para el input number */
+:deep(.p-inputnumber) {
+    width: 100%;
+}
+
+/* Animaciones */
+.cuenta-dialog {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .cuenta-dialog {
+        width: 95% !important;
+        margin: 1rem;
+    }
+
+    .dialog-content {
+        padding: 0;
+    }
 }
 </style>
