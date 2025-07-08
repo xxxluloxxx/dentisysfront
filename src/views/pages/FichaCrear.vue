@@ -7,6 +7,8 @@ import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
+import OdontoDiente from '@/components/OdontoDiente.vue';
+
 const router = useRouter();
 
 const procedimiento = ref(null);
@@ -300,6 +302,11 @@ const guardarFicha = async () => {
 const cancelar = () => {
     router.push('/pages/fichasMedicas');
 };
+
+function handleCuadranteClick(posicion, numero, { cuadrante }) {
+    // Aquí puedes manejar la lógica al hacer click en un cuadrante de un diente
+    console.log(`Diente ${numero} (${posicion}), cuadrante ${cuadrante}`);
+}
 </script>
 <template>
     <Fluid>
@@ -563,6 +570,37 @@ const cancelar = () => {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <!-- Odontograma visual interactivo -->
+                    <h5>Odontograma visual</h5>
+                    <div class="odontograma-visual" style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 32px">
+                        <!-- Fila superior -->
+                        <div style="display: flex; gap: 4px">
+                            <OdontoDiente v-for="n in 8" :key="'sup-izq-' + n" :numero="18 - n + 1" @cuadrante-click="handleCuadranteClick('sup', 18 - n + 1, $event)" />
+                            <div style="width: 32px"></div>
+                            <OdontoDiente v-for="n in 8" :key="'sup-der-' + n" :numero="21 + n - 1" @cuadrante-click="handleCuadranteClick('sup', 21 + n - 1, $event)" />
+                        </div>
+                        <!-- Fila central superior -->
+                        <div style="display: flex; gap: 4px">
+                            <OdontoDiente v-for="n in 8" :key="'sup-izq-leche-' + n" :numero="55 - n + 1" small @cuadrante-click="handleCuadranteClick('sup-leche', 55 - n + 1, $event)" />
+                            <div style="width: 32px"></div>
+                            <OdontoDiente v-for="n in 8" :key="'sup-der-leche-' + n" :numero="61 + n - 1" small @cuadrante-click="handleCuadranteClick('sup-leche', 61 + n - 1, $event)" />
+                        </div>
+                        <!-- Fila central inferior -->
+                        <div style="display: flex; gap: 4px">
+                            <OdontoDiente v-for="n in 8" :key="'inf-izq-leche-' + n" :numero="85 - n + 1" small @cuadrante-click="handleCuadranteClick('inf-leche', 85 - n + 1, $event)" />
+                            <div style="width: 32px"></div>
+                            <OdontoDiente v-for="n in 8" :key="'inf-der-leche-' + n" :numero="71 + n - 1" small @cuadrante-click="handleCuadranteClick('inf-leche', 71 + n - 1, $event)" />
+                        </div>
+                        <!-- Fila inferior -->
+                        <div style="display: flex; gap: 4px">
+                            <OdontoDiente v-for="n in 8" :key="'inf-izq-' + n" :numero="48 - n + 1" @cuadrante-click="handleCuadranteClick('inf', 48 - n + 1, $event)" />
+                            <div style="width: 32px"></div>
+                            <OdontoDiente v-for="n in 8" :key="'inf-der-' + n" :numero="31 + n - 1" @cuadrante-click="handleCuadranteClick('inf', 31 + n - 1, $event)" />
                         </div>
                     </div>
                 </div>
