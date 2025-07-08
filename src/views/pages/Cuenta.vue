@@ -37,34 +37,31 @@ const cuentasFiltradas = computed(() => {
     }
 
     const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
+    const hoyString = hoy.toISOString().split('T')[0]; // Formato YYYY-MM-DD
 
     const inicioSemana = new Date(hoy);
     inicioSemana.setDate(hoy.getDate() - hoy.getDay());
-    inicioSemana.setHours(0, 0, 0, 0);
+    const inicioSemanaString = inicioSemana.toISOString().split('T')[0];
 
     const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-    inicioMes.setHours(0, 0, 0, 0);
+    const inicioMesString = inicioMes.toISOString().split('T')[0];
 
     return cuentas.value.filter((cuenta) => {
-        // Aseguramos que la fecha se procese correctamente
-        const [year, month, day] = cuenta.fechaMovimiento.split('-').map(Number);
-        const fechaCuenta = new Date(year, month - 1, day);
-        fechaCuenta.setHours(0, 0, 0, 0);
+        // Comparar directamente las fechas en formato string YYYY-MM-DD
+        const fechaCuentaString = cuenta.fechaMovimiento;
 
         if (filtroSeleccionado.value.value === 'hoy') {
-            const esHoy = fechaCuenta.getTime() === hoy.getTime();
-            return esHoy;
+            return fechaCuentaString === hoyString;
         } else if (filtroSeleccionado.value.value === 'semana') {
-            return fechaCuenta >= inicioSemana && fechaCuenta <= hoy;
+            return fechaCuentaString >= inicioSemanaString && fechaCuentaString <= hoyString;
         } else if (filtroSeleccionado.value.value === 'mes') {
-            return fechaCuenta >= inicioMes && fechaCuenta <= hoy;
+            return fechaCuentaString >= inicioMesString && fechaCuentaString <= hoyString;
         } else if (filtroSeleccionado.value.value === 'personalizado' && fechaInicio.value && fechaFin.value) {
             const inicio = new Date(fechaInicio.value);
             const fin = new Date(fechaFin.value);
-            inicio.setHours(0, 0, 0, 0);
-            fin.setHours(23, 59, 59, 999);
-            return fechaCuenta >= inicio && fechaCuenta <= fin;
+            const inicioString = inicio.toISOString().split('T')[0];
+            const finString = fin.toISOString().split('T')[0];
+            return fechaCuentaString >= inicioString && fechaCuentaString <= finString;
         }
 
         return true;
