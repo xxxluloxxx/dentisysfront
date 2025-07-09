@@ -10,6 +10,8 @@ import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import OdontoDiente from '@/components/OdontoDiente.vue';
+
 const procedimiento = ref(null);
 const procedimientos = ref([]);
 const route = useRoute();
@@ -108,12 +110,6 @@ onMounted(async () => {
             signo: signo.nombre,
             valor: signo.valor
         }));
-
-        // Mapear odontograma
-        formData.odontograma.superiorDerecho = data.datos.odontograma.superiorDerecho;
-        formData.odontograma.superiorIzquierdo = data.datos.odontograma.superiorIzquierdo;
-        formData.odontograma.inferiorDerecho = data.datos.odontograma.inferiorDerecho;
-        formData.odontograma.inferiorIzquierdo = data.datos.odontograma.inferiorIzquierdo;
 
         // Mapear odontograma visual
         if (data.datos.odontogramaVisual) {
@@ -271,48 +267,7 @@ const formData = reactive({
         { examen: 'A.T.M', tiene: false, descripcion: '' },
         { examen: 'Ganglios', tiene: false, descripcion: '' }
     ],
-    odontograma: {
-        superiorDerecho: [
-            { diente: '1.8', descripcion: '' },
-            { diente: '1.7', descripcion: '' },
-            { diente: '1.6', descripcion: '' },
-            { diente: '1.5', descripcion: '' },
-            { diente: '1.4', descripcion: '' },
-            { diente: '1.3', descripcion: '' },
-            { diente: '1.2', descripcion: '' },
-            { diente: '1.1', descripcion: '' }
-        ],
-        superiorIzquierdo: [
-            { diente: '2.8', descripcion: '' },
-            { diente: '2.7', descripcion: '' },
-            { diente: '2.6', descripcion: '' },
-            { diente: '2.5', descripcion: '' },
-            { diente: '2.4', descripcion: '' },
-            { diente: '2.3', descripcion: '' },
-            { diente: '2.2', descripcion: '' },
-            { diente: '2.1', descripcion: '' }
-        ],
-        inferiorDerecho: [
-            { diente: '4.8', descripcion: '' },
-            { diente: '4.7', descripcion: '' },
-            { diente: '4.6', descripcion: '' },
-            { diente: '4.5', descripcion: '' },
-            { diente: '4.4', descripcion: '' },
-            { diente: '4.3', descripcion: '' },
-            { diente: '4.2', descripcion: '' },
-            { diente: '4.1', descripcion: '' }
-        ],
-        inferiorIzquierdo: [
-            { diente: '3.8', descripcion: '' },
-            { diente: '3.7', descripcion: '' },
-            { diente: '3.6', descripcion: '' },
-            { diente: '3.5', descripcion: '' },
-            { diente: '3.4', descripcion: '' },
-            { diente: '3.3', descripcion: '' },
-            { diente: '3.2', descripcion: '' },
-            { diente: '3.1', descripcion: '' }
-        ]
-    },
+
     odontogramaVisual: {
         // Dientes permanentes superiores (18-11, 21-28)
         superiorDerecho: [
@@ -471,32 +426,7 @@ const actualizarFicha = async () => {
                 descripcion: examen.descripcion,
                 tiene: examen.tiene
             })),
-            odontograma: {
-                superiorDerecho: formData.odontograma.superiorDerecho
-                    .filter((diente) => diente.descripcion)
-                    .map((diente) => ({
-                        diente: diente.diente,
-                        descripcion: diente.descripcion
-                    })),
-                superiorIzquierdo: formData.odontograma.superiorIzquierdo
-                    .filter((diente) => diente.descripcion)
-                    .map((diente) => ({
-                        diente: diente.diente,
-                        descripcion: diente.descripcion
-                    })),
-                inferiorDerecho: formData.odontograma.inferiorDerecho
-                    .filter((diente) => diente.descripcion)
-                    .map((diente) => ({
-                        diente: diente.diente,
-                        descripcion: diente.descripcion
-                    })),
-                inferiorIzquierdo: formData.odontograma.inferiorIzquierdo
-                    .filter((diente) => diente.descripcion)
-                    .map((diente) => ({
-                        diente: diente.diente,
-                        descripcion: diente.descripcion
-                    }))
-            },
+
             odontogramaVisual: {
                 superiorDerecho: formData.odontogramaVisual.superiorDerecho
                     .filter((diente) => diente.cuadrantes.some((c) => c > 0))
@@ -1045,57 +975,6 @@ function getDienteColores(seccion, numero) {
                                                     </Column>
                                                 </DataTable>
                                             </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="card">
-                                        <h5>Odontograma</h5>
-                                        <div class="mb-4">
-                                            <h6>Superior Derecho</h6>
-                                            <DataTable :value="formData.odontograma.superiorDerecho" class="p-datatable-sm" stripedRows rowHover>
-                                                <Column field="diente" header="Diente" style="width: 20%"></Column>
-                                                <Column field="descripcion" header="Descripción" style="width: 80%">
-                                                    <template #body="slotProps">
-                                                        <InputText v-model="slotProps.data.descripcion" class="w-full" />
-                                                    </template>
-                                                </Column>
-                                            </DataTable>
-                                        </div>
-
-                                        <div class="mb-4">
-                                            <h6>Superior Izquierdo</h6>
-                                            <DataTable :value="formData.odontograma.superiorIzquierdo" class="p-datatable-sm" stripedRows rowHover>
-                                                <Column field="diente" header="Diente" style="width: 20%"></Column>
-                                                <Column field="descripcion" header="Descripción" style="width: 80%">
-                                                    <template #body="slotProps">
-                                                        <InputText v-model="slotProps.data.descripcion" class="w-full" />
-                                                    </template>
-                                                </Column>
-                                            </DataTable>
-                                        </div>
-
-                                        <div class="mb-4">
-                                            <h6>Inferior Derecho</h6>
-                                            <DataTable :value="formData.odontograma.inferiorDerecho" class="p-datatable-sm" stripedRows rowHover>
-                                                <Column field="diente" header="Diente" style="width: 20%"></Column>
-                                                <Column field="descripcion" header="Descripción" style="width: 80%">
-                                                    <template #body="slotProps">
-                                                        <InputText v-model="slotProps.data.descripcion" class="w-full" />
-                                                    </template>
-                                                </Column>
-                                            </DataTable>
-                                        </div>
-
-                                        <div class="mb-4">
-                                            <h6>Inferior Izquierdo</h6>
-                                            <DataTable :value="formData.odontograma.inferiorIzquierdo" class="p-datatable-sm" stripedRows rowHover>
-                                                <Column field="diente" header="Diente" style="width: 20%"></Column>
-                                                <Column field="descripcion" header="Descripción" style="width: 80%">
-                                                    <template #body="slotProps">
-                                                        <InputText v-model="slotProps.data.descripcion" class="w-full" />
-                                                    </template>
-                                                </Column>
-                                            </DataTable>
                                         </div>
                                     </div>
 

@@ -112,48 +112,7 @@ const formData = reactive({
         { examen: 'A.T.M', tiene: false, descripcion: '' },
         { examen: 'Ganglios', tiene: false, descripcion: '' }
     ],
-    odontograma: {
-        superiorDerecho: [
-            { diente: '1.8', descripcion: '' },
-            { diente: '1.7', descripcion: '' },
-            { diente: '1.6', descripcion: '' },
-            { diente: '1.5', descripcion: '' },
-            { diente: '1.4', descripcion: '' },
-            { diente: '1.3', descripcion: '' },
-            { diente: '1.2', descripcion: '' },
-            { diente: '1.1', descripcion: '' }
-        ],
-        superiorIzquierdo: [
-            { diente: '2.8', descripcion: '' },
-            { diente: '2.7', descripcion: '' },
-            { diente: '2.6', descripcion: '' },
-            { diente: '2.5', descripcion: '' },
-            { diente: '2.4', descripcion: '' },
-            { diente: '2.3', descripcion: '' },
-            { diente: '2.2', descripcion: '' },
-            { diente: '2.1', descripcion: '' }
-        ],
-        inferiorDerecho: [
-            { diente: '4.8', descripcion: '' },
-            { diente: '4.7', descripcion: '' },
-            { diente: '4.6', descripcion: '' },
-            { diente: '4.5', descripcion: '' },
-            { diente: '4.4', descripcion: '' },
-            { diente: '4.3', descripcion: '' },
-            { diente: '4.2', descripcion: '' },
-            { diente: '4.1', descripcion: '' }
-        ],
-        inferiorIzquierdo: [
-            { diente: '3.8', descripcion: '' },
-            { diente: '3.7', descripcion: '' },
-            { diente: '3.6', descripcion: '' },
-            { diente: '3.5', descripcion: '' },
-            { diente: '3.4', descripcion: '' },
-            { diente: '3.3', descripcion: '' },
-            { diente: '3.2', descripcion: '' },
-            { diente: '3.1', descripcion: '' }
-        ]
-    },
+
     odontogramaVisual: {
         // Dientes permanentes superiores (18-11, 21-28)
         superiorDerecho: [
@@ -313,32 +272,7 @@ const guardarFicha = async () => {
                 descripcion: examen.descripcion,
                 tiene: examen.tiene
             })),
-            odontograma: {
-                superiorDerecho: formData.odontograma.superiorDerecho
-                    .filter((diente) => diente.descripcion)
-                    .map((diente) => ({
-                        diente: diente.diente,
-                        descripcion: diente.descripcion
-                    })),
-                superiorIzquierdo: formData.odontograma.superiorIzquierdo
-                    .filter((diente) => diente.descripcion)
-                    .map((diente) => ({
-                        diente: diente.diente,
-                        descripcion: diente.descripcion
-                    })),
-                inferiorDerecho: formData.odontograma.inferiorDerecho
-                    .filter((diente) => diente.descripcion)
-                    .map((diente) => ({
-                        diente: diente.diente,
-                        descripcion: diente.descripcion
-                    })),
-                inferiorIzquierdo: formData.odontograma.inferiorIzquierdo
-                    .filter((diente) => diente.descripcion)
-                    .map((diente) => ({
-                        diente: diente.diente,
-                        descripcion: diente.descripcion
-                    }))
-            },
+
             odontogramaVisual: {
                 superiorDerecho: formData.odontogramaVisual.superiorDerecho
                     .filter((diente) => diente.cuadrantes.some((c) => c > 0))
@@ -467,6 +401,27 @@ function handleCuadranteClick(posicion, numero, { cuadrante, estado }) {
             dienteEncontrado.cuadrantes[cuadrante - 1] = estado;
         }
     }
+}
+
+function getDienteColores(seccion, numero) {
+    const diente = formData.odontogramaVisual[seccion]?.find((d) => d.diente === numero);
+
+    if (!diente) {
+        return ['#e8f5e9', '#e8f5e9', '#e8f5e9', '#e8f5e9', '#e8f5e9'];
+    }
+
+    const colores = diente.cuadrantes.map((estado) => {
+        switch (estado) {
+            case 1:
+                return '#1976d2'; // azul
+            case 2:
+                return '#d32f2f'; // rojo
+            default:
+                return '#e8f5e9'; // verde claro
+        }
+    });
+
+    return colores;
 }
 </script>
 <template>
@@ -606,57 +561,6 @@ function handleCuadranteClick(posicion, numero, { cuadrante, estado }) {
                 </div>
 
                 <div class="card">
-                    <h5>Odontograma</h5>
-                    <div class="mb-4">
-                        <h6>Superior Derecho</h6>
-                        <DataTable :value="formData.odontograma.superiorDerecho" class="p-datatable-sm" stripedRows rowHover>
-                            <Column field="diente" header="Diente" style="width: 20%"></Column>
-                            <Column field="descripcion" header="Descripción" style="width: 80%">
-                                <template #body="slotProps">
-                                    <InputText v-model="slotProps.data.descripcion" class="w-full" />
-                                </template>
-                            </Column>
-                        </DataTable>
-                    </div>
-
-                    <div class="mb-4">
-                        <h6>Superior Izquierdo</h6>
-                        <DataTable :value="formData.odontograma.superiorIzquierdo" class="p-datatable-sm" stripedRows rowHover>
-                            <Column field="diente" header="Diente" style="width: 20%"></Column>
-                            <Column field="descripcion" header="Descripción" style="width: 80%">
-                                <template #body="slotProps">
-                                    <InputText v-model="slotProps.data.descripcion" class="w-full" />
-                                </template>
-                            </Column>
-                        </DataTable>
-                    </div>
-
-                    <div class="mb-4">
-                        <h6>Inferior Derecho</h6>
-                        <DataTable :value="formData.odontograma.inferiorDerecho" class="p-datatable-sm" stripedRows rowHover>
-                            <Column field="diente" header="Diente" style="width: 20%"></Column>
-                            <Column field="descripcion" header="Descripción" style="width: 80%">
-                                <template #body="slotProps">
-                                    <InputText v-model="slotProps.data.descripcion" class="w-full" />
-                                </template>
-                            </Column>
-                        </DataTable>
-                    </div>
-
-                    <div class="mb-4">
-                        <h6>Inferior Izquierdo</h6>
-                        <DataTable :value="formData.odontograma.inferiorIzquierdo" class="p-datatable-sm" stripedRows rowHover>
-                            <Column field="diente" header="Diente" style="width: 20%"></Column>
-                            <Column field="descripcion" header="Descripción" style="width: 80%">
-                                <template #body="slotProps">
-                                    <InputText v-model="slotProps.data.descripcion" class="w-full" />
-                                </template>
-                            </Column>
-                        </DataTable>
-                    </div>
-                </div>
-
-                <div class="card">
                     <!-- Tabla de Examen del Sistema Estomatognático -->
                     <div class="col-12">
                         <div class="card">
@@ -741,27 +645,55 @@ function handleCuadranteClick(posicion, numero, { cuadrante, estado }) {
                     <div class="odontograma-visual" style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 32px">
                         <!-- Fila superior -->
                         <div style="display: flex; gap: 4px">
-                            <OdontoDiente v-for="n in 8" :key="'sup-izq-' + n" :numero="18 - n + 1" @cuadrante-click="handleCuadranteClick('sup', 18 - n + 1, $event)" />
+                            <OdontoDiente v-for="n in 8" :key="'sup-izq-' + n" :numero="18 - n + 1" :colores="getDienteColores('superiorDerecho', 18 - n + 1)" @cuadrante-click="handleCuadranteClick('sup', 18 - n + 1, $event)" />
                             <div style="width: 32px"></div>
-                            <OdontoDiente v-for="n in 8" :key="'sup-der-' + n" :numero="21 + n - 1" @cuadrante-click="handleCuadranteClick('sup', 21 + n - 1, $event)" />
+                            <OdontoDiente v-for="n in 8" :key="'sup-der-' + n" :numero="21 + n - 1" :colores="getDienteColores('superiorIzquierdo', 21 + n - 1)" @cuadrante-click="handleCuadranteClick('sup', 21 + n - 1, $event)" />
                         </div>
                         <!-- Fila central superior -->
                         <div style="display: flex; gap: 4px">
-                            <OdontoDiente v-for="n in 8" :key="'sup-izq-leche-' + n" :numero="55 - n + 1" small @cuadrante-click="handleCuadranteClick('sup-leche', 55 - n + 1, $event)" />
+                            <OdontoDiente
+                                v-for="n in 8"
+                                :key="'sup-izq-leche-' + n"
+                                :numero="55 - n + 1"
+                                :colores="getDienteColores('superiorDerechoTemporal', 55 - n + 1)"
+                                small
+                                @cuadrante-click="handleCuadranteClick('sup-leche', 55 - n + 1, $event)"
+                            />
                             <div style="width: 32px"></div>
-                            <OdontoDiente v-for="n in 8" :key="'sup-der-leche-' + n" :numero="61 + n - 1" small @cuadrante-click="handleCuadranteClick('sup-leche', 61 + n - 1, $event)" />
+                            <OdontoDiente
+                                v-for="n in 8"
+                                :key="'sup-der-leche-' + n"
+                                :numero="61 + n - 1"
+                                :colores="getDienteColores('superiorIzquierdoTemporal', 61 + n - 1)"
+                                small
+                                @cuadrante-click="handleCuadranteClick('sup-leche', 61 + n - 1, $event)"
+                            />
                         </div>
                         <!-- Fila central inferior -->
                         <div style="display: flex; gap: 4px">
-                            <OdontoDiente v-for="n in 8" :key="'inf-izq-leche-' + n" :numero="85 - n + 1" small @cuadrante-click="handleCuadranteClick('inf-leche', 85 - n + 1, $event)" />
+                            <OdontoDiente
+                                v-for="n in 8"
+                                :key="'inf-izq-leche-' + n"
+                                :numero="85 - n + 1"
+                                :colores="getDienteColores('inferiorDerechoTemporal', 85 - n + 1)"
+                                small
+                                @cuadrante-click="handleCuadranteClick('inf-leche', 85 - n + 1, $event)"
+                            />
                             <div style="width: 32px"></div>
-                            <OdontoDiente v-for="n in 8" :key="'inf-der-leche-' + n" :numero="71 + n - 1" small @cuadrante-click="handleCuadranteClick('inf-leche', 71 + n - 1, $event)" />
+                            <OdontoDiente
+                                v-for="n in 8"
+                                :key="'inf-der-leche-' + n"
+                                :numero="71 + n - 1"
+                                :colores="getDienteColores('inferiorIzquierdoTemporal', 71 + n - 1)"
+                                small
+                                @cuadrante-click="handleCuadranteClick('inf-leche', 71 + n - 1, $event)"
+                            />
                         </div>
                         <!-- Fila inferior -->
                         <div style="display: flex; gap: 4px">
-                            <OdontoDiente v-for="n in 8" :key="'inf-izq-' + n" :numero="48 - n + 1" @cuadrante-click="handleCuadranteClick('inf', 48 - n + 1, $event)" />
+                            <OdontoDiente v-for="n in 8" :key="'inf-izq-' + n" :numero="48 - n + 1" :colores="getDienteColores('inferiorDerecho', 48 - n + 1)" @cuadrante-click="handleCuadranteClick('inf', 48 - n + 1, $event)" />
                             <div style="width: 32px"></div>
-                            <OdontoDiente v-for="n in 8" :key="'inf-der-' + n" :numero="31 + n - 1" @cuadrante-click="handleCuadranteClick('inf', 31 + n - 1, $event)" />
+                            <OdontoDiente v-for="n in 8" :key="'inf-der-' + n" :numero="31 + n - 1" :colores="getDienteColores('inferiorIzquierdo', 31 + n - 1)" @cuadrante-click="handleCuadranteClick('inf', 31 + n - 1, $event)" />
                         </div>
                     </div>
                 </div>
