@@ -31,15 +31,38 @@ const numeroStyle = computed(() => ({
 const seleccionados = ref([0, 0, 0, 0, 0]);
 
 function toggleCuadrante(cuadrante) {
+    // Si tenemos colores de props, determinar el estado actual basado en el color
+    let estadoActual = 0;
+    if (props.colores && props.colores.length >= 5) {
+        const colorActual = props.colores[cuadrante - 1];
+        if (colorActual === '#1976d2') estadoActual = 1; // azul
+        else if (colorActual === '#d32f2f') estadoActual = 2; // rojo
+        else estadoActual = 0; // sin selección
+    } else {
+        estadoActual = seleccionados.value[cuadrante - 1];
+    }
+
     // Avanza el estado: 0 -> 1 -> 2 -> 0
-    seleccionados.value[cuadrante - 1] = (seleccionados.value[cuadrante - 1] + 1) % 3;
+    const nuevoEstado = (estadoActual + 1) % 3;
+
+    // Actualizar el estado local solo si no hay colores en props
+    if (!props.colores || props.colores.length < 5) {
+        seleccionados.value[cuadrante - 1] = nuevoEstado;
+    }
+
     emit('cuadrante-click', {
         cuadrante,
-        estado: seleccionados.value[cuadrante - 1]
+        estado: nuevoEstado
     });
 }
 
 function cuadranteFill(cuadrante) {
+    // Usar los colores pasados como props si están disponibles
+    if (props.colores && props.colores.length >= 5) {
+        return props.colores[cuadrante - 1];
+    }
+
+    // Fallback al comportamiento original si no hay colores en props
     const estado = seleccionados.value[cuadrante - 1];
     if (estado === 1) return '#1976d2'; // azul
     if (estado === 2) return '#d32f2f'; // rojo

@@ -115,6 +115,76 @@ onMounted(async () => {
         formData.odontograma.inferiorDerecho = data.datos.odontograma.inferiorDerecho;
         formData.odontograma.inferiorIzquierdo = data.datos.odontograma.inferiorIzquierdo;
 
+        // Mapear odontograma visual
+        if (data.datos.odontogramaVisual) {
+            // Mapear dientes permanentes
+            if (data.datos.odontogramaVisual.superiorDerecho) {
+                data.datos.odontogramaVisual.superiorDerecho.forEach((dienteServidor) => {
+                    const dienteLocal = formData.odontogramaVisual.superiorDerecho.find((d) => d.diente === dienteServidor.diente);
+                    if (dienteLocal) {
+                        dienteLocal.cuadrantes = dienteServidor.cuadrantes;
+                    }
+                });
+            }
+            if (data.datos.odontogramaVisual.superiorIzquierdo) {
+                data.datos.odontogramaVisual.superiorIzquierdo.forEach((dienteServidor) => {
+                    const dienteLocal = formData.odontogramaVisual.superiorIzquierdo.find((d) => d.diente === dienteServidor.diente);
+                    if (dienteLocal) {
+                        dienteLocal.cuadrantes = dienteServidor.cuadrantes;
+                    }
+                });
+            }
+            if (data.datos.odontogramaVisual.inferiorDerecho) {
+                data.datos.odontogramaVisual.inferiorDerecho.forEach((dienteServidor) => {
+                    const dienteLocal = formData.odontogramaVisual.inferiorDerecho.find((d) => d.diente === dienteServidor.diente);
+                    if (dienteLocal) {
+                        dienteLocal.cuadrantes = dienteServidor.cuadrantes;
+                    }
+                });
+            }
+            if (data.datos.odontogramaVisual.inferiorIzquierdo) {
+                data.datos.odontogramaVisual.inferiorIzquierdo.forEach((dienteServidor) => {
+                    const dienteLocal = formData.odontogramaVisual.inferiorIzquierdo.find((d) => d.diente === dienteServidor.diente);
+                    if (dienteLocal) {
+                        dienteLocal.cuadrantes = dienteServidor.cuadrantes;
+                    }
+                });
+            }
+            // Mapear dientes temporales
+            if (data.datos.odontogramaVisual.superiorDerechoTemporal) {
+                data.datos.odontogramaVisual.superiorDerechoTemporal.forEach((dienteServidor) => {
+                    const dienteLocal = formData.odontogramaVisual.superiorDerechoTemporal.find((d) => d.diente === dienteServidor.diente);
+                    if (dienteLocal) {
+                        dienteLocal.cuadrantes = dienteServidor.cuadrantes;
+                    }
+                });
+            }
+            if (data.datos.odontogramaVisual.superiorIzquierdoTemporal) {
+                data.datos.odontogramaVisual.superiorIzquierdoTemporal.forEach((dienteServidor) => {
+                    const dienteLocal = formData.odontogramaVisual.superiorIzquierdoTemporal.find((d) => d.diente === dienteServidor.diente);
+                    if (dienteLocal) {
+                        dienteLocal.cuadrantes = dienteServidor.cuadrantes;
+                    }
+                });
+            }
+            if (data.datos.odontogramaVisual.inferiorDerechoTemporal) {
+                data.datos.odontogramaVisual.inferiorDerechoTemporal.forEach((dienteServidor) => {
+                    const dienteLocal = formData.odontogramaVisual.inferiorDerechoTemporal.find((d) => d.diente === dienteServidor.diente);
+                    if (dienteLocal) {
+                        dienteLocal.cuadrantes = dienteServidor.cuadrantes;
+                    }
+                });
+            }
+            if (data.datos.odontogramaVisual.inferiorIzquierdoTemporal) {
+                data.datos.odontogramaVisual.inferiorIzquierdoTemporal.forEach((dienteServidor) => {
+                    const dienteLocal = formData.odontogramaVisual.inferiorIzquierdoTemporal.find((d) => d.diente === dienteServidor.diente);
+                    if (dienteLocal) {
+                        dienteLocal.cuadrantes = dienteServidor.cuadrantes;
+                    }
+                });
+            }
+        }
+
         // Mapear higiene oral
         formData.higieneOral = data.datos.higieneOral.map((item) => ({
             p1: item.puntos.p1.valor,
@@ -243,6 +313,80 @@ const formData = reactive({
             { diente: '3.1', descripcion: '' }
         ]
     },
+    odontogramaVisual: {
+        // Dientes permanentes superiores (18-11, 21-28)
+        superiorDerecho: [
+            { diente: 18, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 17, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 16, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 15, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 14, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 13, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 12, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 11, cuadrantes: [0, 0, 0, 0, 0] }
+        ],
+        superiorIzquierdo: [
+            { diente: 21, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 22, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 23, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 24, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 25, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 26, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 27, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 28, cuadrantes: [0, 0, 0, 0, 0] }
+        ],
+        // Dientes permanentes inferiores (48-41, 31-38)
+        inferiorDerecho: [
+            { diente: 48, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 47, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 46, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 45, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 44, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 43, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 42, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 41, cuadrantes: [0, 0, 0, 0, 0] }
+        ],
+        inferiorIzquierdo: [
+            { diente: 31, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 32, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 33, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 34, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 35, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 36, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 37, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 38, cuadrantes: [0, 0, 0, 0, 0] }
+        ],
+        // Dientes temporales superiores (55-51, 61-65)
+        superiorDerechoTemporal: [
+            { diente: 55, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 54, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 53, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 52, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 51, cuadrantes: [0, 0, 0, 0, 0] }
+        ],
+        superiorIzquierdoTemporal: [
+            { diente: 61, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 62, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 63, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 64, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 65, cuadrantes: [0, 0, 0, 0, 0] }
+        ],
+        // Dientes temporales inferiores (85-81, 71-75)
+        inferiorDerechoTemporal: [
+            { diente: 85, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 84, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 83, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 82, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 81, cuadrantes: [0, 0, 0, 0, 0] }
+        ],
+        inferiorIzquierdoTemporal: [
+            { diente: 71, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 72, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 73, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 74, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 75, cuadrantes: [0, 0, 0, 0, 0] }
+        ]
+    },
     higieneOral: [
         { p1: '16', check1: false, p2: '17', check2: false, p3: '55', check3: false, placa: '', calculo: '', gingivitis: '' },
         { p1: '11', check1: false, p2: '21', check2: false, p3: '51', check3: false, placa: '', calculo: '', gingivitis: '' },
@@ -351,6 +495,56 @@ const actualizarFicha = async () => {
                     .map((diente) => ({
                         diente: diente.diente,
                         descripcion: diente.descripcion
+                    }))
+            },
+            odontogramaVisual: {
+                superiorDerecho: formData.odontogramaVisual.superiorDerecho
+                    .filter((diente) => diente.cuadrantes.some((c) => c > 0))
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        cuadrantes: diente.cuadrantes
+                    })),
+                superiorIzquierdo: formData.odontogramaVisual.superiorIzquierdo
+                    .filter((diente) => diente.cuadrantes.some((c) => c > 0))
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        cuadrantes: diente.cuadrantes
+                    })),
+                inferiorDerecho: formData.odontogramaVisual.inferiorDerecho
+                    .filter((diente) => diente.cuadrantes.some((c) => c > 0))
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        cuadrantes: diente.cuadrantes
+                    })),
+                inferiorIzquierdo: formData.odontogramaVisual.inferiorIzquierdo
+                    .filter((diente) => diente.cuadrantes.some((c) => c > 0))
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        cuadrantes: diente.cuadrantes
+                    })),
+                superiorDerechoTemporal: formData.odontogramaVisual.superiorDerechoTemporal
+                    .filter((diente) => diente.cuadrantes.some((c) => c > 0))
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        cuadrantes: diente.cuadrantes
+                    })),
+                superiorIzquierdoTemporal: formData.odontogramaVisual.superiorIzquierdoTemporal
+                    .filter((diente) => diente.cuadrantes.some((c) => c > 0))
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        cuadrantes: diente.cuadrantes
+                    })),
+                inferiorDerechoTemporal: formData.odontogramaVisual.inferiorDerechoTemporal
+                    .filter((diente) => diente.cuadrantes.some((c) => c > 0))
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        cuadrantes: diente.cuadrantes
+                    })),
+                inferiorIzquierdoTemporal: formData.odontogramaVisual.inferiorIzquierdoTemporal
+                    .filter((diente) => diente.cuadrantes.some((c) => c > 0))
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        cuadrantes: diente.cuadrantes
                     }))
             },
             higieneOral: formData.higieneOral.map((item, index) => ({
@@ -691,6 +885,69 @@ const calcularTotalPagado = (cobranzas) => {
     if (!cobranzas || cobranzas.length === 0) return 0;
     return cobranzas.reduce((total, cobranza) => total + cobranza.monto, 0);
 };
+
+function handleCuadranteClick(posicion, numero, { cuadrante, estado }) {
+    // Mapear la posición y número del diente a la estructura de datos correcta
+    let seccion = '';
+
+    // Determinar la sección basada en la posición y número del diente
+    if (posicion === 'sup') {
+        if (numero >= 11 && numero <= 18) {
+            seccion = 'superiorDerecho';
+        } else if (numero >= 21 && numero <= 28) {
+            seccion = 'superiorIzquierdo';
+        }
+    } else if (posicion === 'inf') {
+        if (numero >= 31 && numero <= 38) {
+            seccion = 'inferiorIzquierdo';
+        } else if (numero >= 41 && numero <= 48) {
+            seccion = 'inferiorDerecho';
+        }
+    } else if (posicion === 'sup-leche') {
+        if (numero >= 51 && numero <= 55) {
+            seccion = 'superiorDerechoTemporal';
+        } else if (numero >= 61 && numero <= 65) {
+            seccion = 'superiorIzquierdoTemporal';
+        }
+    } else if (posicion === 'inf-leche') {
+        if (numero >= 71 && numero <= 75) {
+            seccion = 'inferiorIzquierdoTemporal';
+        } else if (numero >= 81 && numero <= 85) {
+            seccion = 'inferiorDerechoTemporal';
+        }
+    }
+
+    if (seccion) {
+        // Buscar el diente en la sección correspondiente
+        const dienteEncontrado = formData.odontogramaVisual[seccion].find((d) => d.diente === numero);
+        if (dienteEncontrado) {
+            // Actualizar el estado del cuadrante (0=sin selección, 1=azul, 2=rojo)
+            dienteEncontrado.cuadrantes[cuadrante - 1] = estado;
+            console.log(`Diente ${numero} (${posicion}), cuadrante ${cuadrante}, estado ${estado}`);
+        }
+    }
+}
+
+function getDienteColores(seccion, numero) {
+    const diente = formData.odontogramaVisual[seccion]?.find((d) => d.diente === numero);
+
+    if (!diente) {
+        return ['#e8f5e9', '#e8f5e9', '#e8f5e9', '#e8f5e9', '#e8f5e9'];
+    }
+
+    const colores = diente.cuadrantes.map((estado) => {
+        switch (estado) {
+            case 1:
+                return '#1976d2'; // azul
+            case 2:
+                return '#d32f2f'; // rojo
+            default:
+                return '#e8f5e9'; // verde claro
+        }
+    });
+
+    return colores;
+}
 </script>
 <template>
     <Fluid>
@@ -839,6 +1096,65 @@ const calcularTotalPagado = (cobranzas) => {
                                                     </template>
                                                 </Column>
                                             </DataTable>
+                                        </div>
+                                    </div>
+
+                                    <div class="card">
+                                        <!-- Odontograma visual interactivo -->
+                                        <h5>Odontograma visual</h5>
+                                        <div class="odontograma-visual" style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 32px">
+                                            <!-- Fila superior -->
+                                            <div style="display: flex; gap: 4px">
+                                                <OdontoDiente v-for="n in 8" :key="'sup-izq-' + n" :numero="18 - n + 1" :colores="getDienteColores('superiorDerecho', 18 - n + 1)" @cuadrante-click="handleCuadranteClick('sup', 18 - n + 1, $event)" />
+                                                <div style="width: 32px"></div>
+                                                <OdontoDiente v-for="n in 8" :key="'sup-der-' + n" :numero="21 + n - 1" :colores="getDienteColores('superiorIzquierdo', 21 + n - 1)" @cuadrante-click="handleCuadranteClick('sup', 21 + n - 1, $event)" />
+                                            </div>
+                                            <!-- Fila central superior -->
+                                            <div style="display: flex; gap: 4px">
+                                                <OdontoDiente
+                                                    v-for="n in 8"
+                                                    :key="'sup-izq-leche-' + n"
+                                                    :numero="55 - n + 1"
+                                                    :colores="getDienteColores('superiorDerechoTemporal', 55 - n + 1)"
+                                                    small
+                                                    @cuadrante-click="handleCuadranteClick('sup-leche', 55 - n + 1, $event)"
+                                                />
+                                                <div style="width: 32px"></div>
+                                                <OdontoDiente
+                                                    v-for="n in 8"
+                                                    :key="'sup-der-leche-' + n"
+                                                    :numero="61 + n - 1"
+                                                    :colores="getDienteColores('superiorIzquierdoTemporal', 61 + n - 1)"
+                                                    small
+                                                    @cuadrante-click="handleCuadranteClick('sup-leche', 61 + n - 1, $event)"
+                                                />
+                                            </div>
+                                            <!-- Fila central inferior -->
+                                            <div style="display: flex; gap: 4px">
+                                                <OdontoDiente
+                                                    v-for="n in 8"
+                                                    :key="'inf-izq-leche-' + n"
+                                                    :numero="85 - n + 1"
+                                                    :colores="getDienteColores('inferiorDerechoTemporal', 85 - n + 1)"
+                                                    small
+                                                    @cuadrante-click="handleCuadranteClick('inf-leche', 85 - n + 1, $event)"
+                                                />
+                                                <div style="width: 32px"></div>
+                                                <OdontoDiente
+                                                    v-for="n in 8"
+                                                    :key="'inf-der-leche-' + n"
+                                                    :numero="71 + n - 1"
+                                                    :colores="getDienteColores('inferiorIzquierdoTemporal', 71 + n - 1)"
+                                                    small
+                                                    @cuadrante-click="handleCuadranteClick('inf-leche', 71 + n - 1, $event)"
+                                                />
+                                            </div>
+                                            <!-- Fila inferior -->
+                                            <div style="display: flex; gap: 4px">
+                                                <OdontoDiente v-for="n in 8" :key="'inf-izq-' + n" :numero="48 - n + 1" :colores="getDienteColores('inferiorDerecho', 48 - n + 1)" @cuadrante-click="handleCuadranteClick('inf', 48 - n + 1, $event)" />
+                                                <div style="width: 32px"></div>
+                                                <OdontoDiente v-for="n in 8" :key="'inf-der-' + n" :numero="31 + n - 1" :colores="getDienteColores('inferiorIzquierdo', 31 + n - 1)" @cuadrante-click="handleCuadranteClick('inf', 31 + n - 1, $event)" />
+                                            </div>
                                         </div>
                                     </div>
 

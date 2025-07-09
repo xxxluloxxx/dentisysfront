@@ -154,6 +154,80 @@ const formData = reactive({
             { diente: '3.1', descripcion: '' }
         ]
     },
+    odontogramaVisual: {
+        // Dientes permanentes superiores (18-11, 21-28)
+        superiorDerecho: [
+            { diente: 18, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 17, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 16, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 15, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 14, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 13, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 12, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 11, cuadrantes: [0, 0, 0, 0, 0] }
+        ],
+        superiorIzquierdo: [
+            { diente: 21, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 22, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 23, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 24, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 25, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 26, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 27, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 28, cuadrantes: [0, 0, 0, 0, 0] }
+        ],
+        // Dientes permanentes inferiores (48-41, 31-38)
+        inferiorDerecho: [
+            { diente: 48, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 47, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 46, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 45, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 44, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 43, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 42, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 41, cuadrantes: [0, 0, 0, 0, 0] }
+        ],
+        inferiorIzquierdo: [
+            { diente: 31, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 32, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 33, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 34, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 35, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 36, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 37, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 38, cuadrantes: [0, 0, 0, 0, 0] }
+        ],
+        // Dientes temporales superiores (55-51, 61-65)
+        superiorDerechoTemporal: [
+            { diente: 55, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 54, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 53, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 52, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 51, cuadrantes: [0, 0, 0, 0, 0] }
+        ],
+        superiorIzquierdoTemporal: [
+            { diente: 61, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 62, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 63, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 64, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 65, cuadrantes: [0, 0, 0, 0, 0] }
+        ],
+        // Dientes temporales inferiores (85-81, 71-75)
+        inferiorDerechoTemporal: [
+            { diente: 85, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 84, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 83, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 82, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 81, cuadrantes: [0, 0, 0, 0, 0] }
+        ],
+        inferiorIzquierdoTemporal: [
+            { diente: 71, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 72, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 73, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 74, cuadrantes: [0, 0, 0, 0, 0] },
+            { diente: 75, cuadrantes: [0, 0, 0, 0, 0] }
+        ]
+    },
     higieneOral: [
         { p1: '16', check1: false, p2: '17', check2: false, p3: '55', check3: false, placa: '', calculo: '', gingivitis: '' },
         { p1: '11', check1: false, p2: '21', check2: false, p3: '51', check3: false, placa: '', calculo: '', gingivitis: '' },
@@ -212,6 +286,7 @@ const toggleExamenEstomatognatico = () => {
 
 const guardarFicha = async () => {
     // Crear objeto con los datos formateados
+
     const fichaData = {
         paciente: {
             id: idPaciente.value
@@ -264,6 +339,56 @@ const guardarFicha = async () => {
                         descripcion: diente.descripcion
                     }))
             },
+            odontogramaVisual: {
+                superiorDerecho: formData.odontogramaVisual.superiorDerecho
+                    .filter((diente) => diente.cuadrantes.some((c) => c > 0))
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        cuadrantes: diente.cuadrantes
+                    })),
+                superiorIzquierdo: formData.odontogramaVisual.superiorIzquierdo
+                    .filter((diente) => diente.cuadrantes.some((c) => c > 0))
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        cuadrantes: diente.cuadrantes
+                    })),
+                inferiorDerecho: formData.odontogramaVisual.inferiorDerecho
+                    .filter((diente) => diente.cuadrantes.some((c) => c > 0))
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        cuadrantes: diente.cuadrantes
+                    })),
+                inferiorIzquierdo: formData.odontogramaVisual.inferiorIzquierdo
+                    .filter((diente) => diente.cuadrantes.some((c) => c > 0))
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        cuadrantes: diente.cuadrantes
+                    })),
+                superiorDerechoTemporal: formData.odontogramaVisual.superiorDerechoTemporal
+                    .filter((diente) => diente.cuadrantes.some((c) => c > 0))
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        cuadrantes: diente.cuadrantes
+                    })),
+                superiorIzquierdoTemporal: formData.odontogramaVisual.superiorIzquierdoTemporal
+                    .filter((diente) => diente.cuadrantes.some((c) => c > 0))
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        cuadrantes: diente.cuadrantes
+                    })),
+                inferiorDerechoTemporal: formData.odontogramaVisual.inferiorDerechoTemporal
+                    .filter((diente) => diente.cuadrantes.some((c) => c > 0))
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        cuadrantes: diente.cuadrantes
+                    })),
+                inferiorIzquierdoTemporal: formData.odontogramaVisual.inferiorIzquierdoTemporal
+                    .filter((diente) => diente.cuadrantes.some((c) => c > 0))
+                    .map((diente) => ({
+                        diente: diente.diente,
+                        cuadrantes: diente.cuadrantes
+                    }))
+            },
             higieneOral: formData.higieneOral.map((item, index) => ({
                 sextante: index + 1,
                 puntos: {
@@ -303,9 +428,45 @@ const cancelar = () => {
     router.push('/pages/fichasMedicas');
 };
 
-function handleCuadranteClick(posicion, numero, { cuadrante }) {
-    // Aquí puedes manejar la lógica al hacer click en un cuadrante de un diente
-    console.log(`Diente ${numero} (${posicion}), cuadrante ${cuadrante}`);
+function handleCuadranteClick(posicion, numero, { cuadrante, estado }) {
+    // Mapear la posición y número del diente a la estructura de datos correcta
+    let seccion = '';
+
+    // Determinar la sección basada en la posición y número del diente
+    if (posicion === 'sup') {
+        if (numero >= 11 && numero <= 18) {
+            seccion = 'superiorDerecho';
+        } else if (numero >= 21 && numero <= 28) {
+            seccion = 'superiorIzquierdo';
+        }
+    } else if (posicion === 'inf') {
+        if (numero >= 31 && numero <= 38) {
+            seccion = 'inferiorIzquierdo';
+        } else if (numero >= 41 && numero <= 48) {
+            seccion = 'inferiorDerecho';
+        }
+    } else if (posicion === 'sup-leche') {
+        if (numero >= 51 && numero <= 55) {
+            seccion = 'superiorDerechoTemporal';
+        } else if (numero >= 61 && numero <= 65) {
+            seccion = 'superiorIzquierdoTemporal';
+        }
+    } else if (posicion === 'inf-leche') {
+        if (numero >= 71 && numero <= 75) {
+            seccion = 'inferiorIzquierdoTemporal';
+        } else if (numero >= 81 && numero <= 85) {
+            seccion = 'inferiorDerechoTemporal';
+        }
+    }
+
+    if (seccion) {
+        // Buscar el diente en la sección correspondiente
+        const dienteEncontrado = formData.odontogramaVisual[seccion].find((d) => d.diente === numero);
+        if (dienteEncontrado) {
+            // Actualizar el estado del cuadrante (0=sin selección, 1=azul, 2=rojo)
+            dienteEncontrado.cuadrantes[cuadrante - 1] = estado;
+        }
+    }
 }
 </script>
 <template>
